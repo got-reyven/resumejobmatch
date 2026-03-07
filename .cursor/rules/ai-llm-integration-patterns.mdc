@@ -1,0 +1,179 @@
+---
+description: AI/LLM integration architecture, cost control, and reliability patterns
+alwaysApply: true
+---
+
+# AI/LLM Integration Patterns
+
+## Provider Abstraction
+
+Never couple business logic to a specific AI provider. Use a service interface:
+
+```typescript
+// src/services/ai/types.ts
+export interface AIProvider {
+  generateStructuredOutput<T>(params: {
+    prompt: string;
+    schema: ZodSchema<T>;
+    model?: string;
+    maxTokens?: number;
+  }): Promise<T>;
+}
+
+// src/services/ai/openai-provider.ts   — implements AIProvider
+// src/services/ai/anthropic-provider.ts — implements AIProvider
+// src/services/ai/google-provider.ts    — implements AIProvider
+// src/services/ai/provider.ts           — factory that returns the active provider
+```
+
+- All AI calls go through the `AIProvider` interface
+- Provider selection via env var (`AI_PROVIDER=openai|anthropic|google`) for system default
+- Swap providers without touching business logic
+
+## Bring Your Own API Key (BYOAK)
+
+Registered users can supply their own API key for a supported LLM provider. This gives them provider choice, unlimited AI calls (billed to their own account), and access to premium models.
+
+### Supported Providers
+
+| Provider | Models Available | Env Var (System Key) |
+|----------|-----------------|---------------------|
+| OpenAI | gpt-4o, gpt-4o-mini, gpt-4-turbo | `OPENAI_API_KEY` |
+| Anthropic | claude-3.5-sonnet, claude-3-haiku | `ANTHROPIC_API_KEY` |
+| Google | gemini-1.5-pro, gemini-1.5-flash | `GOOGLE_AI_API_KEY` |
+
+New providers are added by implementing `AIProvider` and registering in the factory — no business logic changes needed.
+
+### Provider Resolution Chain
+
+```typescript
+// src/services/ai/provider.ts
+export async function resolveProvider(userId?: string): Promise<{
+  provider: AIProvider;
+  source: "user" | "system";
+}> {
+  // 1. If authenticated, check for user-provided key
+  if (userId) {
+    const userKey = await getUserApiKey(userId);
+    if (userKey) {
+      return {
+        provider: createProvider(userKey.provider, decrypt(userKey.encrypted_key)),
+        source: "user",
+      };
+    }
+  }
+
+  // 2. Fall back to system default
+  return {
+    provider: createProvider(env.AI_PROVIDER, getSystemKey(env.AI_PROVIDER)),
+    source: "system",
+  };
+}
+```
+
+- **User key takes priority** — if the user configured a key, always use it
+- **System key fallback** — guests and users without keys use the platform's key
+- **Source tracking** — track whether user or system key was used (for rate limiting decisions)
+
+### Key Lifecycle
+
+1. **Add key** — user selects provider, pastes API key in Settings
+2. **Validate** — server makes a lightweight test call (e.g., list models) to verify the key works
+3. **Encrypt & store** — AES-256-GCM encrypt with server-side `API_KEY_ENCRYPTION_SECRET`, store in `user_api_keys`
+4. **Use** — on each AI call, decrypt at call time, pass to provider, never cache decrypted key
+5. **Rotate** — user can update the key at any time; old key is overwritten
+6. **Remove** — user can delete their key to revert to system defaults
+
+### Rate Limiting with BYOAK
+
+| User Type | Daily Match Limit | AI Provider |
+|-----------|------------------|-------------|
+| Guest | 3 | System key |
+| Free (no BYOAK) | 10 | System key |
+| Free (with BYOAK) | Unlimited | User's own key |
+| Lifetime | Unlimited | User's key or system key |
+
+- Users with their own key bypass AI-related rate limits (they're paying the provider directly)
+- Abuse limits still apply (e.g., max 1000 requests/day to prevent runaway automation)
+
+### Model Selection
+
+- Users with BYOAK can select from available models for their chosen provider
+- Default model per provider is pre-selected (cheapest that meets quality needs)
+- Model selection stored in `user_api_keys.preferred_model`
+- Business logic never assumes a specific model — always parameterized via the provider interface
+
+## Cost Control (Critical for MVP)
+
+- **Token budgets**: set `maxTokens` on every call — never leave unbounded
+- **Model tiering**: use cheapest model that meets quality needs
+  - Parsing/extraction: `gpt-4o-mini` or `claude-3-haiku` (fast, cheap)
+  - Complex matching/scoring: `gpt-4o` or `claude-3.5-sonnet` (only when needed)
+- **Cache AI responses**: hash the input, cache the output in Supabase for identical requests
+- **Batch processing**: queue and batch multiple items when possible instead of one-at-a-time
+- **Rate limiting**: enforce per-user daily limits on AI-powered features
+
+## Structured Output (Always)
+
+Never parse free-text AI responses. Always use structured output:
+
+```typescript
+const resumeDataSchema = z.object({
+  name: z.string(),
+  email: z.string().email().optional(),
+  skills: z.array(z.string()),
+  experience: z.array(z.object({
+    title: z.string(),
+    company: z.string(),
+    years: z.number(),
+  })),
+});
+
+const parsed = await aiProvider.generateStructuredOutput({
+  prompt: buildResumeParsingPrompt(rawText),
+  schema: resumeDataSchema,
+});
+```
+
+- Zod schemas validate AI output — reject and retry on parse failure
+- Max 2 retries per AI call, then fail gracefully with user notification
+
+## Prompt Management
+
+```
+src/services/ai/
+  prompts/
+    resume-parsing.ts        # Prompt templates as functions
+    skill-matching.ts
+    job-description-analysis.ts
+  types.ts                   # AIProvider interface + shared types
+  provider.ts                # Provider factory + BYOAK resolution
+  openai-provider.ts
+  anthropic-provider.ts
+  google-provider.ts
+  key-management.ts          # Encrypt/decrypt/validate user API keys
+```
+
+- Prompts are **TypeScript functions** that accept typed parameters — never raw strings
+- Keep prompts version-controlled and testable
+- Include few-shot examples in prompts for consistent output quality
+- System prompts define role and constraints; user prompts provide the data
+
+## Reliability Patterns
+
+1. **Timeout**: 30s max per AI call — abort and return graceful error
+2. **Retry**: exponential backoff (1s, 2s, 4s) on transient errors (429, 500, 503)
+3. **Fallback**: degrade to simpler analysis if AI is unavailable (keyword matching)
+4. **Circuit breaker**: after 5 consecutive failures, stop calling for 60s
+5. **Async processing**: long AI tasks (full resume analysis) run as background jobs, notify on completion
+
+## Security
+
+- Never send raw user PII in prompts when avoidable — anonymize or redact
+- AI responses are untrusted input — validate and sanitize before storing or displaying
+- Log prompt templates and token usage, never log full prompt content with user data
+- System API keys for AI providers stored as server-only env vars (never `NEXT_PUBLIC_`)
+- **User API keys**: encrypted at rest (AES-256-GCM), decrypted only in-memory at call time
+- Never log, cache, or expose user API keys — treat as equivalent to passwords
+- `API_KEY_ENCRYPTION_SECRET` env var required for BYOAK — must be a 32-byte hex string
+- If decryption fails (key rotation, corruption), prompt user to re-enter their key

@@ -1,0 +1,86 @@
+---
+description: Error handling, logging, and debugging standards
+alwaysApply: true
+---
+
+# Errors and Debugging
+
+## Error Hierarchy
+
+```typescript
+// Base application error — all custom errors extend this
+export class AppError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public statusCode: number = 500,
+    public isOperational: boolean = true
+  ) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+export class ValidationError extends AppError {
+  constructor(message: string, public fields?: Record<string, string[]>) {
+    super(message, "VALIDATION_ERROR", 400);
+  }
+}
+
+export class AuthenticationError extends AppError {
+  constructor(message = "Authentication required") {
+    super(message, "UNAUTHENTICATED", 401);
+  }
+}
+
+export class AuthorizationError extends AppError {
+  constructor(message = "Insufficient permissions") {
+    super(message, "FORBIDDEN", 403);
+  }
+}
+
+export class NotFoundError extends AppError {
+  constructor(resource: string) {
+    super(`${resource} not found`, "NOT_FOUND", 404);
+  }
+}
+```
+
+## Error Handling Rules
+
+1. **Catch at boundaries** — API route handlers and React error boundaries, not deep in logic
+2. **Throw specific errors** — always use typed `AppError` subclasses, never raw `Error`
+3. **Never swallow errors** — every catch must log or re-throw
+4. **User vs developer messages** — `AppError.message` is user-safe; attach debug details to logs only
+5. **Fail fast on startup** — validate env vars and connections at boot, crash immediately if invalid
+
+## API Error Response Format
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Human-readable description",
+    "details": { "field": ["specific issue"] }
+  }
+}
+```
+
+## React Error Boundaries
+
+- Wrap each route segment with an `error.tsx` boundary (Next.js convention)
+- Global `global-error.tsx` as the last resort
+- Error boundaries render a retry button + option to report
+
+## Logging
+
+- **Development**: `console.error` / `console.warn` with structured context objects
+- **Production-ready**: prepare for structured JSON logging (swap to Pino/Winston when scaling)
+- **Always log**: error code, user ID (if authed), request path, timestamp
+- **Never log**: passwords, tokens, PII, full request/response bodies
+
+## Debugging Practices
+
+- Use `React DevTools` and `Supabase Dashboard` SQL editor for debugging
+- Add `data-testid` attributes to key interactive elements for easier inspection
+- Use Zod `.safeParse()` to get detailed validation diagnostics without throwing

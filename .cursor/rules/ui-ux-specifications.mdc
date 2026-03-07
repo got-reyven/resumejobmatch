@@ -1,0 +1,58 @@
+---
+description: UI/UX design specifications and component standards
+alwaysApply: true
+---
+
+# UI/UX Specifications
+
+## Design System
+
+- **Component library**: shadcn/ui as the base — copy-paste, fully customizable
+- **Styling**: Tailwind CSS with design tokens via CSS variables in `globals.css`
+- **Icons**: Lucide React (consistent, tree-shakable)
+- **Fonts**: Inter (body), JetBrains Mono (code/data) via `next/font`
+
+## Core Principles
+
+1. **Mobile-first responsive** — design for 320px up; breakpoints: `sm:640` `md:768` `lg:1024` `xl:1280`
+2. **Accessible (WCAG 2.1 AA)** — semantic HTML, ARIA labels, keyboard navigation, 4.5:1 contrast
+3. **Progressive disclosure** — show essentials first, reveal complexity on demand
+4. **Optimistic UI** — reflect user actions immediately, reconcile with server state
+5. **Consistent feedback** — every action produces visible feedback (toast, loading, state change)
+
+## Required States for Every View
+
+Each page/component must handle all five states:
+
+- **Loading** — skeleton placeholders matching content layout (never spinners for page loads)
+- **Empty** — helpful illustration + CTA guiding next action
+- **Error** — clear message + retry action, never raw error text
+- **Partial** — graceful degradation when some data is available
+- **Success** — the default populated view
+
+## Component Guidelines
+
+```tsx
+// Component file structure
+// 1. Imports
+// 2. Types (if component-specific)
+// 3. Component (named export, never default)
+// 4. Sub-components (if small and tightly coupled)
+
+export function ResumeCard({ resume, onSelect }: ResumeCardProps) {
+  // hooks first, then derived state, then handlers, then render
+}
+```
+
+- Prefer composition over prop drilling — use compound components for complex UI
+- Max 3 levels of conditional rendering — extract to sub-components beyond that
+- All interactive elements need `focus-visible` styles and `aria-label` when text isn't visible
+- Use `next/image` for all images with explicit `width`, `height`, and `alt`
+- Forms use `react-hook-form` + Zod resolver for validation
+
+## Layout
+
+- Max content width: `max-w-7xl` (1280px) centered
+- Consistent spacing scale: multiples of 4px (Tailwind default)
+- Sidebar navigation for dashboard, top nav for public pages
+- Sticky headers with blur backdrop on scroll

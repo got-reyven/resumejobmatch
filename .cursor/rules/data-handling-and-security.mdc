@@ -1,0 +1,118 @@
+---
+description: Data handling, security practices, and privacy compliance
+alwaysApply: true
+---
+
+# Data Handling and Security
+
+## Authentication & Authorization
+
+- **Supabase Auth** for all authentication (email/password, OAuth providers)
+- Server-side session validation on every protected route via `getUser()` (never trust client)
+- **Row Level Security (RLS)** enabled on every table — no exceptions
+- RLS policies follow least-privilege: users access only their own data unless explicitly shared
+
+```sql
+-- Example RLS policy
+CREATE POLICY "Users can read own resumes"
+  ON resumes FOR SELECT
+  USING (auth.uid() = user_id);
+```
+
+## Input Validation
+
+- **All user input** validated with Zod before processing — both client and server
+- Sanitize file uploads: validate MIME type, file extension, and size (max 5MB for resumes)
+- Accepted resume formats: `.pdf`, `.docx` only
+- Parameterized queries only — Supabase client handles this, never concatenate SQL
+
+## Data Privacy (GDPR-Aware)
+
+- Collect only necessary data — no tracking beyond essential analytics
+- Users can export their data (provide download endpoint)
+- Users can delete their account and all associated data (cascade delete)
+- Resume content stored in Supabase Storage with private buckets (signed URLs for access)
+- PII fields identified and documented in schema comments
+
+## Security Headers & Practices
+
+- CSP, X-Frame-Options, X-Content-Type-Options configured in `next.config.js`
+- HTTPS enforced (Vercel handles this by default)
+- API rate limiting: implement via middleware (prepare for Upstash Redis on free tier)
+- CSRF protection via SameSite cookies (Supabase Auth default)
+
+## Secrets Management
+
+```typescript
+// src/config/env.ts — single source for all env vars
+import { z } from "zod";
+
+const envSchema = z.object({
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  API_KEY_ENCRYPTION_SECRET: z.string().length(64).regex(/^[0-9a-f]+$/i)
+    .describe("32-byte hex key for AES-256-GCM encryption of user API keys"),
+});
+
+export const env = envSchema.parse(process.env);
+```
+
+- Never commit `.env` files — use `.env.example` with placeholder values
+- Server-only secrets never prefixed with `NEXT_PUBLIC_`
+- Rotate keys immediately if exposed; use Supabase dashboard for key management
+
+## User API Key Encryption (BYOAK)
+
+User-provided LLM API keys require encryption at rest — they are equivalent to credentials.
+
+```typescript
+// src/services/ai/key-management.ts
+import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+
+const ALGORITHM = "aes-256-gcm";
+
+export function encryptApiKey(plaintext: string, secret: string): {
+  ciphertext: string;
+  iv: string;
+  tag: string;
+} {
+  const key = Buffer.from(secret, "hex");
+  const iv = randomBytes(12);
+  const cipher = createCipheriv(ALGORITHM, key, iv);
+  const encrypted = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
+  return {
+    ciphertext: encrypted.toString("base64"),
+    iv: iv.toString("base64"),
+    tag: cipher.getAuthTag().toString("base64"),
+  };
+}
+
+export function decryptApiKey(
+  ciphertext: string, iv: string, tag: string, secret: string
+): string {
+  const key = Buffer.from(secret, "hex");
+  const decipher = createDecipheriv(ALGORITHM, key, Buffer.from(iv, "base64"));
+  decipher.setAuthTag(Buffer.from(tag, "base64"));
+  return decipher.update(ciphertext, "base64", "utf8") + decipher.final("utf8");
+}
+```
+
+### Security Rules for User API Keys
+
+- **Encrypt before storing** — never store plaintext API keys in the database
+- **Decrypt only at call time** — decrypted key exists only in-memory for the duration of the AI call
+- **Never log** — API keys must never appear in logs, error messages, or analytics
+- **Never return to client** — API endpoints return only a masked version (e.g., `sk-...7xQ2`)
+- **RLS enforced** — `user_api_keys` table scoped to `auth.uid() = user_id`
+- **Validate before storing** — test the key with a lightweight provider call; reject invalid keys
+- **One key per provider per user** — upsert on `(user_id, provider)` unique constraint
+- **Cascade delete** — when user deletes account, all API keys are deleted via `ON DELETE CASCADE`
+
+## Database Practices
+
+- Enable `pgcrypto` extension for UUIDs as primary keys
+- Timestamps: `created_at` (default `now()`) and `updated_at` (trigger-maintained) on every table
+- Soft delete via `deleted_at` column for user-facing data (resumes, profiles)
+- Foreign keys with appropriate `ON DELETE` behavior (CASCADE for owned data, RESTRICT for references)
+- Index frequently queried columns (user_id, status, created_at)

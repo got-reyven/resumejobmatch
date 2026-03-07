@@ -1,0 +1,78 @@
+---
+description: Testing strategy, quality standards, and CI/CD practices
+alwaysApply: true
+---
+
+# Testing and Quality Assurance
+
+## Testing Stack (Zero-Cost)
+
+| Tool | Purpose |
+|------|---------|
+| Vitest | Unit & integration tests |
+| Testing Library | Component testing (React) |
+| Playwright | E2E tests (free, cross-browser) |
+| GitHub Actions | CI/CD pipeline (free for public repos, 2K min/mo private) |
+
+## Testing Pyramid
+
+1. **Unit tests** (70%) — pure functions, utilities, Zod schemas, service logic
+2. **Integration tests** (20%) — API routes, database queries, component interactions
+3. **E2E tests** (10%) — critical user flows only (auth, core matching workflow)
+
+## File Conventions
+
+```
+src/
+  services/
+    resume-parser.ts
+    __tests__/
+      resume-parser.test.ts
+  components/
+    features/
+      ResumeUpload.tsx
+      __tests__/
+        ResumeUpload.test.tsx
+e2e/
+  auth.spec.ts
+  resume-upload.spec.ts
+```
+
+- Test files live in `__tests__/` directories adjacent to source
+- Unit/integration: `*.test.ts(x)` — E2E: `*.spec.ts`
+
+## Testing Standards
+
+- **Arrange-Act-Assert** pattern for every test
+- Test behavior, not implementation — assert on outcomes, not internal state
+- Each test must be independent — no shared mutable state between tests
+- Use descriptive test names: `it("returns matched skills when resume contains keywords")`
+- Mock external services (Supabase, APIs) at the boundary, never deep internals
+
+```typescript
+// Example: testing a service function
+describe("matchResume", () => {
+  it("returns a score above 0 when skills overlap", () => {
+    const resume = buildResume({ skills: ["TypeScript", "React"] });
+    const job = buildJob({ requirements: ["React", "Node.js"] });
+
+    const result = matchResume(resume, job);
+
+    expect(result.score).toBeGreaterThan(0);
+    expect(result.matchedSkills).toContain("React");
+  });
+});
+```
+
+## Quality Gates
+
+- **Pre-commit**: lint + format (ESLint + Prettier via lint-staged + Husky)
+- **PR checks**: type-check (`tsc --noEmit`) + unit tests + build
+- **Coverage target**: 60% for MVP, increase to 80% post-launch
+- **No skipped tests in main** — `it.skip` allowed only in feature branches
+
+## Code Quality Tools
+
+- ESLint with `next/core-web-vitals` + `typescript-eslint` strict config
+- Prettier for formatting (single source of truth, no debates)
+- TypeScript `strict: true` — no `any` unless explicitly justified with `// eslint-disable-next-line`

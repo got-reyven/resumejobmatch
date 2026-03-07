@@ -1,0 +1,101 @@
+---
+description: General project rules for task tracking, documentation, and agent coordination
+alwaysApply: true
+---
+
+# General Rules
+
+## Task Documentation (Mandatory)
+
+Every task must have a documentation folder under `docs/tasks/`. This is the single source of truth for planning, progress, and agent coordination.
+
+### Before Starting Any Task
+
+1. **Check existing tasks** — read `docs/tasks/` to see all in-progress and completed tasks
+2. **Check for duplicates** — if a matching task folder exists, read its `to-do.md` and `history.md` before proceeding
+3. **Create or update** — create the task folder if it doesn't exist, or continue from where the last agent left off
+
+### Task Folder Structure
+
+```
+docs/
+  tasks/
+    {task-slug}/
+      plan.md              # Scope, approach, acceptance criteria
+      to-do.md             # Checklist of sub-tasks with status
+      history.md            # Chronological log of agent actions
+      reports/
+        {agent}-report.md  # Per-agent deliverable or findings
+```
+
+- `{task-slug}` — kebab-case short name (e.g., `resume-upload`, `auth-setup`, `ai-matching`)
+
+### File Contents
+
+**plan.md**
+```markdown
+# Task: [Name]
+## Goal
+[What this task achieves]
+## Scope
+[What's included and excluded]
+## Approach
+[High-level plan and key decisions]
+## Acceptance Criteria
+- [ ] [Criteria 1]
+- [ ] [Criteria 2]
+```
+
+**to-do.md**
+```markdown
+# To-Do: [Task Name]
+| # | Sub-task | Assigned To | Status | Notes |
+|---|----------|-------------|--------|-------|
+| 1 | Design schema | architect | done | |
+| 2 | Create API routes | api-engineer | in-progress | |
+| 3 | Build UI | ui-ux-engineer | pending | |
+```
+Status values: `pending`, `in-progress`, `done`, `blocked`
+
+**history.md**
+```markdown
+# History: [Task Name]
+## [Date] — [Agent]
+- What was done
+- Key decisions made
+- Blockers or issues encountered
+```
+
+**reports/{agent}-report.md**
+```markdown
+# [Agent] Report: [Task Name]
+## Summary
+[What the agent delivered]
+## Details
+[Implementation notes, findings, or recommendations]
+## Status
+[Complete / Needs follow-up]
+```
+
+### Code Review Checkpoint
+
+Every implementation sub-task must end with a review before marking `done`:
+
+1. **Self-review** — the implementing agent verifies against the relevant rules before finishing
+2. **Cross-review** — `principal-engineer` or `qa-engineer` reviews the output for:
+   - Rule compliance (Zod validation, RLS, error handling, i18n keys, file size limits)
+   - Integration correctness (does it work with adjacent modules?)
+   - No regressions (existing tests still pass)
+3. **Findings** — review issues are logged in `history.md` and fixed before the sub-task is marked `done`
+
+A sub-task is only `done` when the implementer AND reviewer agree it meets acceptance criteria.
+
+### Rules for All Agents
+
+1. **Always check first** — read `docs/tasks/` before creating anything new
+2. **No duplicate tasks** — if the task exists, continue it; don't recreate
+3. **Update `to-do.md`** — mark your sub-task status when starting and finishing
+4. **Append to `history.md`** — log what you did after completing your part
+5. **Write your report** — add `reports/{your-agent}-report.md` when your work is done
+6. **Reference other reports** — read sibling reports to stay informed of prior decisions
+7. **Review before done** — no sub-task is marked `done` without passing the code review checkpoint

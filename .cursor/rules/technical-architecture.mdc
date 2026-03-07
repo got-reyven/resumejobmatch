@@ -1,0 +1,56 @@
+---
+description: Technical architecture standards for the Resume Job Match platform
+alwaysApply: true
+---
+
+# Technical Architecture
+
+## Stack (Zero-Cost MVP Tier)
+
+| Layer | Technology | Free Tier |
+|-------|-----------|-----------|
+| Framework | Next.js 14+ (App Router) | Vercel Hobby |
+| Language | TypeScript (strict mode) | - |
+| Database | Supabase PostgreSQL | 500MB, 50K rows |
+| Auth | Supabase Auth | 50K MAU |
+| Storage | Supabase Storage | 1GB |
+| Styling | Tailwind CSS + shadcn/ui | OSS |
+| Validation | Zod | OSS |
+| State | React Server Components + Zustand (client) | OSS |
+
+## Project Structure
+
+```
+src/
+  app/                  # Next.js App Router (routes + layouts)
+  components/
+    ui/                 # Reusable primitives (shadcn/ui)
+    features/           # Feature-specific composed components
+  lib/
+    supabase/           # Supabase client, helpers, RLS policies
+    utils/              # Pure utility functions
+    constants/          # App-wide constants and enums
+    validations/        # Zod schemas (shared between client/server)
+  hooks/                # Custom React hooks
+  services/             # Business logic layer (server-side)
+  types/                # Shared TypeScript types/interfaces
+  config/               # Environment and app configuration
+```
+
+## Architecture Principles
+
+1. **Feature-based colocation** — group related components, hooks, and logic by feature
+2. **Server-first rendering** — default to RSC; use `"use client"` only when interactivity is required
+3. **Thin route handlers** — API routes delegate to `services/` for business logic
+4. **Single source of truth** — Zod schemas drive types, validation, and API contracts
+5. **Environment-aware config** — all env vars accessed through `config/` with runtime validation
+6. **No barrel exports** — import directly from the module file, avoid `index.ts` re-exports
+7. **Max 300 lines per file** — split when approaching this limit
+
+## Naming Conventions
+
+- **Files**: `kebab-case.ts` for utilities, `PascalCase.tsx` for components
+- **Types/Interfaces**: `PascalCase`, prefix interfaces only when needed for disambiguation
+- **Functions**: `camelCase`, prefix hooks with `use`, server actions with action verb
+- **Database**: `snake_case` for tables and columns (PostgreSQL convention)
+- **Env vars**: `NEXT_PUBLIC_` prefix for client-exposed, `SCREAMING_SNAKE_CASE`

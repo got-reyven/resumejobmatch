@@ -1,0 +1,75 @@
+---
+description: Git workflow, branching strategy, and version control conventions
+alwaysApply: true
+---
+
+# Git and Version Control
+
+## Branching Strategy (GitHub Flow)
+
+```
+main              ← production-ready, always deployable
+  └── feat/...    ← new features
+  └── fix/...     ← bug fixes
+  └── chore/...   ← tooling, deps, config
+  └── refactor/...← code restructuring (no behavior change)
+  └── docs/...    ← documentation only
+```
+
+- `main` is the single source of truth — never commit directly
+- All work happens in short-lived branches off `main`
+- Branch naming: `{type}/{short-description}` in `kebab-case` (e.g., `feat/resume-parser`)
+- Delete branches after merge
+
+## Commit Messages (Conventional Commits)
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+```
+
+| Type | When |
+|------|------|
+| `feat` | New feature or capability |
+| `fix` | Bug fix |
+| `refactor` | Code change that doesn't fix a bug or add a feature |
+| `chore` | Build, deps, CI config, tooling |
+| `docs` | Documentation only |
+| `test` | Adding or updating tests |
+| `perf` | Performance improvement |
+| `style` | Formatting, whitespace (no logic change) |
+
+- **Scope**: module or feature affected (e.g., `feat(auth): add OAuth login`)
+- **Description**: imperative mood, lowercase, no period, max 72 chars
+- **Body**: explain *why*, not *what* — the diff shows what changed
+- One logical change per commit — don't bundle unrelated changes
+
+## Pull Request Standards
+
+- Title mirrors the primary commit: `feat(matching): add skill extraction service`
+- Description includes: **Summary** (what and why), **Test plan** (how to verify)
+- Keep PRs small — under 400 lines changed when possible
+- Self-review the diff before requesting review
+- All CI checks must pass before merge
+- Squash merge to `main` to keep history clean
+
+## .gitignore Essentials
+
+```
+node_modules/
+.next/
+.env
+.env.local
+.env*.local
+*.tsbuildinfo
+coverage/
+dist/
+.vercel/
+```
+
+## Release Versioning
+
+- Follow SemVer (`MAJOR.MINOR.PATCH`) when publishing releases
+- MVP phase: `0.x.y` — no stable API contract yet
+- Tag releases on `main`: `v0.1.0`, `v0.2.0`, etc.

@@ -1,0 +1,96 @@
+---
+description: API design conventions and documentation standards for SaaS readiness
+alwaysApply: true
+---
+
+# API Documentation
+
+## API Design (SaaS-Ready)
+
+### URL Structure
+
+```
+/api/v1/{resource}          # Collection
+/api/v1/{resource}/{id}     # Single resource
+/api/v1/{resource}/{id}/{sub-resource}  # Nested resource
+```
+
+- All API routes versioned under `/api/v1/` from day one
+- Resource names are **plural nouns** in `kebab-case`
+- Use query params for filtering/sorting: `?status=active&sort=-created_at`
+
+### HTTP Methods
+
+| Method | Usage | Idempotent |
+|--------|-------|-----------|
+| GET | Retrieve resource(s) | Yes |
+| POST | Create resource | No |
+| PATCH | Partial update | Yes |
+| DELETE | Remove resource | Yes |
+
+### Response Envelope
+
+```typescript
+// Success
+{
+  "data": T | T[],
+  "meta": {
+    "total": number,
+    "page": number,
+    "pageSize": number
+  }
+}
+
+// Error (see errors-and-debugging rule)
+{
+  "error": {
+    "code": string,
+    "message": string,
+    "details"?: Record<string, string[]>
+  }
+}
+```
+
+### Status Codes
+
+- `200` success — `201` created — `204` no content (delete)
+- `400` validation — `401` unauthenticated — `403` forbidden — `404` not found
+- `409` conflict — `422` unprocessable — `429` rate limited
+- `500` server error (only for unexpected failures)
+
+## Route Handler Pattern
+
+```typescript
+// src/app/api/v1/resumes/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { createResumeSchema } from "@/lib/validations/resume";
+import { createResume } from "@/services/resume-service";
+import { withAuth } from "@/lib/supabase/middleware";
+import { handleApiError } from "@/lib/utils/api-error-handler";
+
+export const POST = withAuth(async (req: NextRequest, user) => {
+  try {
+    const body = createResumeSchema.parse(await req.json());
+    const resume = await createResume(user.id, body);
+    return NextResponse.json({ data: resume }, { status: 201 });
+  } catch (error) {
+    return handleApiError(error);
+  }
+});
+```
+
+## Documentation Standards
+
+- Every route file includes a header comment with: endpoint, method, auth requirement, description
+- Zod schemas serve as the living API contract — keep them in `lib/validations/`
+- Prepare for OpenAPI/Swagger generation from Zod schemas (use `zod-to-openapi` when ready)
+- Document rate limits and pagination defaults in a central config
+
+## SaaS Preparation Checklist
+
+- [ ] All routes behind `/api/v1/` prefix
+- [ ] Auth middleware extracting and validating user context
+- [ ] Consistent error response format across all endpoints
+- [ ] Pagination on all list endpoints (default: 20, max: 100)
+- [ ] Request validation via Zod on every mutating endpoint
+- [ ] Idempotency keys for critical operations (payments, submissions)

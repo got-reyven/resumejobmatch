@@ -1,0 +1,67 @@
+---
+description: Performance targets, optimization strategies, and monitoring
+alwaysApply: true
+---
+
+# Performance and Optimization
+
+## Core Web Vitals Targets
+
+| Metric | Target | Measured By |
+|--------|--------|-------------|
+| LCP (Largest Contentful Paint) | < 2.5s | Vercel Analytics (free) |
+| INP (Interaction to Next Paint) | < 200ms | Vercel Analytics |
+| CLS (Cumulative Layout Shift) | < 0.1 | Vercel Analytics |
+| TTFB (Time to First Byte) | < 800ms | Vercel Analytics |
+
+## Rendering Strategy
+
+- **Static (SSG)** — public pages, marketing, docs (build-time generation)
+- **Server (SSR)** — personalized dashboard views, search results
+- **Client** — only for real-time interactive widgets (drag-drop, live previews)
+- Default to server components; add `"use client"` only when hooks or browser APIs are needed
+
+## Bundle Optimization
+
+- **Max first-load JS**: < 100kB per route (check with `next build` output)
+- Dynamic imports for heavy components: `next/dynamic` with `{ ssr: false }` for client-only
+- Tree-shake icons: import individually (`import { Upload } from "lucide-react"`)
+- No full library imports — always destructure (`import { clsx }` not `import clsx from "clsx"`)
+- Analyze bundle periodically: `@next/bundle-analyzer`
+
+## Image and Asset Optimization
+
+- All images via `next/image` with `width`, `height`, `alt`, and `priority` on above-fold
+- Use WebP/AVIF formats where possible (Next.js auto-optimizes)
+- Lazy load below-fold images (default Next.js behavior)
+- Fonts via `next/font` — zero layout shift, self-hosted, preloaded
+
+## Data Fetching
+
+- Fetch in server components as close to where data is used as possible
+- Use React `cache()` for deduplicating identical requests within a render
+- Set appropriate `revalidate` intervals — stale-while-revalidate for non-critical data
+- Paginate all list queries — never fetch unbounded result sets
+- Supabase queries: select only needed columns, use `.range()` for pagination
+
+## Caching Layers
+
+```
+Browser cache (static assets, fonts)
+  → CDN / Edge (Vercel, static + ISR pages)
+    → Server (React cache, fetch cache)
+      → Database (Supabase connection pooling)
+```
+
+- Static assets: immutable cache headers (Vercel default for `_next/static/`)
+- API responses: `Cache-Control` headers based on data freshness needs
+- Avoid caching user-specific or sensitive data at the CDN layer
+
+## Performance Checklist (Per Feature)
+
+- [ ] No layout shift — all dynamic content has reserved space
+- [ ] Images optimized and lazy-loaded
+- [ ] Heavy components dynamically imported
+- [ ] List endpoints paginated
+- [ ] No N+1 query patterns in server components
+- [ ] Route segment size under 100kB first-load JS
