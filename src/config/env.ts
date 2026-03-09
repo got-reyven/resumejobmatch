@@ -8,6 +8,10 @@ const envSchema = z.object({
 
 const serverEnvSchema = envSchema.extend({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  AI_PROVIDER: z.enum(["openai", "anthropic", "google"]).default("openai"),
+  OPENAI_API_KEY: z.string().min(1).optional(),
+  ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  GOOGLE_AI_API_KEY: z.string().min(1).optional(),
   API_KEY_ENCRYPTION_SECRET: z
     .string()
     .length(64)

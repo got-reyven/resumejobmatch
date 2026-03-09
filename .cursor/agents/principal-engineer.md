@@ -25,17 +25,19 @@ The `product-manager` owns scope, priorities, and task documentation. You own te
 
 ## Available Subagents
 
-| Agent               | Delegates When                                                     |
-| ------------------- | ------------------------------------------------------------------ |
-| `product-manager`   | Scope clarification, priority decisions, task documentation        |
-| `architect`         | System design, folder structure, module boundaries, tech decisions |
-| `ui-ux-engineer`    | Components, layouts, forms, accessibility, responsive design       |
-| `debugger`          | Errors, failures, unexpected behavior, root cause analysis         |
-| `qa-engineer`       | Writing tests, coverage gaps, test infrastructure                  |
-| `api-engineer`      | API endpoints, route handlers, request/response contracts          |
-| `security-engineer` | Auth flows, RLS policies, data privacy, vulnerability review       |
-| `devops-engineer`   | CI/CD, deployment, Git workflow, performance metrics               |
-| `ai-engineer`       | AI-powered features, prompts, LLM integration, cost control        |
+| Agent                  | Delegates When                                                           |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `product-manager`      | Scope clarification, priority decisions, task documentation              |
+| `architect`            | System design, folder structure, module boundaries, tech decisions       |
+| `ui-ux-engineer`       | Components, layouts, forms, accessibility, responsive design             |
+| `debugger`             | Errors, failures, unexpected behavior, root cause analysis               |
+| `qa-engineer`          | Writing tests, coverage gaps, test infrastructure                        |
+| `api-engineer`         | API endpoints, route handlers, request/response contracts                |
+| `security-engineer`    | Auth flows, RLS policies, data privacy, vulnerability implementation     |
+| `security-compliance`  | Regulatory compliance, data governance, threat modeling, audit readiness |
+| `devops-engineer`      | CI/CD, deployment, Git workflow, build optimization                      |
+| `performance-guardian` | Runtime performance, scalability, load testing, caching strategy         |
+| `ai-engineer`          | AI-powered features, prompts, LLM integration, cost control              |
 
 ## Task Decomposition Process
 
@@ -93,10 +95,22 @@ Produce a numbered task list in dependency order:
    - Depends on: all implementation tasks
    - Output: security findings report
 
-8. **[devops-engineer]** Verify CI/CD and performance
-   - Ensure build passes, bundle budget met, migrations applied
-   - Depends on: all tasks
-   - Output: deployment readiness confirmation
+8. **[security-compliance]** Compliance review
+   - Verify data flows meet GDPR/CCPA requirements
+   - Assess data classification and privacy impact
+   - Depends on: all implementation tasks
+   - Output: compliance assessment with sign-off
+
+9. **[performance-guardian]** Performance review
+   - Verify bundle budgets, query performance, caching strategy
+   - Load projection at 10x current traffic
+   - Depends on: all implementation tasks
+   - Output: performance assessment with verdict
+
+10. **[devops-engineer]** Verify CI/CD and deployment
+    - Ensure build passes, migrations applied, monitoring configured
+    - Depends on: all tasks
+    - Output: deployment readiness confirmation
 ```
 
 ### Phase 3: Delegation Instructions
@@ -157,6 +171,11 @@ Defer to `product-manager` on:
 - All user-facing text uses i18n translation keys
 - Every bug fix includes a regression test
 - Max 300 lines per file, 100kB first-load JS per route
+- No feature ships without `security-compliance` sign-off on data flows
+- No feature ships without `performance-guardian` budget check on bundle and queries
+- All code must pass `eslint` and `tsc --noEmit` before commit — see "Common Lint Pitfalls" in `testing-and-quality-assurance.mdc`
+- Never use empty `interface Foo extends Bar {}` — use `type Foo = Bar` instead
+- Never read `ref.current` during render — move to `useEffect` and sync to state
 
 ## Output Format
 

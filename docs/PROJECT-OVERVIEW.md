@@ -20,7 +20,7 @@ docs/
 
 .cursor/
   rules/                        ← Standards enforced on every interaction (10 rules)
-  agents/                       ← Specialist subagents with domain expertise (10 agents)
+  agents/                       ← Specialist subagents with domain expertise (12 agents)
   skills/                       ← Execution playbooks for specific workflows (13 skills)
 
 src/                            ← Application source code (Next.js App Router)
@@ -47,7 +47,7 @@ Standards and constraints. Always active — every agent follows these.
 
 ---
 
-## Agents (10) — `.cursor/agents/`
+## Agents (12) — `.cursor/agents/`
 
 Domain experts. Each agent reads relevant rules and uses relevant skills.
 
@@ -60,26 +60,30 @@ product-manager ──→ defines scope, creates tasks, tracks progress
         ├── ui-ux-engineer ──→ components, layouts, accessibility
         ├── api-engineer ──→ API routes, Zod schemas, service layer
         ├── ai-engineer ──→ LLM integration, prompts, cost control
-        ├── security-engineer ──→ auth, RLS, privacy, vulnerability review
+        ├── security-engineer ──→ auth, RLS, privacy, vulnerability implementation
+        ├── security-compliance ──→ regulatory compliance, data governance, audit readiness
         ├── qa-engineer ──→ tests, coverage, quality validation
-        ├── devops-engineer ──→ CI/CD, deployment, performance
+        ├── devops-engineer ──→ CI/CD, deployment, build optimization
+        ├── performance-guardian ──→ runtime performance, scalability, load testing
         └── debugger ──→ root cause analysis, error resolution
 ```
 
 ### Agent → Rule → Skill Mapping
 
-| Agent              | Primary Rules                                         | Primary Skills                                                 |
-| ------------------ | ----------------------------------------------------- | -------------------------------------------------------------- |
-| product-manager    | general-rules                                         | scope-decomposition, backlog-prioritization, progress-tracking |
-| principal-engineer | all rules                                             | delegates to other agents' skills                              |
-| architect          | technical-architecture                                | feature-scaffolding, database-schema-design                    |
-| ui-ux-engineer     | ui-ux-specifications                                  | component-development, internationalization                    |
-| api-engineer       | api-documentation                                     | api-endpoint-development                                       |
-| ai-engineer        | ai-llm-integration-patterns                           | ai-feature-development                                         |
-| security-engineer  | data-handling-and-security                            | security-audit, database-schema-design                         |
-| qa-engineer        | testing-and-quality-assurance                         | test-development                                               |
-| devops-engineer    | git-and-version-control, performance-and-optimization | cicd-and-deployment, performance-audit                         |
-| debugger           | errors-and-debugging                                  | _(uses error rules directly)_                                  |
+| Agent                | Primary Rules                                           | Primary Skills                                                 |
+| -------------------- | ------------------------------------------------------- | -------------------------------------------------------------- |
+| product-manager      | general-rules                                           | scope-decomposition, backlog-prioritization, progress-tracking |
+| principal-engineer   | all rules                                               | delegates to other agents' skills                              |
+| architect            | technical-architecture                                  | feature-scaffolding, database-schema-design                    |
+| ui-ux-engineer       | ui-ux-specifications                                    | component-development, internationalization                    |
+| api-engineer         | api-documentation                                       | api-endpoint-development                                       |
+| ai-engineer          | ai-llm-integration-patterns                             | ai-feature-development                                         |
+| security-engineer    | data-handling-and-security                              | security-audit, database-schema-design                         |
+| security-compliance  | data-handling-and-security, ai-llm-integration-patterns | security-audit _(governance layer)_                            |
+| qa-engineer          | testing-and-quality-assurance                           | test-development                                               |
+| devops-engineer      | git-and-version-control                                 | cicd-and-deployment                                            |
+| performance-guardian | performance-and-optimization, technical-architecture    | performance-audit                                              |
+| debugger             | errors-and-debugging                                    | _(uses error rules directly)_                                  |
 
 ---
 
@@ -120,11 +124,15 @@ Execution playbooks with step-by-step workflows and templates.
                     ↓
 6. REVIEW       code review checkpoint: implementer self-reviews, then cross-review
                     ↓
-7. VERIFY       qa-engineer validates, security-engineer audits, devops verifies build
+7. SECURE       security-engineer audits code, security-compliance reviews data flows
                     ↓
-8. TRACK        product-manager updates to-do, history, generates progress report
+8. PERFORM      performance-guardian verifies budgets, queries, and scalability
                     ↓
-9. NEXT         pick next task from BACKLOG.md → repeat from step 4
+9. VERIFY       qa-engineer validates, devops-engineer verifies build and deployment
+                    ↓
+10. TRACK       product-manager updates to-do, history, generates progress report
+                    ↓
+11. NEXT        pick next task from BACKLOG.md → repeat from step 4
 ```
 
 ---

@@ -76,3 +76,16 @@ describe("matchResume", () => {
 - ESLint with `next/core-web-vitals` + `typescript-eslint` strict config
 - Prettier for formatting (single source of truth, no debates)
 - TypeScript `strict: true` — no `any` unless explicitly justified with `// eslint-disable-next-line`
+
+## Common Lint Pitfalls (Prevent Before Commit)
+
+These patterns are caught by ESLint/TypeScript strict mode and **must** be avoided:
+
+| Pattern | Fix |
+|---------|-----|
+| `interface FooProps extends Bar {}` (empty interface) | Use `type FooProps = Bar;` instead |
+| `ref.current` read during render (in JSX/return) | Move to `useEffect`/`useState` — refs are for side effects only |
+| `<link>` font tags in `layout.tsx` `<head>` | Load fonts via CSS `@import` in `globals.css` or `next/font` |
+| `export default function` for components | Use named exports: `export function Component()` |
+| `.optional()` in Zod schemas for OpenAI structured output | Use `.nullable()` — OpenAI requires all fields present |
+| Accessing `window`/`document` in server components | Guard with `"use client"` directive or `typeof window !== "undefined"` |

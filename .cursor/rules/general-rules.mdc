@@ -86,7 +86,9 @@ Every implementation sub-task must end with a review before marking `done`:
    - Rule compliance (Zod validation, RLS, error handling, i18n keys, file size limits)
    - Integration correctness (does it work with adjacent modules?)
    - No regressions (existing tests still pass)
-3. **Findings** — review issues are logged in `history.md` and fixed before the sub-task is marked `done`
+3. **Security & compliance gate** — for features handling user data or AI calls, `security-compliance` reviews data flows, classification, and regulatory impact
+4. **Performance gate** — for features adding routes, queries, or dependencies, `performance-guardian` verifies bundle budgets, query efficiency, and caching strategy
+5. **Findings** — review issues are logged in `history.md` and fixed before the sub-task is marked `done`
 
 A sub-task is only `done` when the implementer AND reviewer agree it meets acceptance criteria.
 

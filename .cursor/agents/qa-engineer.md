@@ -100,6 +100,10 @@ test("user can upload a resume and see parsed results", async ({ page }) => {
 - Every bug fix ships with a regression test
 - All tests pass before PR merge
 - `data-testid` attributes on key interactive elements
+- `eslint` and `tsc --noEmit` pass with zero errors before commit
+- No empty interfaces (`interface Foo extends Bar {}` → use `type Foo = Bar`)
+- No ref reads during render (`ref.current` in JSX → move to `useEffect` + state)
+- No `.optional()` in Zod schemas used with OpenAI structured output (use `.nullable()`)
 
 ## Output Format
 

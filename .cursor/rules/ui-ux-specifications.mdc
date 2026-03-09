@@ -10,7 +10,24 @@ alwaysApply: true
 - **Component library**: shadcn/ui as the base — copy-paste, fully customizable
 - **Styling**: Tailwind CSS with design tokens via CSS variables in `globals.css`
 - **Icons**: Lucide React (consistent, tree-shakable)
-- **Fonts**: Inter (body), JetBrains Mono (code/data) via `next/font`
+- **Font**: Google Sans (all text — body, headings, code, data) via Google Fonts stylesheet — single typeface for unified visual identity (weights: 400, 500, 600, 700)
+
+## Typography Scale (Custom — Scaled Up from Tailwind Defaults)
+
+Font sizes are overridden in `globals.css` `@theme` block. Base body text (`text-sm`) = 16px.
+
+| Utility | Size | Line Height | Usage |
+|---------|------|-------------|-------|
+| `text-xs` | 14px (0.875rem) | 20px | Captions, badges, helper text |
+| `text-sm` | 16px (1rem) | 24px | Body text, labels, buttons (base) |
+| `text-base` | 18px (1.125rem) | 28px | Emphasized body, subtitles |
+| `text-lg` | 20px (1.25rem) | 30px | Section intros, card titles |
+| `text-xl` | 24px (1.5rem) | 32px | Section headings |
+| `text-2xl` | 28px (1.75rem) | 36px | Page sub-headings |
+| `text-3xl` | 32px (2rem) | 40px | Page headings |
+| `text-4xl` | 40px (2.5rem) | 48px | Hero headings (mobile) |
+| `text-5xl` | 52px (3.25rem) | 1 | Hero headings (tablet) |
+| `text-6xl` | 64px (4rem) | 1 | Hero headings (desktop) |
 
 ## Core Principles
 

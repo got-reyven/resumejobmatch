@@ -1,0 +1,899 @@
+---
+description: Insights engine architecture, implementation specs, and interpretation guide for all 23 insight modules
+alwaysApply: true
+---
+
+# Insights & Analytics Engine
+
+The insights engine is the core differentiator. Most tools give a percentage score. We give a breakdown that tells users _why_ they match and _what to do about it_. Each insight is a standalone module — built, shipped, and tested independently.
+
+## Architecture
+
+### Data Flow
+
+```
+ParsedResume + ParsedJob
+       ↓
+  Matching Engine (AI-powered comparison)
+       ↓
+  Overall Score + Per-Insight Results
+       ↓
+  Tabbed Results UI
+```
+
+### Module Pattern
+
+Every insight follows the same structure:
+
+```
+src/services/insights/
+  types.ts                    # Shared InsightResult interface
+  insight-registry.ts         # Maps insight IDs to implementations
+  score/
+    overall-score.ts          # #1 — compute + format
+    overall-score.prompt.ts   # Prompt template
+    overall-score.schema.ts   # Zod output schema
+  skills-breakdown/
+    ...
+```
+
+Each insight module exports:
+- **`compute(resume, job, options)`** — runs the AI call or algorithm, returns structured result
+- **`schema`** — Zod schema validating the AI output
+- **`prompt`** — TypeScript function building the prompt from parsed inputs
+
+### Display Component Requirements
+
+Every insight display component **must** include:
+- **Title icon** — a Lucide React icon placed before the title in the `<h3>` heading, sized `h-5 w-5` with an appropriate color. Icon choice should reflect the insight's purpose:
+  - Overall Match Score → `Target` (primary)
+  - Skills Match Breakdown → `Puzzle` (blue-500)
+  - Top 3 Action Items → `Lightbulb` (yellow-500)
+  - Top Strengths → `Trophy` (amber-500)
+- Icons are **required** for all current and future insights — no insight card ships without one
+
+### Result Envelope
+
+```typescript
+interface InsightResult<T> {
+  id: string;                    // e.g. "overall-score"
+  name: string;                  // e.g. "Overall Match Score"
+  tier: 1 | 2 | 3;
+  tab: "shared" | "jobseeker" | "hiring-manager";
+  status: "success" | "partial" | "error";
+  data: T;                       // Insight-specific typed payload
+  computedAt: string;            // ISO timestamp
+  modelUsed: string;             // e.g. "gpt-4o-mini"
+  tokensUsed: number;
+}
+```
+
+### Tier Gating
+
+| Tier | Visibility | Access |
+|------|-----------|--------|
+| 1 | Always shown in full | Guest + Free + Lifetime |
+| 2 | Teaser shown (blurred/truncated), full behind gate | Free (limited) + Lifetime (full) |
+| 3 | Locked with preview description | Lifetime only |
+
+Gating is applied at the UI layer, not the API — all insights are computed for all users to enable instant unlock on upgrade. Cached results remain valid after tier change.
+
+### Caching
+
+- Cache key: `hash(resume_text + job_text + insight_id + model)`
+- Storage: `ai_cache` table in Supabase
+- TTL: indefinite (same inputs always produce same insight)
+- Identical resume+job pairs skip AI calls entirely
+
+## Results UI
+
+### Tabbed Layout
+
+```
+┌───────────────────────────────────────────┐
+│  Overall Match Score: 78%  [ring gauge]   │
+├───────────────────────────────────────────┤
+│  [ For Jobseekers ]  [ For Hiring Mgrs ] │
+│  ─────────────────────────────────────    │
+│  (insight cards render below in tab)      │
+└───────────────────────────────────────────┘
+```
+
+- **Shared insights** appear in both tabs, framed per audience
+- **Exclusive insights** appear only in their designated tab
+- Each insight renders as a card with title, status badge, and expandable content
+
+---
+
+## Insight Catalog
+
+### #1 — Overall Match Score
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Shared |
+| **Tier** | 1 (always available) |
+| **Phase** | MVP |
+
+**Why it matters**
+The anchor metric. Jobseekers get a fast read on competitiveness. Hiring managers get a structured first-pass filter. This is the number users remember and share.
+
+**Implementation**
+- AI compares parsed resume against parsed job requirements
+- Weighted scoring across 4 dimensions: skills (40%), experience (30%), qualifications (20%), overall fit (10%)
+- Single AI call with structured output returning dimension scores + overall percentage
+- Score is 0–100, displayed as a ring/donut gauge
+
+**Output schema**
+```typescript
+z.object({
+  overall: z.number().min(0).max(100),
+  dimensions: z.object({
+    skills: z.number().min(0).max(100),
+    experience: z.number().min(0).max(100),
+    qualifications: z.number().min(0).max(100),
+    overall_fit: z.number().min(0).max(100),
+  }),
+  summary: z.string(),  // 1-2 sentence summary
+})
+```
+
+**How to interpret**
+- **80–100%**: Strong match — resume closely aligns with requirements
+- **60–79%**: Moderate match — clear alignment with notable gaps
+- **40–59%**: Weak match — some transferable skills but significant gaps
+- **0–39%**: Poor match — role requires substantially different background
+
+**Framing**
+- Jobseeker: "You match 78% of this role's requirements"
+- Hiring manager: "This candidate meets 78% of your stated requirements"
+
+---
+
+### #2 — Skills Match Breakdown
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Shared |
+| **Tier** | 1 (always available) |
+| **Phase** | MVP |
+
+**Why it matters**
+The most actionable insight for jobseekers — they see exactly which skills to add. Hiring managers see requirements coverage at a glance, enabling faster screening.
+
+**Implementation**
+- AI extracts skills from job description (required vs. preferred)
+- Cross-references with skills parsed from resume
+- Categorizes each skill as: exact match, semantic match (e.g., "JS" ≈ "JavaScript"), or missing
+- No separate AI call needed if combined with #1 scoring call
+
+**Output schema**
+```typescript
+z.object({
+  matched: z.array(z.object({
+    skill: z.string(),
+    type: z.enum(["exact", "semantic"]),
+    resume_term: z.string().optional(), // what the resume actually says
+  })),
+  missing: z.array(z.object({
+    skill: z.string(),
+    priority: z.enum(["required", "preferred"]),
+  })),
+  coverage_percent: z.number(),
+})
+```
+
+**How to interpret**
+- Green list = skills the candidate has (matched)
+- Red list = skills the job needs but the resume lacks (missing)
+- Semantic matches shown with "≈" notation to clarify non-exact wording
+
+**Framing**
+- Jobseeker: "Matched Skills" / "Skills to Add" with priority badges
+- Hiring manager: "Requirements Met" / "Requirements Not Found"
+
+---
+
+### #3 — Top 3 Action Items
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Jobseeker only |
+| **Tier** | 1 (always available) |
+| **Phase** | MVP |
+
+**Why it matters**
+Turns analysis into action. Jobseekers don't just want to know what's wrong — they want to know what to do _first_. This is the "so what?" that competitors miss. Drives repeat usage and upgrades.
+
+**Implementation**
+- AI analyzes the gap between resume and job requirements
+- Generates 3 prioritized, specific recommendations ranked by impact on match score
+- Each action item references a specific resume section and suggests concrete wording
+
+**Output schema**
+```typescript
+z.object({
+  actions: z.array(z.object({
+    priority: z.number().min(1).max(3),
+    title: z.string(),           // e.g., "Add Kubernetes to your skills"
+    description: z.string(),     // Why this matters + how to do it
+    section: z.string(),         // Which resume section to edit
+    impact: z.enum(["high", "medium"]),
+  })).length(3),
+})
+```
+
+**How to interpret**
+- Ordered by impact — action #1 moves the score the most
+- Each action targets a specific resume section for easy editing
+- "High impact" = directly addresses a required skill/qualification
+
+---
+
+### #4 — Top Strengths
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Hiring Manager only |
+| **Tier** | 1 (always available) |
+| **Phase** | MVP |
+
+**Why it matters**
+Gives hiring managers a quick "why consider this candidate" summary. Saves time during high-volume screening by surfacing the best reasons to interview.
+
+**Implementation**
+- AI identifies the top 3 areas where the candidate strongly meets or exceeds requirements
+- Each strength is backed by specific evidence from the resume
+- Considers both explicit matches and inferred strengths (e.g., leadership from titles)
+
+**Output schema**
+```typescript
+z.object({
+  strengths: z.array(z.object({
+    area: z.string(),          // e.g., "Frontend Architecture"
+    evidence: z.string(),      // Specific resume content backing the claim
+    relevance: z.string(),     // How it maps to the job requirement
+  })).min(1).max(3),
+})
+```
+
+**How to interpret**
+- Each strength links a job requirement to resume evidence
+- Strengths are ranked by relevance to the role's most critical needs
+
+---
+
+### #5 — ATS Keyword Analysis
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Jobseeker only |
+| **Tier** | 2 (Free: top 5 keywords, Lifetime: full list) |
+| **Phase** | v0.2 |
+
+**Why it matters**
+Most large companies use Applicant Tracking Systems that filter resumes by keyword match before a human ever sees them. This insight helps jobseekers pass the automated filter — a critical first hurdle.
+
+**Implementation**
+- AI extracts critical keywords and phrases from the job description
+- Checks resume for exact matches, partial matches, and semantic equivalents
+- Highlights keywords by category: technical skills, tools, certifications, soft skills
+- Provides an estimated "ATS pass likelihood" based on keyword coverage
+
+**Output schema**
+```typescript
+z.object({
+  keywords: z.array(z.object({
+    keyword: z.string(),
+    category: z.enum(["technical", "tool", "certification", "soft_skill", "other"]),
+    found_in_resume: z.boolean(),
+    match_type: z.enum(["exact", "semantic", "missing"]).optional(),
+    resume_context: z.string().optional(),
+  })),
+  ats_pass_likelihood: z.enum(["high", "medium", "low"]),
+  suggestion: z.string(),
+})
+```
+
+**How to interpret**
+- **High ATS likelihood**: Most critical keywords present — likely to pass automated screening
+- **Medium**: Some gaps — adding 2-3 keywords could make the difference
+- **Low**: Major keyword gaps — resume needs significant tailoring for this role
+
+**Tier gating**
+- Free: shows top 5 keywords + ATS likelihood
+- Lifetime: full keyword list with categories and suggestions
+
+---
+
+### #6 — Experience Alignment
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Shared |
+| **Tier** | 2 (Free: summary only, Lifetime: full role mapping) |
+| **Phase** | v0.2 |
+
+**Why it matters**
+Skills alone don't tell the full story. This maps actual work history to the role's expectations — years of experience, seniority level, and industry relevance. Helps both users understand "fit" beyond keywords.
+
+**Implementation**
+- AI maps each resume role to the job requirements
+- Assesses: years of relevant experience, seniority match, industry overlap
+- Identifies experience that's directly relevant vs. transferable vs. unrelated
+- Compares required years to actual years in relevant domains
+
+**Output schema**
+```typescript
+z.object({
+  total_relevant_years: z.number(),
+  required_years: z.number().nullable(),
+  seniority_fit: z.enum(["under", "match", "over"]),
+  industry_alignment: z.enum(["same", "adjacent", "different"]),
+  role_mapping: z.array(z.object({
+    resume_role: z.string(),
+    relevance: z.enum(["direct", "transferable", "unrelated"]),
+    relevant_aspects: z.array(z.string()),
+  })),
+  summary: z.string(),
+})
+```
+
+**Framing**
+- Jobseeker: "Your 5 years of React experience exceeds the 3-year requirement" or "Consider highlighting your backend work — it's highly relevant"
+- Hiring manager: relevance score per role, seniority fit indicator, total relevant years vs. required
+
+---
+
+### #7 — Qualification Fit
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Shared |
+| **Tier** | 2 (Free: summary, Lifetime: full breakdown) |
+| **Phase** | v0.2 |
+
+**Why it matters**
+Many roles have hard qualification requirements (degrees, certifications, clearances). This gives a clear pass/fail view so jobseekers know if they meet the bar, and hiring managers can quickly filter.
+
+**Implementation**
+- AI extracts required and preferred qualifications from the job description
+- Maps each to resume education, certifications, and credentials
+- Flags each as: "Met", "Partially met", or "Not found"
+
+**Output schema**
+```typescript
+z.object({
+  qualifications: z.array(z.object({
+    requirement: z.string(),
+    type: z.enum(["required", "preferred"]),
+    status: z.enum(["met", "partially_met", "not_found"]),
+    evidence: z.string().optional(),
+    note: z.string().optional(),
+  })),
+  summary: z.string(),
+})
+```
+
+**How to interpret**
+- **Met**: Resume clearly demonstrates this qualification
+- **Partially met**: Related but not exact (e.g., "BS in Math" for a "BS in CS" requirement)
+- **Not found**: No evidence in resume — may still have it but should add it
+
+---
+
+### #8 — Resume Section Strength
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Jobseeker only |
+| **Tier** | 2 (Free: scores only, Lifetime: scores + suggestions) |
+| **Phase** | v0.3 |
+
+**Why it matters**
+Jobseekers often don't know which part of their resume is letting them down. This rates each section against the specific job, pointing them to where editing effort has the most ROI.
+
+**Implementation**
+- AI evaluates each resume section (summary, skills, experience, education, certifications) against the job description
+- Scores each section 1–5 for relevance to the specific role
+- Identifies the weakest section and provides targeted improvement suggestions
+
+**Output schema**
+```typescript
+z.object({
+  sections: z.array(z.object({
+    name: z.enum(["summary", "skills", "experience", "education", "certifications", "other"]),
+    score: z.number().min(1).max(5),
+    feedback: z.string(),
+    suggestion: z.string().optional(),
+  })),
+  weakest: z.string(),
+  summary: z.string(),
+})
+```
+
+---
+
+### #9 — Tailored Summary Suggestion
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Jobseeker only |
+| **Tier** | 2 (Free: first sentence only, Lifetime: full summary) |
+| **Phase** | v0.3 |
+
+**Why it matters**
+The professional summary is the first thing recruiters read and the easiest section to tailor per application. A ready-to-use rewrite removes friction and directly improves match rate. High perceived value drives Lifetime conversions.
+
+**Implementation**
+- AI generates a complete professional summary (3–4 sentences) optimized for the specific job
+- Incorporates matched skills, relevant experience, and job-specific language
+- Provides a before/after comparison showing the current vs. suggested summary
+
+**Output schema**
+```typescript
+z.object({
+  current_summary: z.string().nullable(),
+  suggested_summary: z.string(),
+  key_changes: z.array(z.string()),
+})
+```
+
+---
+
+### #10 — Risk Areas & Gaps
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Hiring Manager only |
+| **Tier** | 2 (Free: top 3, Lifetime: all) |
+| **Phase** | v0.3 |
+
+**Why it matters**
+Saves interview time by pre-identifying areas to probe. Framed constructively — not as disqualifiers but as areas needing clarification. Helps hiring managers ask better questions and make informed decisions.
+
+**Implementation**
+- AI identifies areas where the candidate falls short of requirements
+- Frames each gap constructively with context and transferability assessment
+- Suggests what to look for if the candidate has adjacent experience
+
+**Output schema**
+```typescript
+z.object({
+  risks: z.array(z.object({
+    area: z.string(),
+    severity: z.enum(["critical", "moderate", "minor"]),
+    detail: z.string(),
+    mitigation: z.string().optional(),
+  })),
+  summary: z.string(),
+})
+```
+
+---
+
+### #11 — Interview Focus Points
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Hiring Manager only |
+| **Tier** | 2 (Free: 2 questions, Lifetime: all questions) |
+| **Phase** | v0.3 |
+
+**Why it matters**
+Turns gap analysis into interview strategy. Instead of generic behavioral questions, hiring managers get questions tailored to this specific candidate's profile against this specific role. Significantly improves interview quality.
+
+**Implementation**
+- AI generates questions based on identified gaps and ambiguous areas
+- Each question targets a specific concern with context on what to listen for
+- Questions are categorized: technical verification, experience depth, culture fit
+
+**Output schema**
+```typescript
+z.object({
+  questions: z.array(z.object({
+    question: z.string(),
+    rationale: z.string(),
+    category: z.enum(["technical", "experience", "culture", "growth"]),
+    listen_for: z.string(),
+  })),
+})
+```
+
+---
+
+### #12 — Overqualification Assessment
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Hiring Manager only |
+| **Tier** | 2 |
+| **Phase** | v0.4 |
+
+**Why it matters**
+Overqualified candidates can be flight risks or salary mismatches. This flags the situation early so hiring managers can set appropriate expectations during interviews, reducing costly mis-hires.
+
+**Implementation**
+- AI compares candidate seniority, years of experience, and skill depth against the role's level
+- Flags significant overqualification with context
+- Only triggers when the gap is meaningful — avoids false positives
+
+**Output schema**
+```typescript
+z.object({
+  is_overqualified: z.boolean(),
+  confidence: z.enum(["high", "moderate", "low"]),
+  indicators: z.array(z.string()),
+  recommendation: z.string(),
+})
+```
+
+---
+
+### #13 — Rewrite Suggestions
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Jobseeker only |
+| **Tier** | 3 (Lifetime only) |
+| **Phase** | v0.4 |
+
+**Why it matters**
+Goes beyond "what to change" to "here's the exact wording." Bullet-by-bullet rewrites using the job's language and power verbs. The highest-effort insight but also the highest perceived value — a key Lifetime conversion driver.
+
+**Implementation**
+- AI rewrites individual experience bullets to better match the job description
+- Uses action verbs and terminology from the job posting
+- Shows before/after for each suggestion
+- Limits to the 5 most impactful bullet rewrites
+
+**Output schema**
+```typescript
+z.object({
+  rewrites: z.array(z.object({
+    original: z.string(),
+    suggested: z.string(),
+    rationale: z.string(),
+    section: z.string(),
+  })).max(5),
+})
+```
+
+---
+
+### #14 — Competitive Positioning
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Jobseeker only |
+| **Tier** | 3 (Lifetime only) |
+| **Phase** | v0.5+ |
+
+**Why it matters**
+Answers the ultimate jobseeker question: "Am I competitive for this role?" Based on requirement coverage analysis (not real applicant data), it gives a directional estimate that helps candidates decide whether to apply or keep tailoring.
+
+**Implementation**
+- AI estimates percentile positioning based on how completely the resume covers the stated requirements
+- Uses requirement coverage depth and specificity as signals
+- Explicitly framed as an estimate, not based on actual applicant pool data
+
+**Output schema**
+```typescript
+z.object({
+  positioning: z.string(),  // e.g., "top 30% of typical applicants"
+  confidence: z.enum(["high", "moderate", "low"]),
+  strong_areas: z.array(z.string()),
+  weak_areas: z.array(z.string()),
+  recommendation: z.string(),
+})
+```
+
+---
+
+### #15 — Industry Jargon Check
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Jobseeker only |
+| **Tier** | 3 (Lifetime only) |
+| **Phase** | v0.5+ |
+
+**Why it matters**
+Every industry has its own vocabulary. Using the right terms signals insider knowledge and cultural fit. Particularly valuable for career changers entering a new industry.
+
+**Implementation**
+- AI identifies industry-specific terminology from the job description
+- Checks which terms are present or absent in the resume
+- Suggests natural ways to incorporate missing jargon
+
+**Output schema**
+```typescript
+z.object({
+  industry: z.string(),
+  terms: z.array(z.object({
+    term: z.string(),
+    present: z.boolean(),
+    suggestion: z.string().optional(),
+  })),
+  summary: z.string(),
+})
+```
+
+---
+
+### #16 — Soft Skills Alignment
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Shared |
+| **Tier** | 3 (Lifetime only) |
+| **Phase** | v0.4 |
+
+**Why it matters**
+Technical skills get candidates past the screen — soft skills get them hired. This extracts soft skill requirements and checks if the resume demonstrates them through language and accomplishments, not just listing them.
+
+**Implementation**
+- AI extracts soft skill requirements from the job description (leadership, collaboration, communication, etc.)
+- Analyzes resume for evidence of each skill through action verbs and achievement descriptions
+- Scores evidence strength rather than simple keyword presence
+
+**Output schema**
+```typescript
+z.object({
+  skills: z.array(z.object({
+    skill: z.string(),
+    required: z.boolean(),
+    evidence_strength: z.enum(["strong", "moderate", "weak", "none"]),
+    evidence: z.string().optional(),
+    suggestion: z.string().optional(),
+  })),
+  coverage_percent: z.number(),
+})
+```
+
+**Framing**
+- Jobseeker: improvement tips for weak/missing soft skills with example phrasing
+- Hiring manager: soft skills coverage map with evidence strength indicators
+
+---
+
+### #17 — Career Gap Analysis
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Shared |
+| **Tier** | 3 (Lifetime only) |
+| **Phase** | v0.5+ |
+
+**Why it matters**
+Employment gaps are the #1 concern hiring managers flag during screening. For jobseekers, knowing how their gaps are perceived helps them address concerns proactively. For hiring managers, structured gap context enables fair evaluation.
+
+**Implementation**
+- Analyzes employment timeline from parsed resume experience dates
+- Identifies gaps longer than 3 months
+- Provides context where inferable (education, freelance indicators)
+
+**Output schema**
+```typescript
+z.object({
+  gaps: z.array(z.object({
+    from: z.string(),
+    to: z.string(),
+    duration_months: z.number(),
+    possible_context: z.string().optional(),
+  })),
+  has_significant_gaps: z.boolean(),
+  summary: z.string(),
+})
+```
+
+**Framing**
+- Jobseeker: "You have a 6-month gap in 2023 — consider adding freelance work, education, or a brief note explaining the transition"
+- Hiring manager: "1 gap identified (6 months in 2023) — possible context: coincides with graduate program dates"
+
+---
+
+### #18 — Cover Letter Starter
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Jobseeker only |
+| **Tier** | 3 (Lifetime only) |
+| **Phase** | v0.5+ |
+
+**Why it matters**
+Many jobs still require cover letters, and most candidates dread writing them. A tailored opening paragraph based on the match analysis removes the blank-page problem and ensures the letter highlights the strongest alignment points.
+
+**Implementation**
+- AI generates an opening paragraph (3–4 sentences) tailored to the specific job
+- Highlights the candidate's strongest match areas from the analysis
+- Maintains a professional but personable tone
+- Ready to copy-paste and extend
+
+**Output schema**
+```typescript
+z.object({
+  opening_paragraph: z.string(),
+  key_points_used: z.array(z.string()),
+  tone: z.string(),
+})
+```
+
+---
+
+### #19 — Skill Transferability Map
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Hiring Manager only |
+| **Tier** | 3 (Lifetime only) |
+| **Phase** | v0.5+ |
+
+**Why it matters**
+The best candidates aren't always exact-match candidates. This insight helps hiring managers see potential in adjacent experience — e.g., an Angular expert can likely learn React quickly. Reduces false negatives in screening.
+
+**Implementation**
+- AI identifies skills the candidate lacks but has adjacent experience in
+- Rates transferability based on technology proximity, conceptual overlap, and learning curve
+- Provides context for each transfer potential
+
+**Output schema**
+```typescript
+z.object({
+  transfers: z.array(z.object({
+    required_skill: z.string(),
+    candidate_skill: z.string(),
+    transferability: z.enum(["high", "moderate", "low"]),
+    rationale: z.string(),
+  })),
+  summary: z.string(),
+})
+```
+
+---
+
+### #20 — Culture & Communication Indicators
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Hiring Manager only |
+| **Tier** | 3 (Lifetime only) |
+| **Phase** | v0.5+ |
+
+**Why it matters**
+Resume writing style reveals communication patterns. Collaborative language, leadership framing, and technical depth in descriptions signal working style. Not a personality test — a language pattern analysis that gives hiring managers additional signal.
+
+**Implementation**
+- AI analyzes resume writing patterns across dimensions: collaborative vs. individual, leadership vs. execution, detail-oriented vs. big-picture
+- Based purely on language analysis of the resume text
+- Explicitly disclaimed as "indicators from writing style, not a personality assessment"
+
+**Output schema**
+```typescript
+z.object({
+  indicators: z.array(z.object({
+    dimension: z.string(),
+    signal: z.string(),
+    evidence: z.string(),
+  })),
+  communication_style: z.string(),
+  disclaimer: z.string(),
+})
+```
+
+---
+
+### #21 — Comparison Matrix
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Hiring Manager only |
+| **Tier** | 3 (Lifetime only) |
+| **Phase** | v0.5+ |
+
+**Why it matters**
+When evaluating multiple candidates, side-by-side comparison saves hours. Per-requirement scoring across candidates reveals who's strongest where — essential for shortlisting.
+
+**Implementation**
+- Aggregates match results from multiple resumes matched against the same job
+- Builds a comparison table with per-requirement scores
+- Highlights the strongest candidate per category and overall
+- Requires the multi-resume comparison feature (Lifetime tier)
+
+**Output schema**
+```typescript
+z.object({
+  job_id: z.string(),
+  candidates: z.array(z.object({
+    resume_id: z.string(),
+    name: z.string(),
+    overall_score: z.number(),
+    dimension_scores: z.record(z.string(), z.number()),
+  })),
+  best_overall: z.string(),
+  best_per_dimension: z.record(z.string(), z.string()),
+})
+```
+
+**Note**: This is the only insight that requires multiple match results. It's computed on-demand when the user opens the comparison view, not during individual matching.
+
+---
+
+### #22 — Salary Range Indicator
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Hiring Manager only |
+| **Tier** | 3 (Lifetime only) |
+| **Phase** | v0.5+ (requires external data) |
+
+**Why it matters**
+Helps hiring managers set realistic compensation expectations based on the candidate's experience level and skill set. Reduces offer-rejection rates from misaligned expectations.
+
+**Implementation**
+- AI estimates a salary range based on experience level, skills, seniority, and industry signals from the resume and job description
+- Framed as a market-informed estimate, not a precise figure
+- Future phase: integrate with public salary APIs for data-backed ranges
+
+**Output schema**
+```typescript
+z.object({
+  range: z.object({
+    low: z.number(),
+    mid: z.number(),
+    high: z.number(),
+    currency: z.string(),
+  }),
+  confidence: z.enum(["high", "moderate", "low"]),
+  factors: z.array(z.string()),
+  disclaimer: z.string(),
+})
+```
+
+**Note**: MVP version is AI-estimated. Post-launch, integrate with salary data APIs (Levels.fyi, Glassdoor) for data-backed ranges.
+
+---
+
+### #23 — Structured Evaluation Report
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Hiring Manager only |
+| **Tier** | 3 (Lifetime only) |
+| **Phase** | v0.5+ |
+
+**Why it matters**
+Hiring committees need shareable documentation. An exportable PDF with all insights formatted as a professional evaluation document saves hours of write-up time and standardizes the evaluation process across reviewers.
+
+**Implementation**
+- Aggregates all computed insights into a structured PDF document
+- Uses a professional template with sections, scores, and evidence
+- Includes: executive summary, score breakdown, strengths, risks, interview recommendations
+- Generated server-side using a PDF library (e.g., `@react-pdf/renderer`)
+
+**Output**: PDF binary — no Zod schema needed. The input is the complete set of `InsightResult` objects from the match.
+
+---
+
+## Scaling Strategy
+
+The insights engine is designed to scale indefinitely:
+
+1. **Modular architecture** — each insight is independent; adding a new one never touches existing code
+2. **Registry pattern** — new insights register themselves; the UI auto-renders based on the registry
+3. **Tiered gating** — new insights default to Tier 3 (Lifetime), creating ongoing upgrade incentive
+4. **AI model flexibility** — cheap models (gpt-4o-mini) for simple insights, powerful models (gpt-4o) only where quality demands it
+5. **Batched prompts** — combine related insights into single AI calls where schemas are compatible (e.g., #1 + #2 in one call)
+6. **Cache-first** — identical inputs return cached results instantly; users only pay AI cost once per unique resume+job pair
+
+### Cost Estimation Per Match (MVP — 4 insights)
+
+| Insight | Model | Est. Tokens | Est. Cost |
+|---------|-------|-------------|-----------|
+| #1 Overall Score | gpt-4o-mini | ~2,000 | ~$0.001 |
+| #2 Skills Breakdown | Combined with #1 | — | — |
+| #3 Top 3 Actions | gpt-4o-mini | ~1,500 | ~$0.0008 |
+| #4 Top Strengths | gpt-4o-mini | ~1,500 | ~$0.0008 |
+| **Total per match** | | ~5,000 | **~$0.003** |
+
+At $0.003/match and 3 free matches/day per guest, the daily cost per guest is under $0.01.

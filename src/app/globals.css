@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap");
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
@@ -58,6 +59,29 @@
 }
 
 @theme inline {
+  --font-sans: "Google Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Google Sans", ui-monospace, monospace;
+
+  --text-xs: 0.875rem;
+  --text-xs--line-height: 1.25rem;
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.5rem;
+  --text-base: 1.125rem;
+  --text-base--line-height: 1.75rem;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.875rem;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 2rem;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 2.25rem;
+  --text-3xl: 2rem;
+  --text-3xl--line-height: 2.5rem;
+  --text-4xl: 2.5rem;
+  --text-4xl--line-height: 3rem;
+  --text-5xl: 3.25rem;
+  --text-5xl--line-height: 1;
+  --text-6xl: 4rem;
+  --text-6xl--line-height: 1;
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
@@ -99,4 +123,23 @@
       "rlig" 1,
       "calt" 1;
   }
+}
+
+.hero-mesh {
+  background-color: hsl(var(--background));
+  background-image:
+    radial-gradient(at 20% 20%, hsl(240 85% 88%) 0px, transparent 50%),
+    radial-gradient(at 80% 10%, hsl(200 90% 85%) 0px, transparent 50%),
+    radial-gradient(at 50% 80%, hsl(260 80% 87%) 0px, transparent 50%),
+    radial-gradient(at 90% 70%, hsl(180 75% 85%) 0px, transparent 40%),
+    radial-gradient(at 10% 60%, hsl(220 80% 87%) 0px, transparent 40%);
+}
+
+.dark .hero-mesh {
+  background-image:
+    radial-gradient(at 20% 20%, hsl(240 50% 20%) 0px, transparent 50%),
+    radial-gradient(at 80% 10%, hsl(200 50% 18%) 0px, transparent 50%),
+    radial-gradient(at 50% 80%, hsl(260 40% 19%) 0px, transparent 50%),
+    radial-gradient(at 90% 70%, hsl(180 40% 17%) 0px, transparent 40%),
+    radial-gradient(at 10% 60%, hsl(220 45% 19%) 0px, transparent 40%);
 }
