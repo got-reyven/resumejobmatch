@@ -25,11 +25,9 @@ import {
   BarChart3,
   DollarSign,
   ClipboardCheck,
-  CheckCircle2,
-  Lock,
+  Crown,
   type LucideIcon,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/cn";
 
 type Access = "everyone" | "registered" | "pro";
@@ -305,70 +303,28 @@ const advancedInsights: Insight[] = [
   },
 ];
 
-const accessConfig: Record<Access, { label: string; className: string }> = {
-  everyone: {
-    label: "Free for Everyone",
-    className:
-      "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
-  },
-  registered: {
-    label: "Free Registered",
-    className:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  },
-  pro: {
-    label: "Pro Plan",
-    className:
-      "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
-  },
-};
-
-const audienceConfig: Record<Audience, { label: string; className: string }> = {
-  jobseeker: {
-    label: "Jobseeker",
-    className:
-      "border-sky-200 text-sky-600 dark:border-sky-700 dark:text-sky-400",
-  },
-  hiring_manager: {
-    label: "Hiring Manager",
-    className:
-      "border-amber-200 text-amber-600 dark:border-amber-700 dark:text-amber-400",
-  },
-  both: {
-    label: "Both",
-    className:
-      "border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-400",
-  },
-};
-
 function InsightCard({ insight }: { insight: Insight }) {
-  const access = accessConfig[insight.access];
-  const audience = audienceConfig[insight.audience];
-
   return (
     <div
       className={cn(
-        "group relative flex flex-col rounded-xl border bg-background p-5 transition-shadow hover:shadow-md",
-        insight.available && "ring-1 ring-primary/20"
+        "group relative flex flex-col rounded-xl border bg-background p-5 transition-shadow",
+        insight.available
+          ? "ring-1 ring-primary/20 hover:shadow-md"
+          : "opacity-50"
       )}
     >
       <div className="mb-3 flex items-start justify-between gap-2">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-muted">
           <insight.icon
-            className={cn("h-5 w-5", insight.iconColor)}
+            className={cn("h-8 w-8", insight.iconColor)}
             aria-hidden="true"
           />
         </div>
-        {insight.available ? (
-          <Badge className="gap-1 bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
-            <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
-            Live
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="gap-1 text-muted-foreground">
-            <Lock className="h-3 w-3" aria-hidden="true" />
-            Coming Soon
-          </Badge>
+        {insight.access === "pro" && (
+          <Crown
+            className="h-5 w-5 shrink-0 text-amber-500"
+            aria-label="Pro plan"
+          />
         )}
       </div>
 
@@ -376,25 +332,6 @@ function InsightCard({ insight }: { insight: Insight }) {
       <p className="mt-1.5 flex-1 text-xs leading-relaxed text-muted-foreground">
         {insight.description}
       </p>
-
-      <div className="mt-4 flex flex-wrap items-center gap-1.5">
-        <span
-          className={cn(
-            "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
-            access.className
-          )}
-        >
-          {access.label}
-        </span>
-        <span
-          className={cn(
-            "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium",
-            audience.className
-          )}
-        >
-          {audience.label}
-        </span>
-      </div>
     </div>
   );
 }
