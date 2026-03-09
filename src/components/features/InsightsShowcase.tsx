@@ -26,9 +26,18 @@ import {
   DollarSign,
   ClipboardCheck,
   Crown,
+  ChevronRight,
   type LucideIcon,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils/cn";
+import { insightDetails } from "@/lib/constants/insight-details";
 
 type Access = "everyone" | "registered" | "pro";
 type Audience = "jobseeker" | "hiring_manager" | "both";
@@ -304,35 +313,102 @@ const advancedInsights: Insight[] = [
 ];
 
 function InsightCard({ insight }: { insight: Insight }) {
+  const [open, setOpen] = useState(false);
+  const detail = insightDetails[insight.id];
+
   return (
-    <div
-      className={cn(
-        "group relative flex flex-col rounded-xl border bg-background p-5 transition-shadow",
-        insight.available
-          ? "ring-1 ring-primary/20 hover:shadow-md"
-          : "opacity-50"
-      )}
-    >
-      <div className="mb-3 flex items-start justify-between gap-2">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-muted">
-          <insight.icon
-            className={cn("h-8 w-8", insight.iconColor)}
-            aria-hidden="true"
-          />
+    <>
+      <div
+        className={cn(
+          "group relative flex flex-col rounded-xl border bg-background p-5 transition-shadow",
+          insight.available
+            ? "ring-1 ring-primary/20 hover:shadow-md"
+            : "opacity-50"
+        )}
+      >
+        <div className="mb-3 flex items-start justify-between gap-2">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-muted">
+            <insight.icon
+              className={cn("h-8 w-8", insight.iconColor)}
+              aria-hidden="true"
+            />
+          </div>
+          {insight.access === "pro" && (
+            <Crown
+              className="h-5 w-5 shrink-0 text-amber-500"
+              aria-label="Pro plan"
+            />
+          )}
         </div>
-        {insight.access === "pro" && (
-          <Crown
-            className="h-5 w-5 shrink-0 text-amber-500"
-            aria-label="Pro plan"
-          />
+
+        <h3 className="text-sm font-semibold leading-snug">{insight.name}</h3>
+        <p className="mt-1.5 flex-1 text-xs leading-relaxed text-muted-foreground">
+          {insight.description}
+        </p>
+
+        {detail && (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="mt-3 inline-flex items-center gap-0.5 self-start text-xs font-medium text-primary transition-colors hover:text-primary/80"
+          >
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+            Learn More
+          </button>
         )}
       </div>
 
-      <h3 className="text-sm font-semibold leading-snug">{insight.name}</h3>
-      <p className="mt-1.5 flex-1 text-xs leading-relaxed text-muted-foreground">
-        {insight.description}
-      </p>
-    </div>
+      {detail && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                  <insight.icon
+                    className={cn("h-5 w-5", insight.iconColor)}
+                    aria-hidden="true"
+                  />
+                </div>
+                <DialogTitle>{insight.name}</DialogTitle>
+              </div>
+              <DialogDescription>{insight.description}</DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-5 pt-2">
+              <div>
+                <h4 className="text-sm font-semibold">Why it matters</h4>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  {detail.why}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold">How we do it</h4>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  {detail.implementation}
+                </p>
+              </div>
+
+              {detail.interpret && (
+                <div>
+                  <h4 className="text-sm font-semibold">How to interpret</h4>
+                  <ul className="mt-1.5 space-y-1">
+                    {detail.interpret.split("\n").map((line) => (
+                      <li
+                        key={line}
+                        className="text-sm leading-relaxed text-muted-foreground"
+                      >
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 }
 
@@ -344,7 +420,7 @@ const filterTabs: { value: Filter; label: string; dot: string }[] = [
   { value: "all", label: "All Insights", dot: "bg-foreground/60" },
   { value: "everyone", label: "Free for Everyone", dot: "bg-green-500" },
   { value: "registered", label: "Free Registered", dot: "bg-blue-500" },
-  { value: "pro", label: "Pro Plan ($99/mo)", dot: "bg-purple-500" },
+  { value: "pro", label: "Paid Plans", dot: "bg-purple-500" },
 ];
 
 export function InsightsShowcase() {
