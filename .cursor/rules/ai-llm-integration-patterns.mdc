@@ -30,78 +30,20 @@ export interface AIProvider {
 - Provider selection via env var (`AI_PROVIDER=openai|anthropic|google`) for system default
 - Swap providers without touching business logic
 
-## Bring Your Own API Key (BYOAK)
+## Rate Limiting
 
-Registered users can supply their own API key for a supported LLM provider. This gives them provider choice, unlimited AI calls (billed to their own account), and access to premium models.
+All AI calls use the platform's system API keys. Rate limits are enforced per user tier:
 
-### Supported Providers
+| User Type         | Daily Match Limit | AI Provider |
+|-------------------|-------------------|-------------|
+| Guest             | 3                 | System key  |
+| Jobseeker Free    | 10                | System key  |
+| Jobseeker Pro     | Unlimited         | System key  |
+| Business Free     | 10                | System key  |
+| Business Pro      | Unlimited         | System key  |
 
-| Provider | Models Available | Env Var (System Key) |
-|----------|-----------------|---------------------|
-| OpenAI | gpt-4o, gpt-4o-mini, gpt-4-turbo | `OPENAI_API_KEY` |
-| Anthropic | claude-3.5-sonnet, claude-3-haiku | `ANTHROPIC_API_KEY` |
-| Google | gemini-1.5-pro, gemini-1.5-flash | `GOOGLE_AI_API_KEY` |
-
-New providers are added by implementing `AIProvider` and registering in the factory — no business logic changes needed.
-
-### Provider Resolution Chain
-
-```typescript
-// src/services/ai/provider.ts
-export async function resolveProvider(userId?: string): Promise<{
-  provider: AIProvider;
-  source: "user" | "system";
-}> {
-  // 1. If authenticated, check for user-provided key
-  if (userId) {
-    const userKey = await getUserApiKey(userId);
-    if (userKey) {
-      return {
-        provider: createProvider(userKey.provider, decrypt(userKey.encrypted_key)),
-        source: "user",
-      };
-    }
-  }
-
-  // 2. Fall back to system default
-  return {
-    provider: createProvider(env.AI_PROVIDER, getSystemKey(env.AI_PROVIDER)),
-    source: "system",
-  };
-}
-```
-
-- **User key takes priority** — if the user configured a key, always use it
-- **System key fallback** — guests and users without keys use the platform's key
-- **Source tracking** — track whether user or system key was used (for rate limiting decisions)
-
-### Key Lifecycle
-
-1. **Add key** — user selects provider, pastes API key in Settings
-2. **Validate** — server makes a lightweight test call (e.g., list models) to verify the key works
-3. **Encrypt & store** — AES-256-GCM encrypt with server-side `API_KEY_ENCRYPTION_SECRET`, store in `user_api_keys`
-4. **Use** — on each AI call, decrypt at call time, pass to provider, never cache decrypted key
-5. **Rotate** — user can update the key at any time; old key is overwritten
-6. **Remove** — user can delete their key to revert to system defaults
-
-### Rate Limiting with BYOAK
-
-| User Type | Daily Match Limit | AI Provider |
-|-----------|------------------|-------------|
-| Guest | 3 | System key |
-| Free (no BYOAK) | 10 | System key |
-| Free (with BYOAK) | Unlimited | User's own key |
-| Lifetime | Unlimited | User's key or system key |
-
-- Users with their own key bypass AI-related rate limits (they're paying the provider directly)
 - Abuse limits still apply (e.g., max 1000 requests/day to prevent runaway automation)
-
-### Model Selection
-
-- Users with BYOAK can select from available models for their chosen provider
-- Default model per provider is pre-selected (cheapest that meets quality needs)
-- Model selection stored in `user_api_keys.preferred_model`
-- Business logic never assumes a specific model — always parameterized via the provider interface
+- LLM provider/model choice may be offered under platform control in the future
 
 ## Cost Control (Critical for MVP)
 
@@ -147,11 +89,10 @@ src/services/ai/
     skill-matching.ts
     job-description-analysis.ts
   types.ts                   # AIProvider interface + shared types
-  provider.ts                # Provider factory + BYOAK resolution
+  provider.ts                # Provider factory (system key only)
   openai-provider.ts
   anthropic-provider.ts
   google-provider.ts
-  key-management.ts          # Encrypt/decrypt/validate user API keys
 ```
 
 - Prompts are **TypeScript functions** that accept typed parameters — never raw strings
@@ -173,7 +114,3 @@ src/services/ai/
 - AI responses are untrusted input — validate and sanitize before storing or displaying
 - Log prompt templates and token usage, never log full prompt content with user data
 - System API keys for AI providers stored as server-only env vars (never `NEXT_PUBLIC_`)
-- **User API keys**: encrypted at rest (AES-256-GCM), decrypted only in-memory at call time
-- Never log, cache, or expose user API keys — treat as equivalent to passwords
-- `API_KEY_ENCRYPTION_SECRET` env var required for BYOAK — must be a 32-byte hex string
-- If decryption fails (key rotation, corruption), prompt user to re-enter their key

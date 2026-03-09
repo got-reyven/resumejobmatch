@@ -20,7 +20,7 @@ Enable users to upload a PDF resume and have it automatically parsed into struct
 - DOCX parsing (separate task)
 - Supabase Storage persistence (processed in-memory for now)
 - AI response caching (separate task)
-- BYOAK key resolution (uses system key only for MVP)
+- All AI calls use platform system key (no user-provided keys)
 
 ## Approach
 

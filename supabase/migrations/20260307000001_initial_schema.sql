@@ -13,9 +13,8 @@ CREATE EXTENSION IF NOT EXISTS "moddatetime";    -- auto-update updated_at trigg
 -- ---------------------------------------------------------------------------
 -- 2. Custom types
 -- ---------------------------------------------------------------------------
-CREATE TYPE user_tier AS ENUM ('free', 'lifetime');
+CREATE TYPE user_tier AS ENUM ('free', 'pro');
 CREATE TYPE match_status AS ENUM ('pending', 'processing', 'completed', 'failed');
-CREATE TYPE ai_provider AS ENUM ('openai', 'anthropic', 'google');
 CREATE TYPE file_type AS ENUM ('pdf', 'docx');
 CREATE TYPE insight_tab AS ENUM ('shared', 'jobseeker', 'hiring_manager');
 
@@ -263,43 +262,8 @@ CREATE INDEX idx_anonymous_usage_lookup ON anonymous_usage(ip_hash, usage_date);
 ALTER TABLE anonymous_usage ENABLE ROW LEVEL SECURITY;
 
 -- ---------------------------------------------------------------------------
--- 11. User API keys (BYOAK — encrypted at rest)
--- ---------------------------------------------------------------------------
-CREATE TABLE user_api_keys (
-  id                UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id           UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  provider          ai_provider NOT NULL,
-  encrypted_key     TEXT NOT NULL,
-  iv                TEXT NOT NULL,
-  auth_tag          TEXT NOT NULL,
-  key_hint          TEXT,
-  preferred_model   TEXT,
-  is_valid          BOOLEAN NOT NULL DEFAULT true,
-  last_validated_at TIMESTAMPTZ,
-  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (user_id, provider)
-);
-
-CREATE TRIGGER set_user_api_keys_updated_at
-  BEFORE UPDATE ON user_api_keys
-  FOR EACH ROW EXECUTE FUNCTION moddatetime(updated_at);
-
-CREATE INDEX idx_user_api_keys_user_id ON user_api_keys(user_id);
-
-ALTER TABLE user_api_keys ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "users_select_own_keys" ON user_api_keys
-  FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "users_insert_own_keys" ON user_api_keys
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "users_update_own_keys" ON user_api_keys
-  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "users_delete_own_keys" ON user_api_keys
-  FOR DELETE USING (auth.uid() = user_id);
-
--- ---------------------------------------------------------------------------
--- 12. AI cache (deduplicate identical AI calls)
+-- 11. AI cache (deduplicate identical AI calls)
+-- (Section 11 was previously user_api_keys — removed; BYOAK deferred)
 -- ---------------------------------------------------------------------------
 CREATE TABLE ai_cache (
   id            UUID DEFAULT gen_random_uuid() PRIMARY KEY,

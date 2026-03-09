@@ -143,7 +143,10 @@ export function MatchingHero() {
   }, [isReady, parsedResume, jobDescription]);
 
   return (
-    <section className="relative flex min-h-[calc(100vh-4rem)] flex-col">
+    <section
+      id="hero"
+      className="relative flex min-h-[calc(100vh-4rem)] flex-col"
+    >
       <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
         <div className="flex flex-1 flex-col rounded-2xl bg-background/100 p-6 backdrop-blur-sm sm:p-10 lg:p-12">
           <div className="mx-auto max-w-3xl text-center">

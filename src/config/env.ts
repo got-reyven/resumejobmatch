@@ -12,11 +12,6 @@ const serverEnvSchema = envSchema.extend({
   OPENAI_API_KEY: z.string().min(1).optional(),
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
   GOOGLE_AI_API_KEY: z.string().min(1).optional(),
-  API_KEY_ENCRYPTION_SECRET: z
-    .string()
-    .length(64)
-    .regex(/^[0-9a-f]+$/i)
-    .describe("32-byte hex key for AES-256-GCM encryption of user API keys"),
 });
 
 function createEnv() {

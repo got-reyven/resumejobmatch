@@ -39,6 +39,12 @@ export function Header() {
             How It Works
           </Link>
           <Link
+            href="#insights"
+            className="text-sm font-medium text-foreground transition-colors hover:text-primary"
+          >
+            What We Give
+          </Link>
+          <Link
             href="#pricing"
             className="text-sm font-medium text-foreground transition-colors hover:text-primary"
           >
@@ -51,7 +57,7 @@ export function Header() {
             <Link href="/auth/login">Sign In</Link>
           </Button>
           <Button size="sm" asChild>
-            <Link href="/auth/signup">Register</Link>
+            <Link href="/register">Register</Link>
           </Button>
         </div>
       </div>

@@ -57,7 +57,6 @@ Resume data sent to LLM providers requires special handling:
 - **Processor agreements** — OpenAI, Anthropic, Google must have DPA in place
 - **No training opt-out** — ensure API usage is excluded from provider model training
 - **Response validation** — AI outputs are untrusted input; validate before storing
-- **Key isolation** — user BYOAK keys decrypted only in-memory, never logged or cached
 - **Audit trail** — log which provider processed which user's data (without logging content)
 
 ### 5. Threat Modeling (STRIDE)
@@ -93,12 +92,11 @@ Pre-launch and ongoing verification:
 - [ ] Account deletion cascades all user data (GDPR Article 17)
 - [ ] Cookie consent banner for non-essential cookies
 - [ ] Privacy policy and terms of service published
-- [ ] API keys encrypted at rest with AES-256-GCM
+- [ ] System AI API keys stored as server-only env vars (never `NEXT_PUBLIC_`)
 - [ ] No PII in application logs, error messages, or analytics
 - [ ] Rate limiting on all public endpoints
 - [ ] CSP headers configured to prevent XSS
 - [ ] Third-party AI processors have data processing agreements
-- [ ] BYOAK keys never logged, cached, or returned to client
 - [ ] Vulnerability scanning integrated into CI pipeline
 - [ ] Dependency audit (`npm audit`) runs on every PR
 

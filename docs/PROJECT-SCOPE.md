@@ -15,23 +15,29 @@ The core differentiator is **depth of insight**. Most tools give a percentage. W
 
 ---
 
-## 2. User Personas
+## 2. User Types & Personas
 
-### Persona A: Jobseeker (Primary)
+### User Type A: Jobseeker (`jobseeker`)
 
 - Actively applying to jobs (5–30 applications/week)
 - Wants to know if their resume is competitive before hitting "Apply"
 - Needs specific guidance on what to fix, not just a score
+- Registers with personal email via **magic link** (no password)
+- Dashboard shows Jobseeker + Shared insights only
 
-### Persona B: Hiring Manager / Recruiter (Secondary)
+### User Type B: Business (`business`)
 
-- Reviewing 20–100+ resumes per role
+- Hiring managers, recruiters, or HR professionals reviewing 20–100+ resumes per role
 - Wants to quickly identify strong candidates and know where to probe in interviews
 - Needs structured evaluation beyond gut feeling
+- 1 Business Owner registers and creates an organization
+- Owner can invite team members via Supabase native invite email
+- All org members see Hiring Manager + Shared insights in the dashboard
+- Registers with magic link (no password)
 
-### Persona C: Career Coach / Resume Writer (Future)
+### Future Persona: Career Coach / Resume Writer
 
-- Uses the tool with multiple clients
+- Uses the tool with multiple clients — maps to `business` user type
 - Needs batch comparisons and shareable reports
 - Willing to pay for unlimited access
 
@@ -124,46 +130,82 @@ The landing page _is_ the product. No onboarding, no dashboard required to get v
 
 ## 4. User Tiers & Pricing
 
-### 4.1 Tier Comparison
+### 4.1 Guest Access (No Signup)
 
-| Feature                            | Guest (No Signup) | Free Forever           | One-Time Fee           |
-| ---------------------------------- | ----------------- | ---------------------- | ---------------------- |
-| Daily matches                      | 3                 | 10                     | Unlimited              |
-| Basic insights (score, top gaps)   | ✅                | ✅                     | ✅                     |
-| Detailed insights (full breakdown) | Top 3 only        | Top 5 only             | ✅ All insights        |
-| Match history                      | ❌                | Last 30 days           | Unlimited              |
-| Share results                      | ❌                | Link sharing           | Link + PDF export      |
-| Multi-resume comparison            | ❌                | ❌                     | Up to 5 per job        |
-| Priority AI processing             | ❌                | ❌                     | ✅                     |
-| Bring Your Own API Key             | ❌                | ✅ (unlimited matches) | ✅ (unlimited matches) |
-| Custom branding on exports         | ❌                | ❌                     | ❌ (future add-on)     |
+| Feature       | Guest       |
+| ------------- | ----------- |
+| Daily matches | 3           |
+| Insights      | Tier 1 only |
+| Match history | None        |
+| Share results | None        |
 
-### 4.2 Pricing Model
+### 4.2 Jobseeker Tiers
 
-**Free Forever** — $0
+| Feature                     | Jobseeker Free | Jobseeker Pro ($19/mo) |
+| --------------------------- | -------------- | ---------------------- |
+| Auth method                 | Magic link     | Magic link             |
+| Daily matches               | 10             | Unlimited              |
+| Jobseeker + Shared insights | Basic (Tier 1) | All tiers              |
+| Match history               | 3 days         | Unlimited              |
+| Share insights              | Link sharing   | Link + PDF export      |
+| **Price**                   | $0             | $19/month              |
+
+### 4.3 Business Tiers
+
+| Feature                          | Business Free  | Business Pro ($149/mo)  |
+| -------------------------------- | -------------- | ----------------------- |
+| Auth method                      | Magic link     | Magic link              |
+| Daily matches                    | 10             | Unlimited               |
+| Hiring Manager + Shared insights | Basic (Tier 1) | All tiers               |
+| Match history                    | 14 days        | 30 days                 |
+| Share results                    | Link sharing   | Link + PDF export       |
+| Multi-resume comparison          | ❌             | Up to 3 per job         |
+| Team members (invitations)       | Owner only     | Owner + invited members |
+| **Price**                        | $0             | $149/month              |
+
+### 4.4 Pricing Model
+
+**Jobseeker Free** — $0
 
 - 10 matches/day (resets at midnight UTC)
-- Core insights with limited depth
-- Match history (30 days retention)
-- Email signup required
+- Basic jobseeker insights
+- 3-day saved match history
+- Share insights via link
+- Magic link signup required
 
-**Lifetime Access** — $49 one-time fee
+**Jobseeker Pro** — $19/month
+
+- Unlimited matching
+- All advanced jobseeker insights
+- Unlimited match history
+- PDF export
+
+**Business Free** — $0
+
+- 10 matches/day (resets at midnight UTC)
+- Basic hiring insights
+- 14-day match history
+- Share via link
+- 1 owner seat, no team invitations
+
+**Business Pro** — $149/month
 
 - Unlimited matches
-- All current and future insights
-- Unlimited history
-- PDF export and sharing
-- Multi-resume comparison
-- Priority processing queue
+- All advanced hiring insights
+- 30-day match history
+- Invite team members
+- PDF export
+- Multi-resume comparison (up to 3)
 
-### 4.3 Why One-Time Fee vs. Subscription
+### 4.5 Why Separate Pricing Per User Type
 
-- Jobseekers are often budget-conscious and between jobs — a one-time fee removes friction
-- Creates goodwill and word-of-mouth ("I paid $49 once and use it forever")
-- Upsell path exists later: team plans for recruiters, API access for integrations
-- Lower churn risk — no monthly cancel decisions
+- Different value propositions: jobseekers optimize their own resume, businesses evaluate candidates at scale
+- Business tier includes team/org features that justify a higher price point
+- Jobseeker pricing can be lower to match the budget-conscious job-search audience
+- Predictable recurring revenue supports ongoing AI costs and feature development
+- Cancel-anytime flexibility reduces purchase hesitation
 
-### 4.4 Credit System
+### 4.6 Credit System
 
 **Decision**: No credit system. Simple daily match counts only. Revisit post-launch if finer monetization granularity is needed.
 
@@ -173,16 +215,89 @@ The landing page _is_ the product. No onboarding, no dashboard required to get v
 
 ### 5.1 Authentication
 
-- Email + password (Supabase Auth)
-- Google OAuth (one-click signup — critical for conversion)
-- Magic link (passwordless email)
-- No email verification wall — let users start immediately, verify later
+- **Magic link only** — no passwords, via Supabase Auth `signInWithOtp()`
+- No email verification wall — magic link inherently verifies the email
+- Google OAuth deferred to post-MVP
+- Unified registration page at `/register` with user type selection
+- Magic link for email verification and login (no passwords)
 
-### 5.2 Dashboard
+#### Registration Flow
+
+```
+Step 1  /register
+        ┌─────────────────────────────────────────────┐
+        │  Choose: "As a Jobseeker" | "As a Business" │
+        │  Enter email                                │
+        │  [Continue] → sends magic link via Supabase │
+        └─────────────────────────────────────────────┘
+                          │
+Step 2  /register/confirm
+        ┌─────────────────────────────────────────────┐
+        │  "Check your email"                         │
+        │  We sent a magic link to {email}            │
+        │  [Resend] (after 60s cooldown)              │
+        └─────────────────────────────────────────────┘
+                          │
+Step 3  User opens email, clicks magic link
+        → Supabase verifies → redirects to /auth/callback
+        → /auth/callback exchanges code for session
+                          │
+Step 4  /register/plan
+        ┌─────────────────────────────────────────────┐
+        │  "Choose Your Plan"                         │
+        │  Shows Free Forever | Pro (Coming Soon)     │
+        │  side by side for the selected user type    │
+        │                                             │
+        │  Jobseeker Free: → Dashboard                │
+        │  Business Free:  → Business Setup (Step 5)  │
+        │  Pro:            → Payment (future)         │
+        └─────────────────────────────────────────────┘
+                          │
+Step 5  /register/business-setup (Business only)
+        ┌─────────────────────────────────────────────┐
+        │  "Business Account Setup"                   │
+        │  Company Name (required)                    │
+        │  Number of Employees — dropdown (required)  │
+        │  Industry — select 1–3 (required)           │
+        │  [Proceed to Dashboard]                     │
+        └─────────────────────────────────────────────┘
+                          │
+Step 6  /dashboard
+        ┌─────────────────────────────────────────────┐
+        │  Jobseeker → Dashboard directly from Step 4 │
+        │  Business  → Dashboard after Step 5         │
+        │  Pro users → Payment page first (future)    │
+        └─────────────────────────────────────────────┘
+```
+
+#### Business Invitation Flow
+
+```
+Business Owner → Dashboard → Team → "Invite Member"
+  → Enter email + role (member)
+  → Server calls supabase.auth.admin.inviteUserByEmail()
+  → Invitee receives Supabase invite email with magic link
+  → Clicks link → completes profile (name, phone, location)
+  → Auto-joined to organization as member
+  → Dashboard (HM insights, org matches visible)
+```
+
+### 5.2 Organizations
+
+- Created during the Business Account Setup step (`/register/business-setup`)
+- The registering user becomes the `owner`
+- **Owner** can: manage billing/settings, invite/deactivate members, run matches, see all org matches
+- **Member** can: run matches, see all org matches, manage own profile
+- Organization profile captures: company name (required), employee range (required), 1–3 industries (required)
+- All matches run by org members are tagged with `organization_id`
+- Org members share visibility into all org matches and insights
+
+### 5.3 Dashboard
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │  Sidebar: Dashboard | History | Settings | [New Match]       │
+│  (Business adds: Team)                                       │
 ├──────────────────────────────────────────────────────────────┤
 │                                                              │
 │  Quick Stats:                                                │
@@ -199,22 +314,25 @@ The landing page _is_ the product. No onboarding, no dashboard required to get v
 └──────────────────────────────────────────────────────────────┘
 ```
 
-### 5.3 Match History
+- **Jobseeker dashboard**: shows Jobseeker + Shared tab insights only
+- **Business dashboard**: shows Hiring Manager + Shared tab insights only, plus Team management (owner)
+
+### 5.4 Match History
 
 - List of all past matches with: job title, company (parsed), score, date
 - Search and filter by: date range, score range, keyword
 - Re-open any past match to see full insights
 - Delete individual matches
-- Free tier: 30-day retention, Lifetime: unlimited
+- Free tier: 30-day retention, Pro: unlimited
 
-### 5.4 Share Results
+### 5.5 Share Results
 
 - Generate a unique shareable link (read-only public page)
 - Optional expiry on shared links (24h, 7d, 30d, never)
-- Lifetime tier: export as branded PDF report
+- Pro tier: export as branded PDF report
 - Share metadata: match score in social preview card (OG tags)
 
-### 5.5 Multi-Resume Comparison (Lifetime Tier)
+### 5.6 Multi-Resume Comparison (Business Pro Tier)
 
 - Upload up to 5 resumes against the same job description
 - Side-by-side comparison table:
@@ -223,57 +341,6 @@ The landing page _is_ the product. No onboarding, no dashboard required to get v
   - Strengths/weaknesses comparison
   - "Best resume for this job" recommendation
 - Use case: different resume versions tailored for different roles
-
-### 5.6 Bring Your Own API Key (Free + Lifetime)
-
-Registered users can connect their own LLM API key to unlock provider choice and unlimited AI-powered matches.
-
-#### Settings UI
-
-```
-┌──────────────────────────────────────────────────────────┐
-│  Settings > AI Provider                                   │
-├──────────────────────────────────────────────────────────┤
-│                                                           │
-│  AI Provider:  [ OpenAI ▾ ]                               │
-│                                                           │
-│  API Key:      [ sk-•••••••••••••••7xQ2 ]  [✓ Valid]     │
-│                                                           │
-│  Model:        [ gpt-4o-mini ▾ ]                          │
-│                                                           │
-│  [ Test Connection ]   [ Remove Key ]                     │
-│                                                           │
-│  ℹ Your key is encrypted and used only for your matches.  │
-│    We never store it in plaintext or share it.             │
-│                                                           │
-│  Benefits of using your own key:                          │
-│  • Unlimited matches (no daily cap)                       │
-│  • Choose your preferred AI provider and model            │
-│  • Billed directly to your provider account               │
-│                                                           │
-└──────────────────────────────────────────────────────────┘
-```
-
-#### Supported Providers
-
-| Provider  | Available Models                  | Best For                       |
-| --------- | --------------------------------- | ------------------------------ |
-| OpenAI    | gpt-4o, gpt-4o-mini, gpt-4-turbo  | Best structured output support |
-| Anthropic | claude-3.5-sonnet, claude-3-haiku | Nuanced language analysis      |
-| Google    | gemini-1.5-pro, gemini-1.5-flash  | Cost-effective high volume     |
-
-#### Rules
-
-| Rule                | Details                                                                                                     |
-| ------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Availability        | Free and Lifetime registered users                                                                          |
-| Keys per provider   | 1 per user per provider                                                                                     |
-| Validation          | Lightweight test call on save; reject invalid keys                                                          |
-| Storage             | AES-256-GCM encrypted at rest in `user_api_keys` table                                                      |
-| Display             | Masked on client (e.g., `sk-...7xQ2`); never returned in full                                               |
-| Rate limit override | Users with valid BYOAK key: unlimited matches (hard cap at 1000/day for abuse prevention)                   |
-| Fallback            | If user's key fails at call time, show error + prompt to check key — never silently fall back to system key |
-| Deletion            | Removing key reverts user to system defaults and standard rate limits                                       |
 
 ---
 
@@ -303,7 +370,7 @@ Results are displayed in a tabbed layout — no role selection before matching. 
 
 Each insight is tagged: **Shared** (both tabs), **Jobseeker** (JS tab only), or **Hiring Manager** (HM tab only).
 
-#### Tier 1 — Always Available (Guest + Free + Lifetime)
+#### Tier 1 — Always Available (Guest + Free + Pro)
 
 | #   | Insight                    | Tab            | Description                                                                                                                                                                                                                     |
 | --- | -------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -312,7 +379,7 @@ Each insight is tagged: **Shared** (both tabs), **Jobseeker** (JS tab only), or 
 | 3   | **Top 3 Action Items**     | Jobseeker      | AI-generated prioritized list: the 3 most impactful changes to improve match score. E.g., "Add 'Kubernetes' to your skills section — it's a key requirement."                                                                   |
 | 4   | **Top Strengths**          | Hiring Manager | Top 3 areas where the candidate exceeds or strongly meets requirements.                                                                                                                                                         |
 
-#### Tier 2 — Free (Limited) + Lifetime (Full)
+#### Tier 2 — Free (Limited) + Pro (Full)
 
 | #   | Insight                          | Tab            | Description                                                                                                                                                                                                         |
 | --- | -------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -325,7 +392,7 @@ Each insight is tagged: **Shared** (both tabs), **Jobseeker** (JS tab only), or 
 | 11  | **Interview Focus Points**       | Hiring Manager | AI-generated questions tailored to probe the specific gaps identified. E.g., "Ask about their experience scaling systems — the resume shows small-team environments."                                               |
 | 12  | **Overqualification Assessment** | Hiring Manager | Flags if the candidate appears significantly overqualified. Includes context: "Senior-level experience applying for mid-level role — verify expectations."                                                          |
 
-#### Tier 3 — Lifetime Only
+#### Tier 3 — Pro Only
 
 | #   | Insight                                | Tab            | Description                                                                                                                                                                                              |
 | --- | -------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -359,7 +426,7 @@ Build insights in this order — each delivers standalone value:
 | **MVP**   | #1 Overall Score (Shared), #2 Skills Breakdown (Shared), #3 Top 3 Actions (JS), #4 Top Strengths (HM) | Core value prop for both tabs — validates product-market fit |
 | **v0.2**  | #5 ATS Keywords (JS), #6 Experience Alignment (Shared), #7 Qualification Fit (Shared)                 | High-demand jobseeker feature + deepens shared insights      |
 | **v0.3**  | #8 Section Strength (JS), #9 Tailored Summary (JS), #10 Risk Areas (HM), #11 Interview Questions (HM) | Makes both tabs actionable beyond scoring                    |
-| **v0.4**  | #12 Overqualification (HM), #13 Rewrite Suggestions (JS), #16 Soft Skills (Shared)                    | Drives Lifetime conversion with premium-feel insights        |
+| **v0.4**  | #12 Overqualification (HM), #13 Rewrite Suggestions (JS), #16 Soft Skills (Shared)                    | Drives Pro conversion with premium-feel insights             |
 | **v0.5+** | Remaining Tier 3 insights, one at a time                                                              | Data-driven prioritization based on user engagement          |
 
 ---
@@ -401,32 +468,11 @@ users (Supabase Auth)
   │     └── shared_links (public sharing tokens)
   ├── job_descriptions (parsed job data)
   ├── usage_tracking (daily match counts)
-  └── user_api_keys (encrypted BYOAK keys per provider)
+  └── organization_invitations (business team invites)
 
 anonymous_usage (IP-based rate limiting for guests)
 ai_cache (cached AI responses by input hash)
 ```
-
-#### `user_api_keys` Table
-
-| Column              | Type                     | Description                             |
-| ------------------- | ------------------------ | --------------------------------------- |
-| `id`                | `uuid` (PK)              | Primary key                             |
-| `user_id`           | `uuid` (FK → auth.users) | Owner, RLS-scoped                       |
-| `provider`          | `text`                   | `openai`, `anthropic`, `google`         |
-| `encrypted_key`     | `text`                   | AES-256-GCM ciphertext (base64)         |
-| `iv`                | `text`                   | Initialization vector (base64)          |
-| `auth_tag`          | `text`                   | GCM authentication tag (base64)         |
-| `key_hint`          | `text`                   | Last 4 chars for display (e.g., `7xQ2`) |
-| `preferred_model`   | `text`                   | User's selected model for this provider |
-| `is_valid`          | `boolean`                | Last validation result                  |
-| `last_validated_at` | `timestamptz`            | When the key was last tested            |
-| `created_at`        | `timestamptz`            | Default `now()`                         |
-| `updated_at`        | `timestamptz`            | Trigger-maintained                      |
-
-- **Unique constraint**: `(user_id, provider)` — one key per provider per user
-- **RLS**: `auth.uid() = user_id` on all operations
-- **ON DELETE CASCADE** from `auth.users`
 
 ### 7.3 Key Technical Decisions
 
@@ -436,29 +482,34 @@ ai_cache (cached AI responses by input hash)
 | One AI call vs. pipeline        | Pipeline (parse → match → insights) | Smaller focused calls are cheaper, cacheable, and more reliable than one mega-prompt                                                  |
 | Real-time vs. async processing  | Real-time with progress streaming   | Matches should complete in 10–20s; async queue only for batch comparison                                                              |
 | Guest rate limiting             | IP hash in DB (not Redis)           | Free tier — Supabase is sufficient; add Redis/Upstash only if abuse becomes an issue                                                  |
-| Payment processor               | Lemon Squeezy                       | One-time $49 payment, no subscription complexity; handles tax automatically for global sales                                          |
+| Payment processor               | Lemon Squeezy                       | Monthly subscription; handles tax automatically for global sales                                                                      |
 | Job URL extraction              | ChatGPT API (browsing)              | Pass public URL directly to ChatGPT to read and extract content — reliable for public job postings, no scraping infrastructure needed |
-| BYOAK API key storage           | AES-256-GCM encryption at rest      | User API keys are credentials — never stored plaintext; decrypted only in-memory at call time                                         |
-| BYOAK provider support          | OpenAI, Anthropic, Google           | Three major providers cover most user preferences; extensible via `AIProvider` interface                                              |
+| LLM provider strategy           | Platform-managed (system key only)  | All AI calls use the platform's API keys; may offer provider/model choice under platform control in the future                        |
 
 ---
 
 ## 8. Pages & Routes
 
-| Route                   | Page                            | Auth                                         |
-| ----------------------- | ------------------------------- | -------------------------------------------- |
-| `/`                     | Landing page with matching tool | Public                                       |
-| `/results/[id]`         | Match results view              | Public (with sharing token) or authenticated |
-| `/auth/login`           | Sign in                         | Public                                       |
-| `/auth/signup`          | Sign up                         | Public                                       |
-| `/dashboard`            | User dashboard                  | Required                                     |
-| `/dashboard/history`    | Match history list              | Required                                     |
-| `/dashboard/match/[id]` | Detailed match view             | Required                                     |
-| `/dashboard/compare`    | Multi-resume comparison         | Required (Lifetime)                          |
-| `/dashboard/settings`   | Account settings                | Required                                     |
-| `/pricing`              | Plan comparison                 | Public                                       |
-| `/how-it-works`         | Explainer page                  | Public                                       |
-| `/shared/[token]`       | Shared results (read-only)      | Public                                       |
+| Route                         | Page                            | Auth                                         |
+| ----------------------------- | ------------------------------- | -------------------------------------------- |
+| `/`                           | Landing page with matching tool | Public                                       |
+| `/results/[id]`               | Match results view              | Public (with sharing token) or authenticated |
+| `/register`                   | Choose user type + enter email  | Public                                       |
+| `/register/confirm`           | "Check your email" page         | Public                                       |
+| `/register/plan`              | Choose Free/Pro plan            | Required (new user, pre-dashboard)           |
+| `/register/business-setup`    | Business profile capture        | Required (Business users only)               |
+| `/auth/callback`              | Magic link exchange handler     | Public (Supabase redirect)                   |
+| `/auth/login`                 | Sign in (magic link)            | Public                                       |
+| `/auth/accept-invite/[token]` | Accept business invitation      | Public (auto-auth via Supabase invite link)  |
+| `/dashboard`                  | User dashboard                  | Required                                     |
+| `/dashboard/history`          | Match history list              | Required                                     |
+| `/dashboard/match/[id]`       | Detailed match view             | Required                                     |
+| `/dashboard/compare`          | Multi-resume comparison         | Required (Business Pro)                      |
+| `/dashboard/team`             | Team management                 | Required (Business owner only)               |
+| `/dashboard/settings`         | Account settings                | Required                                     |
+| `/pricing`                    | Plan comparison                 | Public                                       |
+| `/how-it-works`               | Explainer page                  | Public                                       |
+| `/shared/[token]`             | Shared results (read-only)      | Public                                       |
 
 ---
 
@@ -474,8 +525,9 @@ ai_cache (cached AI responses by input hash)
 - [x] 4 core insights: Match Score, Skills Breakdown (Shared), Top 3 Actions (JS), Top Strengths (HM)
 - [x] Tabbed results view: "For Jobseekers" and "For Hiring Managers"
 - [x] Guest rate limiting (3/day)
-- [x] Email + Google OAuth authentication
-- [x] Free tier with 10 matches/day
+- [x] Magic link authentication (Jobseeker + Business registration flows)
+- [x] Two user types: Jobseeker and Business with organization model
+- [x] Free tier with 10 matches/day per user type
 - [x] Basic match history (last 30 days)
 - [x] Responsive design (mobile + desktop)
 - [x] i18n-ready structure (English first)
@@ -483,10 +535,10 @@ ai_cache (cached AI responses by input hash)
 ### Deferred to Post-MVP
 
 - [ ] Image/OCR resume processing
-- [ ] One-time payment integration ($49 Lifetime via Lemon Squeezy)
-- [ ] Lifetime tier features (comparison, PDF export, sharing)
+- [ ] Subscription payment integration ($99/month Pro via Lemon Squeezy)
+- [ ] Pro tier features (comparison, PDF export, sharing)
 - [ ] Advanced insights (Tier 2 and 3)
-- [ ] BYOAK: Bring Your Own API Key (provider selection + encrypted key storage)
+- [ ] LLM provider/model choice (under platform control)
 - [ ] API access for third-party integrations
 
 ---
@@ -498,7 +550,7 @@ ai_cache (cached AI responses by input hash)
 | Landing page → match started    | > 40% conversion               |
 | Match started → match completed | > 90% (reliability)            |
 | Guest → signup conversion       | > 15%                          |
-| Free → Lifetime conversion      | > 5%                           |
+| Free → Pro conversion           | > 5%                           |
 | Daily active matches            | 100+                           |
 | Average match satisfaction      | > 4/5 (future feedback widget) |
 
@@ -506,12 +558,14 @@ ai_cache (cached AI responses by input hash)
 
 ## 11. Resolved Decisions
 
-| #   | Question                      | Decision                                          | Rationale                                                                                                                                                  |
-| --- | ----------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Lifetime pricing              | **$49** one-time fee                              | Premium positioning; room to discount for early adopters or promos                                                                                         |
-| 2   | Image OCR                     | **Post-MVP**                                      | Adds complexity (OCR pipeline, accuracy issues); PDF + DOCX covers 95% of resumes                                                                          |
-| 3   | Job URL extraction            | **MVP** — via ChatGPT API                         | ChatGPT can read public URLs natively; no scraping infra needed; works reliably with public job postings                                                   |
-| 4   | Hiring manager mode           | **No pre-match toggle** — tabbed results instead  | Single matching flow for everyone; results page has "For Jobseekers" and "For Hiring Managers" tabs; insights are tagged as Shared, JS-only, or HM-only    |
-| 5   | Credit system                 | **No** — simple daily match limits                | Match counts are easier to understand; credits add UX friction; revisit only if monetization needs finer control                                           |
-| 6   | BYOAK strategy                | **Post-MVP** — encrypted key storage, 3 providers | Users bring their own OpenAI/Anthropic/Google key for unlimited matches; AES-256-GCM encryption at rest; never silently fall back to system key on failure |
-| 7   | BYOAK fallback on key failure | **Show error, don't fall back**                   | Silent fallback to system key would consume platform credits without user awareness; explicit error + prompt to fix key is safer                           |
+| #   | Question               | Decision                                                    | Rationale                                                                                                                                               |
+| --- | ---------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Pricing model          | **Separate pricing per user type** (JS $19/mo, Biz $149/mo) | Jobseekers and Business have different value propositions; separate tiers justify different price points                                                |
+| 2   | Image OCR              | **Post-MVP**                                                | Adds complexity (OCR pipeline, accuracy issues); PDF + DOCX covers 95% of resumes                                                                       |
+| 3   | Job URL extraction     | **MVP** — via ChatGPT API                                   | ChatGPT can read public URLs natively; no scraping infra needed; works reliably with public job postings                                                |
+| 4   | Hiring manager mode    | **No pre-match toggle** — tabbed results instead            | Single matching flow for everyone; results page has "For Jobseekers" and "For Hiring Managers" tabs; insights are tagged as Shared, JS-only, or HM-only |
+| 5   | Credit system          | **No** — simple daily match limits                          | Match counts are easier to understand; credits add UX friction; revisit only if monetization needs finer control                                        |
+| 6   | LLM provider strategy  | **Platform-managed only** (no BYOAK)                        | All AI calls use the platform's keys; simplifies MVP; may offer provider choice under platform control in the future                                    |
+| 7   | Authentication method  | **Magic link only** (no passwords)                          | Passwordless is simpler, more secure, and reduces signup friction; Supabase OTP handles it natively                                                     |
+| 8   | User types             | **Jobseeker** and **Business** with org model               | Two distinct personas need different dashboards and insights; Business includes team invitation via Supabase invite                                     |
+| 9   | Business member access | **Scoped** — run matches + view org data                    | Members can run matches and see all org results; only owner manages billing, settings, and team                                                         |

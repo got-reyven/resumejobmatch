@@ -72,9 +72,9 @@ interface InsightResult<T> {
 
 | Tier | Visibility | Access |
 |------|-----------|--------|
-| 1 | Always shown in full | Guest + Free + Lifetime |
-| 2 | Teaser shown (blurred/truncated), full behind gate | Free (limited) + Lifetime (full) |
-| 3 | Locked with preview description | Lifetime only |
+| 1 | Always shown in full | Guest + Free + Pro |
+| 2 | Teaser shown (blurred/truncated), full behind gate | Free (limited) + Pro (full) |
+| 3 | Locked with preview description | Pro only |
 
 Gating is applied at the UI layer, not the API — all insights are computed for all users to enable instant unlock on upgrade. Cached results remain valid after tier change.
 
@@ -268,7 +268,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Jobseeker only |
-| **Tier** | 2 (Free: top 5 keywords, Lifetime: full list) |
+| **Tier** | 2 (Free: top 5 keywords, Pro: full list) |
 | **Phase** | v0.2 |
 
 **Why it matters**
@@ -302,7 +302,7 @@ z.object({
 
 **Tier gating**
 - Free: shows top 5 keywords + ATS likelihood
-- Lifetime: full keyword list with categories and suggestions
+- Pro: full keyword list with categories and suggestions
 
 ---
 
@@ -311,7 +311,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Shared |
-| **Tier** | 2 (Free: summary only, Lifetime: full role mapping) |
+| **Tier** | 2 (Free: summary only, Pro: full role mapping) |
 | **Phase** | v0.2 |
 
 **Why it matters**
@@ -350,7 +350,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Shared |
-| **Tier** | 2 (Free: summary, Lifetime: full breakdown) |
+| **Tier** | 2 (Free: summary, Pro: full breakdown) |
 | **Phase** | v0.2 |
 
 **Why it matters**
@@ -387,7 +387,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Jobseeker only |
-| **Tier** | 2 (Free: scores only, Lifetime: scores + suggestions) |
+| **Tier** | 2 (Free: scores only, Pro: scores + suggestions) |
 | **Phase** | v0.3 |
 
 **Why it matters**
@@ -419,11 +419,11 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Jobseeker only |
-| **Tier** | 2 (Free: first sentence only, Lifetime: full summary) |
+| **Tier** | 2 (Free: first sentence only, Pro: full summary) |
 | **Phase** | v0.3 |
 
 **Why it matters**
-The professional summary is the first thing recruiters read and the easiest section to tailor per application. A ready-to-use rewrite removes friction and directly improves match rate. High perceived value drives Lifetime conversions.
+The professional summary is the first thing recruiters read and the easiest section to tailor per application. A ready-to-use rewrite removes friction and directly improves match rate. High perceived value drives Pro conversions.
 
 **Implementation**
 - AI generates a complete professional summary (3–4 sentences) optimized for the specific job
@@ -446,7 +446,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Hiring Manager only |
-| **Tier** | 2 (Free: top 3, Lifetime: all) |
+| **Tier** | 2 (Free: top 3, Pro: all) |
 | **Phase** | v0.3 |
 
 **Why it matters**
@@ -477,7 +477,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Hiring Manager only |
-| **Tier** | 2 (Free: 2 questions, Lifetime: all questions) |
+| **Tier** | 2 (Free: 2 questions, Pro: all questions) |
 | **Phase** | v0.3 |
 
 **Why it matters**
@@ -535,11 +535,11 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Jobseeker only |
-| **Tier** | 3 (Lifetime only) |
+| **Tier** | 3 (Pro only) |
 | **Phase** | v0.4 |
 
 **Why it matters**
-Goes beyond "what to change" to "here's the exact wording." Bullet-by-bullet rewrites using the job's language and power verbs. The highest-effort insight but also the highest perceived value — a key Lifetime conversion driver.
+Goes beyond "what to change" to "here's the exact wording." Bullet-by-bullet rewrites using the job's language and power verbs. The highest-effort insight but also the highest perceived value — a key Pro conversion driver.
 
 **Implementation**
 - AI rewrites individual experience bullets to better match the job description
@@ -566,7 +566,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Jobseeker only |
-| **Tier** | 3 (Lifetime only) |
+| **Tier** | 3 (Pro only) |
 | **Phase** | v0.5+ |
 
 **Why it matters**
@@ -595,7 +595,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Jobseeker only |
-| **Tier** | 3 (Lifetime only) |
+| **Tier** | 3 (Pro only) |
 | **Phase** | v0.5+ |
 
 **Why it matters**
@@ -626,7 +626,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Shared |
-| **Tier** | 3 (Lifetime only) |
+| **Tier** | 3 (Pro only) |
 | **Phase** | v0.4 |
 
 **Why it matters**
@@ -662,7 +662,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Shared |
-| **Tier** | 3 (Lifetime only) |
+| **Tier** | 3 (Pro only) |
 | **Phase** | v0.5+ |
 
 **Why it matters**
@@ -698,7 +698,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Jobseeker only |
-| **Tier** | 3 (Lifetime only) |
+| **Tier** | 3 (Pro only) |
 | **Phase** | v0.5+ |
 
 **Why it matters**
@@ -726,7 +726,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Hiring Manager only |
-| **Tier** | 3 (Lifetime only) |
+| **Tier** | 3 (Pro only) |
 | **Phase** | v0.5+ |
 
 **Why it matters**
@@ -757,7 +757,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Hiring Manager only |
-| **Tier** | 3 (Lifetime only) |
+| **Tier** | 3 (Pro only) |
 | **Phase** | v0.5+ |
 
 **Why it matters**
@@ -788,7 +788,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Hiring Manager only |
-| **Tier** | 3 (Lifetime only) |
+| **Tier** | 3 (Pro only) |
 | **Phase** | v0.5+ |
 
 **Why it matters**
@@ -798,7 +798,7 @@ When evaluating multiple candidates, side-by-side comparison saves hours. Per-re
 - Aggregates match results from multiple resumes matched against the same job
 - Builds a comparison table with per-requirement scores
 - Highlights the strongest candidate per category and overall
-- Requires the multi-resume comparison feature (Lifetime tier)
+- Requires the multi-resume comparison feature (Pro tier)
 
 **Output schema**
 ```typescript
@@ -824,7 +824,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Hiring Manager only |
-| **Tier** | 3 (Lifetime only) |
+| **Tier** | 3 (Pro only) |
 | **Phase** | v0.5+ (requires external data) |
 
 **Why it matters**
@@ -859,7 +859,7 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Hiring Manager only |
-| **Tier** | 3 (Lifetime only) |
+| **Tier** | 3 (Pro only) |
 | **Phase** | v0.5+ |
 
 **Why it matters**
@@ -881,7 +881,7 @@ The insights engine is designed to scale indefinitely:
 
 1. **Modular architecture** — each insight is independent; adding a new one never touches existing code
 2. **Registry pattern** — new insights register themselves; the UI auto-renders based on the registry
-3. **Tiered gating** — new insights default to Tier 3 (Lifetime), creating ongoing upgrade incentive
+3. **Tiered gating** — new insights default to Tier 3 (Pro), creating ongoing upgrade incentive
 4. **AI model flexibility** — cheap models (gpt-4o-mini) for simple insights, powerful models (gpt-4o) only where quality demands it
 5. **Batched prompts** — combine related insights into single AI calls where schemas are compatible (e.g., #1 + #2 in one call)
 6. **Cache-first** — identical inputs return cached results instantly; users only pay AI cost once per unique resume+job pair

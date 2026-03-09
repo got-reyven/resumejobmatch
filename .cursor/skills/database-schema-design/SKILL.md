@@ -169,4 +169,103 @@ export const createResumeSchema = z.object({
 - RLS enforces tenant boundaries at the database level
 - No cross-tenant queries possible without explicit sharing policies
 - Service role key used only for background jobs and admin operations
-- Prepare for organization-level tenancy (`org_id`) when team features are added
+
+## Organization-Level Tenancy Pattern
+
+For features that require team/org access (e.g., Business users sharing matches), use the following pattern.
+
+### Table Structure
+
+```
+organizations (id, owner_id, name, ...)
+  ↓ 1:many
+organization_members (id, organization_id, user_id, role, status, ...)
+  ↓ 1:many
+organization_invitations (id, organization_id, email, role, status, expires_at, ...)
+```
+
+- `organizations`: one per Business registration, created during business setup step
+  - `name TEXT NOT NULL` — company name
+  - `employee_range TEXT` — constrained to predefined ranges (`1-10`, `11-50`, ..., `5000+`)
+  - `industry JSONB` — array of 1–3 industry strings (validated via CHECK constraint)
+- `organization_members`: owner is auto-inserted on org creation; invited members added on invite acceptance
+- `organization_invitations`: tracks pending invites, uses Supabase `auth.admin.inviteUserByEmail()`
+
+### RLS for Org-Owned Data
+
+When a table has an `organization_id` column, use membership-based RLS:
+
+```sql
+-- Users see their own rows OR rows belonging to their active org
+CREATE POLICY "select_own_or_org" ON target_table
+  FOR SELECT USING (
+    auth.uid() = user_id
+    OR (
+      organization_id IS NOT NULL
+      AND EXISTS (
+        SELECT 1 FROM organization_members
+        WHERE organization_members.organization_id = target_table.organization_id
+          AND organization_members.user_id = auth.uid()
+          AND organization_members.status = 'active'
+      )
+    )
+  );
+```
+
+### RLS for Org Management (Owner Only)
+
+```sql
+-- Only the org owner can manage members and invitations
+CREATE POLICY "owner_manage" ON organization_members
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM organizations
+      WHERE organizations.id = organization_members.organization_id
+        AND organizations.owner_id = auth.uid()
+    )
+  );
+```
+
+### Invitation Flow with Supabase
+
+```
+1. Owner calls API: POST /api/v1/organizations/:id/invitations { email, role }
+2. Server creates organization_invitations row (status: 'pending')
+3. Server calls supabase.auth.admin.inviteUserByEmail(email, { data: { org_id, role } })
+4. Invitee receives Supabase invite email → clicks link → lands on /auth/accept-invite
+5. Server reads org_id from user metadata → inserts organization_members row
+6. Server updates invitation status to 'accepted'
+```
+
+### Auto-Create Org on Business Signup
+
+```sql
+-- Trigger on profiles table: when user_type = 'business', auto-create org + owner membership
+CREATE OR REPLACE FUNCTION handle_business_signup()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_org_id UUID;
+BEGIN
+  IF NEW.user_type != 'business' THEN RETURN NEW; END IF;
+
+  INSERT INTO organizations (owner_id, name)
+  VALUES (NEW.id, COALESCE(/* company_name from metadata */, NEW.full_name || '''s Organization'))
+  RETURNING id INTO v_org_id;
+
+  INSERT INTO organization_members (organization_id, user_id, role, joined_at, status)
+  VALUES (v_org_id, NEW.id, 'owner', now(), 'active');
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+### Conventions for Org-Scoped Tables
+
+| Convention | Rule                                                                         |
+| ---------- | ---------------------------------------------------------------------------- |
+| FK column  | `organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL`       |
+| Nullable   | Always nullable — not all data belongs to an org (jobseeker data has no org) |
+| Index      | Always index `organization_id WHERE organization_id IS NOT NULL`             |
+| RLS        | Combine `user_id = auth.uid()` OR org membership check                       |
+| Roles      | `owner` has full control; `member` has read + run access                     |

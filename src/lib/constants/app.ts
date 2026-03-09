@@ -4,9 +4,15 @@ export const APP_URL = "https://resumejobmatch.com";
 
 export const RATE_LIMITS = {
   guest: { dailyMatches: 3 },
-  free: { dailyMatches: 10 },
-  lifetime: { dailyMatches: Infinity },
-  byoak: { dailyMatches: 1000 },
+  jobseeker: {
+    free: { dailyMatches: 10 },
+    pro: { dailyMatches: Infinity },
+  },
+  business: {
+    free: { dailyMatches: 10 },
+    pro: { dailyMatches: Infinity },
+  },
+  abuseCap: { dailyMatches: 1000 },
 } as const;
 
 export const FILE_LIMITS = {

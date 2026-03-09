@@ -1,89 +1,153 @@
 import Link from "next/link";
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils/cn";
 
-interface Feature {
-  label: string;
-  included: boolean;
+interface PlanGroup {
+  audience: string;
+  subtitle: string;
+  freePrice: string;
+  proPrice: string;
+  proBadge?: string;
+  freeCta: string;
+  proCta: string;
+  freeHref: string;
+  proHref: string;
+  freeFeatures: string[];
+  proExtras: string[];
 }
 
-interface Plan {
-  name: string;
-  price: string;
-  priceDetail: string;
-  description: string;
-  features: Feature[];
-  cta: string;
-  href: string;
-  highlighted?: boolean;
-  badge?: string;
-}
-
-const plans: Plan[] = [
+const planGroups: PlanGroup[] = [
   {
-    name: "Guest",
-    price: "Free",
-    priceDetail: "No signup",
-    description: "Try it out instantly — no account needed.",
-    features: [
-      { label: "3 matches per day", included: true },
-      { label: "Overall match score", included: true },
-      { label: "Skills breakdown", included: true },
-      { label: "Top 3 action items", included: true },
-      { label: "Match history", included: false },
-      { label: "Share results", included: false },
-      { label: "Bring Your Own API Key", included: false },
+    audience: "For Job Seekers",
+    subtitle: "Optimize your resume and land more interviews",
+    freePrice: "$0",
+    proPrice: "$19",
+    freeCta: "Sign Up Free",
+    proCta: "Coming Soon",
+    proBadge: "Coming Soon",
+    freeHref: "/register?type=jobseeker",
+    proHref: "/register?type=jobseeker",
+    freeFeatures: [
+      "10 matches per day",
+      "Basic jobseeker insights",
+      "3-day saved match history",
+      "Share insights via link",
     ],
-    cta: "Start Matching",
-    href: "#",
+    proExtras: [
+      "Unlimited matching",
+      "All advanced insights",
+      "Unlimited match history",
+      "PDF export",
+    ],
   },
   {
-    name: "Free Forever",
-    price: "$0",
-    priceDetail: "forever",
-    description: "More matches and history — just sign up.",
-    features: [
-      { label: "10 matches per day", included: true },
-      { label: "All basic insights", included: true },
-      { label: "Top 5 detailed insights", included: true },
-      { label: "30-day match history", included: true },
-      { label: "Share via link", included: true },
-      { label: "Bring Your Own API Key", included: true },
-      { label: "Multi-resume comparison", included: false },
+    audience: "For Business",
+    subtitle: "Evaluate candidates faster with your team",
+    freePrice: "$0",
+    proPrice: "$149",
+    freeCta: "Sign Up Free",
+    proCta: "Coming Soon",
+    proBadge: "Coming Soon",
+    freeHref: "/register?type=business",
+    proHref: "/register?type=business",
+    freeFeatures: [
+      "10 matches per day",
+      "Basic hiring insights",
+      "14-day match history",
+      "Share via link",
     ],
-    cta: "Sign Up Free",
-    href: "/auth/signup",
-  },
-  {
-    name: "Lifetime",
-    price: "$49",
-    priceDetail: "one-time payment",
-    description: "Unlimited everything. Pay once, use forever.",
-    features: [
-      { label: "Unlimited matches", included: true },
-      { label: "All 23 insights", included: true },
-      { label: "Unlimited history", included: true },
-      { label: "PDF export & sharing", included: true },
-      { label: "Multi-resume comparison", included: true },
-      { label: "Priority AI processing", included: true },
-      { label: "Bring Your Own API Key", included: true },
+    proExtras: [
+      "Unlimited matches",
+      "All advanced insights",
+      "30-day match history",
+      "Invite team members",
+      "PDF export",
+      "Multi-resume comparison (up to 3)",
     ],
-    cta: "Get Lifetime Access",
-    href: "/auth/signup",
-    highlighted: true,
-    badge: "Best Value",
   },
 ];
+
+function FeatureList({ items }: { items: string[] }) {
+  return (
+    <ul className="space-y-2.5" role="list">
+      {items.map((item) => (
+        <li key={item} className="flex items-center gap-2">
+          <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+          <span className="text-sm">{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function PlanGroupCard({ group }: { group: PlanGroup }) {
+  return (
+    <div className="overflow-hidden rounded-xl border bg-background">
+      <div className="border-b bg-muted/40 px-6 py-5 text-center">
+        <h3 className="text-lg font-semibold">{group.audience}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{group.subtitle}</p>
+      </div>
+
+      <div className="grid grid-cols-2 divide-x">
+        <div className="flex flex-col">
+          <div className="border-b px-5 pt-5 pb-5">
+            <p className="text-center text-sm font-medium text-muted-foreground">
+              Free Forever
+            </p>
+            <div className="mt-2 text-center">
+              <span className="text-3xl font-bold">{group.freePrice}</span>
+              <span className="ml-1 text-sm text-muted-foreground">
+                forever
+              </span>
+            </div>
+          </div>
+
+          <div className="flex-1 px-5 py-4">
+            <FeatureList items={group.freeFeatures} />
+          </div>
+
+          <div className="border-t px-5 py-5">
+            <Button variant="outline" className="w-full" asChild>
+              <Link href={group.freeHref}>{group.freeCta}</Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="relative flex flex-col">
+          {group.proBadge && (
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <Badge>{group.proBadge}</Badge>
+            </div>
+          )}
+
+          <div className="border-b px-5 pt-5 pb-5">
+            <p className="text-center text-sm font-medium text-primary">Pro</p>
+            <div className="mt-2 text-center">
+              <span className="text-3xl font-bold">{group.proPrice}</span>
+              <span className="ml-1 text-sm text-muted-foreground">
+                / month
+              </span>
+            </div>
+          </div>
+
+          <div className="flex-1 px-5 py-4">
+            <p className="mb-3 text-sm font-medium text-muted-foreground">
+              Everything in Free, plus:
+            </p>
+            <FeatureList items={group.proExtras} />
+          </div>
+
+          <div className="border-t px-5 py-5">
+            <Button className="w-full" asChild>
+              <Link href={group.proHref}>{group.proCta}</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function Pricing() {
   return (
@@ -94,81 +158,31 @@ export function Pricing() {
             Simple, Transparent Pricing
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Start free. Upgrade when you&apos;re ready. No subscriptions — ever.
+            Start free. Upgrade when you&apos;re ready. Cancel anytime.
           </p>
         </div>
 
-        <div className="mx-auto mt-16 grid max-w-5xl gap-8 lg:grid-cols-3">
-          {plans.map((plan) => (
-            <Card
-              key={plan.name}
-              className={cn(
-                "relative flex flex-col",
-                plan.highlighted &&
-                  "border-primary shadow-lg ring-1 ring-primary"
-              )}
-            >
-              {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge>{plan.badge}</Badge>
-                </div>
-              )}
+        <div className="mx-auto mt-10 flex max-w-6xl flex-col items-center justify-between gap-4 rounded-lg border border-dashed bg-muted/30 px-6 py-5 sm:flex-row sm:items-center">
+          <div>
+            <h3 className="font-semibold">No account needed to start</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Try the app as a guest with up to 3 matches per day and basic
+              insights — completely free, no signup required.
+            </p>
+          </div>
+          <Button variant="outline" className="shrink-0" asChild>
+            <Link href="#hero">Try Matching Resumes Now</Link>
+          </Button>
+        </div>
 
-              <CardHeader>
-                <CardTitle className="text-lg">{plan.name}</CardTitle>
-                <CardDescription>{plan.description}</CardDescription>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    {plan.priceDetail}
-                  </span>
-                </div>
-              </CardHeader>
-
-              <CardContent className="flex-1">
-                <ul className="space-y-3" role="list">
-                  {plan.features.map((feature) => (
-                    <li key={feature.label} className="flex items-start gap-3">
-                      {feature.included ? (
-                        <Check
-                          className="mt-0.5 h-4 w-4 shrink-0 text-primary"
-                          aria-hidden="true"
-                        />
-                      ) : (
-                        <X
-                          className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/50"
-                          aria-hidden="true"
-                        />
-                      )}
-                      <span
-                        className={cn(
-                          "text-sm",
-                          !feature.included && "text-muted-foreground"
-                        )}
-                      >
-                        {feature.label}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-
-              <CardFooter>
-                <Button
-                  variant={plan.highlighted ? "default" : "outline"}
-                  className="w-full"
-                  asChild
-                >
-                  <Link href={plan.href}>{plan.cta}</Link>
-                </Button>
-              </CardFooter>
-            </Card>
+        <div className="mx-auto mt-10 grid max-w-6xl gap-8 lg:grid-cols-2">
+          {planGroups.map((group) => (
+            <PlanGroupCard key={group.audience} group={group} />
           ))}
         </div>
 
         <p className="mt-10 text-center text-sm text-muted-foreground">
-          All prices in USD. Lifetime access includes all current and future
-          features. No recurring charges.
+          All prices in USD. Cancel anytime — no long-term contracts.
         </p>
       </div>
     </section>
