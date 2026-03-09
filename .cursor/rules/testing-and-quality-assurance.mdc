@@ -89,3 +89,5 @@ These patterns are caught by ESLint/TypeScript strict mode and **must** be avoid
 | `export default function` for components | Use named exports: `export function Component()` |
 | `.optional()` in Zod schemas for OpenAI structured output | Use `.nullable()` — OpenAI requires all fields present |
 | Accessing `window`/`document` in server components | Guard with `"use client"` directive or `typeof window !== "undefined"` |
+| Unused imports/variables (`const router = useRouter()`) | Remove any declared variable, import, or hook not referenced in the code |
+| `setState` called synchronously inside `useEffect` body | Use lazy initializer `useState(() => computeValue())` or derive during render |
