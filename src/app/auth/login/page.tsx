@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { APP_NAME } from "@/lib/constants/app";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -88,12 +88,14 @@ export default function LoginPage() {
   if (sent) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 px-4 py-12">
-        <Link
-          href="/"
-          className="mb-8 text-xl font-bold tracking-tight"
-          aria-label={`${APP_NAME} home`}
-        >
-          {APP_NAME}
+        <Link href="/" className="mb-8" aria-label="Resume Job Match home">
+          <Image
+            src="/logo.svg"
+            alt="Resume Job Match"
+            width={260}
+            height={50}
+            priority
+          />
         </Link>
 
         <div className="w-full max-w-md rounded-xl border bg-background p-8 shadow-sm text-center">
@@ -144,12 +146,14 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 px-4 py-12">
-      <Link
-        href="/"
-        className="mb-8 text-xl font-bold tracking-tight"
-        aria-label={`${APP_NAME} home`}
-      >
-        {APP_NAME}
+      <Link href="/" className="mb-8" aria-label="Resume Job Match home">
+        <Image
+          src="/logo.svg"
+          alt="Resume Job Match"
+          width={260}
+          height={50}
+          priority
+        />
       </Link>
 
       <div className="w-full max-w-md rounded-xl border bg-background p-8 shadow-sm">

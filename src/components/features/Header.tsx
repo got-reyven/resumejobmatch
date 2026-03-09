@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 
@@ -26,9 +26,14 @@ export function Header() {
       )}
     >
       <div className="flex h-16 items-center px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2" aria-label="Home">
-          <FileText className="h-6 w-6 text-primary" />
-          <span className="text-lg font-bold">ResumeMatch</span>
+        <Link href="/" className="flex items-center" aria-label="Home">
+          <Image
+            src="/logo.svg"
+            alt="Resume Job Match"
+            width={260}
+            height={50}
+            priority
+          />
         </Link>
 
         <nav className="hidden flex-1 items-center justify-center gap-6 sm:flex">
