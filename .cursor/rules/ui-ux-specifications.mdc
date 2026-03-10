@@ -29,6 +29,20 @@ Font sizes are overridden in `globals.css` `@theme` block. Base body text (`text
 | `text-5xl` | 52px (3.25rem) | 1 | Hero headings (tablet) |
 | `text-6xl` | 64px (4rem) | 1 | Hero headings (desktop) |
 
+## Primary Color Palette
+
+| Swatch | Hex | Usage |
+|--------|-----|-------|
+| Dark Blue | `#6696C9` | Primary accent, borders, interactive elements, gradient start |
+| Light Blue | `#B5DAF2` | Gradient end, light backgrounds, tinted surfaces |
+| Black | `#000000` | Text, high-contrast elements, dark badges |
+| Light Gray | `#F5F5F5` | Section backgrounds, muted surfaces |
+| White | `#FFFFFF` | Cards, page background, content areas |
+
+- Hero gradient: `linear-gradient(to bottom, #6696C9, #B5DAF2)`
+- Blue-themed banners/alerts: `bg-[#B5DAF2]/30` background + `border-[#6696C9]` border
+- Use these hex values directly when Tailwind's semantic tokens don't apply
+
 ## Core Principles
 
 1. **Mobile-first responsive** — design for 320px up; breakpoints: `sm:640` `md:768` `lg:1024` `xl:1280`
@@ -66,6 +80,13 @@ export function ResumeCard({ resume, onSelect }: ResumeCardProps) {
 - All interactive elements need `focus-visible` styles and `aria-label` when text isn't visible
 - Use `next/image` for all images with explicit `width`, `height`, and `alt`
 - Forms use `react-hook-form` + Zod resolver for validation
+
+## Shadows & Borders
+
+- **No shadows by default** — the base `Card` component ships without `shadow-*` classes. Do NOT add shadows to panels, cards, or boxes unless explicitly requested.
+- **Borders only** — use light gray borders (`border-gray-200`) for visual separation.
+- **Hover states** — prefer `hover:bg-muted/40` or background-color transitions over `hover:shadow-*`.
+- If a shadow is specifically requested, apply it only to that element — never re-introduce shadows globally.
 
 ## Layout
 

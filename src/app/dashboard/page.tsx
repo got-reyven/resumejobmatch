@@ -75,7 +75,7 @@ export default async function DashboardPage() {
       <h2 className="mb-4 text-lg font-semibold">Quick Actions</h2>
       <div className="grid gap-4 sm:grid-cols-3">
         <Link href="/dashboard/match">
-          <Card className="h-full transition-shadow hover:shadow-md">
+          <Card className="h-full transition-colors hover:bg-muted/40">
             <CardContent className="flex flex-col items-center gap-3 pt-6 text-center">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                 <PlusCircle className="h-5 w-5 text-primary" />
@@ -91,7 +91,7 @@ export default async function DashboardPage() {
         </Link>
 
         <Link href="/dashboard/history">
-          <Card className="h-full transition-shadow hover:shadow-md">
+          <Card className="h-full transition-colors hover:bg-muted/40">
             <CardContent className="flex flex-col items-center gap-3 pt-6 text-center">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                 <History className="h-5 w-5 text-indigo-500" />
@@ -107,7 +107,7 @@ export default async function DashboardPage() {
         </Link>
 
         <Link href="/dashboard/settings">
-          <Card className="h-full transition-shadow hover:shadow-md">
+          <Card className="h-full transition-colors hover:bg-muted/40">
             <CardContent className="flex flex-col items-center gap-3 pt-6 text-center">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                 <Settings className="h-5 w-5 text-slate-500" />

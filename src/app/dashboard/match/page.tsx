@@ -228,7 +228,7 @@ export default function DashboardMatchPage() {
           size="lg"
           disabled={!isReady || matchStatus === "matching"}
           onClick={handleStartMatching}
-          className="h-14 px-10 text-base font-semibold shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
+          className="h-14 px-10 text-base font-semibold transition-colors disabled:opacity-50"
         >
           {matchStatus === "matching" ? (
             <>

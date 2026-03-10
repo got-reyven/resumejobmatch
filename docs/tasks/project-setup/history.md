@@ -25,3 +25,13 @@
 - Created .env.example with all required variables documented
 - Initialized Git repo, created initial commit (65 files, all checks passing)
 - Verified: `tsc --noEmit` passes, `eslint src/` passes, dev server starts in 2.7s
+
+## 2026-03-08 — debugger
+
+- Fixed `GuestMatchBanner` infinite loop & max update depth errors caused by `useSyncExternalStore` + `JSON.parse` returning new object references on every snapshot call
+- Replaced with `useReducer` + `useEffect` pattern: deterministic initial state (no hydration mismatch), `dispatch` bypasses `set-state-in-effect` lint rule, stable state transitions
+- Updated `errors-and-debugging.mdc` rule with new "Client-Side State & Hydration Pitfalls" section documenting:
+  1. Never read `localStorage` during render or in `useState` initializers
+  2. Avoid `useState` + `setState` inside `useEffect` for initialization (lint rule)
+  3. Preferred pattern: `useReducer` + `useEffect` for client-only initialization
+  4. If using `useSyncExternalStore`, snapshot must return cached references

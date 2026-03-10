@@ -48,7 +48,7 @@ interface MatchResultsProps {
 
 function UnlockMoreCTA() {
   return (
-    <Card className="flex flex-col justify-center rounded-2xl border-2 border-foreground bg-white shadow-none">
+    <Card className="flex flex-col justify-center rounded-2xl border-2 border-foreground bg-white">
       <CardContent className="flex flex-col gap-5">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
@@ -139,29 +139,29 @@ export function MatchResults({
 
         <TabsContent value="jobseeker" className="mt-6 space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
-            <Card className="rounded-2xl border-0 bg-white shadow-none">
+            <Card className="rounded-2xl border-0 bg-white">
               <CardContent>
                 <MatchScoreDisplay {...score} />
               </CardContent>
             </Card>
-            <Card className="rounded-2xl border-0 bg-white shadow-none">
+            <Card className="rounded-2xl border-0 bg-white">
               <CardContent>
                 <SkillsBreakdownDisplay {...skillsBreakdown} />
               </CardContent>
             </Card>
-            <Card className="rounded-2xl border-0 bg-white shadow-none">
+            <Card className="rounded-2xl border-0 bg-white">
               <CardContent>
                 <ActionItemsDisplay {...actionItems} />
               </CardContent>
             </Card>
           </div>
           <div className="grid gap-6 lg:grid-cols-3">
-            <Card className="rounded-2xl border-0 bg-white shadow-none">
+            <Card className="rounded-2xl border-0 bg-white">
               <CardContent>
                 <ATSKeywordDisplay {...atsKeywords} />
               </CardContent>
             </Card>
-            <Card className="rounded-2xl border-0 bg-white shadow-none">
+            <Card className="rounded-2xl border-0 bg-white">
               <CardContent>
                 <ExperienceAlignmentDisplay {...experienceAlignment} />
               </CardContent>
@@ -172,24 +172,24 @@ export function MatchResults({
 
         <TabsContent value="business" className="mt-6 space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
-            <Card className="rounded-2xl border-0 bg-white shadow-none">
+            <Card className="rounded-2xl border-0 bg-white">
               <CardContent>
                 <MatchScoreDisplay {...score} />
               </CardContent>
             </Card>
-            <Card className="rounded-2xl border-0 bg-white shadow-none">
+            <Card className="rounded-2xl border-0 bg-white">
               <CardContent>
                 <SkillsBreakdownDisplay {...skillsBreakdown} />
               </CardContent>
             </Card>
-            <Card className="rounded-2xl border-0 bg-white shadow-none">
+            <Card className="rounded-2xl border-0 bg-white">
               <CardContent>
                 <TopStrengthsDisplay {...topStrengths} />
               </CardContent>
             </Card>
           </div>
           <div className="grid gap-6 lg:grid-cols-3">
-            <Card className="rounded-2xl border-0 bg-white shadow-none">
+            <Card className="rounded-2xl border-0 bg-white">
               <CardContent>
                 <ExperienceAlignmentDisplay {...experienceAlignment} />
               </CardContent>

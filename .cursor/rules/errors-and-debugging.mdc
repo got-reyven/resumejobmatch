@@ -79,6 +79,74 @@ export class NotFoundError extends AppError {
 - **Always log**: error code, user ID (if authed), request path, timestamp
 - **Never log**: passwords, tokens, PII, full request/response bodies
 
+## Client-Side State & Hydration Pitfalls
+
+These patterns cause recurring bugs in Next.js client components. Follow the rules below to avoid them.
+
+### 1. Never read `localStorage` / `sessionStorage` during render or in `useState` initializers
+
+Browser-only APIs don't exist on the server. Reading them during render causes hydration mismatches (server renders `null`, client renders data).
+
+```typescript
+// BAD — hydration mismatch
+const [data, setData] = useState(() => JSON.parse(localStorage.getItem("key") ?? "null"));
+
+// BAD — useSyncExternalStore with JSON.parse returns a new reference every call → infinite loop
+const data = useSyncExternalStore(subscribe, () => JSON.parse(localStorage.getItem("key") ?? "null"), () => null);
+```
+
+### 2. Avoid `useState` + `setState` inside `useEffect` for initialization
+
+The `react-hooks/set-state-in-effect` lint rule flags `setState` calls inside `useEffect`. While sometimes valid, it triggers lint errors and can cause cascading renders.
+
+### 3. Preferred pattern: `useReducer` + `useEffect`
+
+`useReducer`'s `dispatch` is not flagged by the lint rule, avoids hydration issues (initial state is deterministic), and keeps state transitions explicit.
+
+```typescript
+// GOOD — safe initialization from localStorage
+type State = { data: MyData | null; status: "idle" | "ready" };
+type Action = { type: "loaded"; data: MyData } | { type: "dismiss" };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "loaded": return { ...state, data: action.data, status: "ready" };
+    case "dismiss": return { ...state, status: "idle" };
+  }
+}
+
+export function MyComponent() {
+  const [state, dispatch] = useReducer(reducer, { data: null, status: "idle" });
+
+  useEffect(() => {
+    const raw = localStorage.getItem("key");
+    if (raw) dispatch({ type: "loaded", data: JSON.parse(raw) });
+  }, []);
+
+  if (state.status === "idle") return null;
+  // ...render with state.data
+}
+```
+
+### 4. If you must use `useSyncExternalStore`, cache the snapshot
+
+`getSnapshot` must return the **same reference** if the underlying data hasn't changed, otherwise React re-renders infinitely.
+
+```typescript
+// GOOD — cached snapshot
+let cachedRaw: string | null = null;
+let cachedParsed: MyData | null = null;
+
+function getSnapshot(): MyData | null {
+  const raw = localStorage.getItem("key");
+  if (raw !== cachedRaw) {
+    cachedRaw = raw;
+    cachedParsed = raw ? JSON.parse(raw) : null;
+  }
+  return cachedParsed;
+}
+```
+
 ## Debugging Practices
 
 - Use `React DevTools` and `Supabase Dashboard` SQL editor for debugging
