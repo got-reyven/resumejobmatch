@@ -1,4 +1,3 @@
-import { Header } from "@/components/features/Header";
 import { MatchingHero } from "@/components/features/MatchingHero";
 import { HowItWorks } from "@/components/features/HowItWorks";
 import { InsightsShowcase } from "@/components/features/InsightsShowcase";
@@ -8,10 +7,7 @@ import { Footer } from "@/components/features/Footer";
 export default function HomePage() {
   return (
     <>
-      <div className="hero-mesh">
-        <Header />
-        <MatchingHero />
-      </div>
+      <MatchingHero />
       <HowItWorks />
       <InsightsShowcase />
       <Pricing />

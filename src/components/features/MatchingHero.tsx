@@ -1,17 +1,21 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { Loader2, Rocket, Lock } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Loader2, Rocket, Lock, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Header } from "@/components/features/Header";
 import { ResumeUpload } from "@/components/features/ResumeUpload";
 import { JobDescriptionInput } from "@/components/features/JobDescriptionInput";
 import { MatchResults } from "@/components/features/MatchResults";
+import { saveGuestMatch } from "@/lib/guest-match-storage";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 import type {
   OverallScoreData,
   SkillsBreakdownData,
   ActionItemsData,
   TopStrengthsData,
+  ATSKeywordsData,
+  ExperienceAlignmentData,
 } from "@/services/insights/types";
 
 type ParseStatus = "idle" | "parsing" | "parsed" | "error";
@@ -23,7 +27,23 @@ function countWords(text: string): number {
   return text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
 }
 
+function formatCount(n: number): string {
+  return n.toLocaleString("en-US");
+}
+
 export function MatchingHero() {
+  const [totalMatches, setTotalMatches] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/v1/stats")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.data?.totalMatches > 0)
+          setTotalMatches(json.data.totalMatches);
+      })
+      .catch(() => {});
+  }, []);
+
   const [file, setFile] = useState<File | null>(null);
   const [parsedResume, setParsedResume] = useState<ParsedResume | null>(null);
   const [parseStatus, setParseStatus] = useState<ParseStatus>("idle");
@@ -37,6 +57,8 @@ export function MatchingHero() {
     skillsBreakdown: SkillsBreakdownData;
     actionItems: ActionItemsData;
     topStrengths: TopStrengthsData;
+    atsKeywords: ATSKeywordsData;
+    experienceAlignment: ExperienceAlignmentData;
   } | null>(null);
   const [matchedJdSnapshot, setMatchedJdSnapshot] = useState<string | null>(
     null
@@ -121,14 +143,29 @@ export function MatchingHero() {
         return;
       }
 
-      setMatchResult({
+      const insights = {
         overallScore: json.data.overallScore.data,
         skillsBreakdown: json.data.skillsBreakdown.data,
         actionItems: json.data.actionItems.data,
         topStrengths: json.data.topStrengths.data,
-      });
+        atsKeywords: json.data.atsKeywords.data,
+        experienceAlignment: json.data.experienceAlignment.data,
+      };
+
+      setMatchResult(insights);
       setMatchedJdSnapshot(jobDescription);
       setMatchStatus("matched");
+
+      if (file && parsedResume) {
+        saveGuestMatch({
+          resumeFileName: file.name,
+          resumeFileType: file.type,
+          resumeFileSize: file.size,
+          resumeParsedData: parsedResume,
+          jobDescriptionText: jobDescription,
+          insights,
+        });
+      }
 
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({
@@ -140,153 +177,179 @@ export function MatchingHero() {
       setMatchError("Network error. Please check your connection and retry.");
       setMatchStatus("error");
     }
-  }, [isReady, parsedResume, jobDescription]);
+  }, [isReady, parsedResume, jobDescription, file]);
 
   return (
-    <section
-      id="hero"
-      className="relative flex min-h-[calc(100vh-4rem)] flex-col"
-    >
-      <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
-        <div className="flex flex-1 flex-col rounded-2xl bg-background/100 p-6 backdrop-blur-sm sm:p-10 lg:p-12">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-              See how well you match
-              <span className="block text-primary"> — in seconds</span>
-            </h1>
-            <p className="mt-4 text-lg text-muted-foreground sm:text-xl">
-              Paste a job description + upload your resume. <br />
-              Get instant, actionable insights.
-            </p>
-          </div>
-
-          <div className="mt-10 w-full">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <div className="flex min-h-[600px] flex-col">
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                    1
-                  </span>
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    Your Resume
-                  </h2>
-                </div>
-                <div className="flex-1">
-                  <ResumeUpload
-                    file={file}
-                    onFileSelect={handleFileSelect}
-                    onParsed={setParsedResume}
-                    parsedResume={parsedResume}
-                    parseStatus={parseStatus}
-                    parseError={parseError}
+    <>
+      <div className="mx-auto w-[98%] pt-4 sm:pt-5">
+        <div className="hero-box overflow-hidden rounded-3xl">
+          <Header />
+          <section
+            id="hero"
+            className="px-6 pb-16 pt-12 sm:px-10 sm:pb-20 sm:pt-16 lg:px-16 lg:pb-24 lg:pt-20"
+          >
+            <div className="mx-auto max-w-3xl text-center">
+              {totalMatches !== null && (
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-black px-4 py-2 shadow-sm">
+                  <TrendingUp
+                    className="h-4 w-4 text-white"
+                    aria-hidden="true"
                   />
-                </div>
-              </div>
-
-              <div className="flex flex-col">
-                <div className="mb-3 flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                    2
+                  <span className="text-sm font-medium text-white">
+                    <span className="font-bold">
+                      {formatCount(totalMatches)}
+                    </span>{" "}
+                    resumes matched!
                   </span>
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    Job Description
-                  </h2>
                 </div>
-                <div className="flex-1">
-                  <JobDescriptionInput
-                    value={jobDescription}
-                    onChange={setJobDescription}
-                  />
-                </div>
-              </div>
+              )}
+
+              <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+                See how well you match
+                <span className="block text-white/90"> — in seconds</span>
+              </h1>
+              <p className="mt-4 text-lg text-white/70 sm:text-xl">
+                Paste a job description + upload your resume. <br />
+                Get instant, actionable insights.
+              </p>
             </div>
 
-            <div className="mt-8 flex flex-col items-center gap-3">
-              <Button
-                size="lg"
-                disabled={
-                  !isReady || matchStatus === "matching" || hasMatchedOnce
-                }
-                onClick={handleStartMatching}
-                className="h-14 px-10 text-base font-semibold shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
-              >
-                {matchStatus === "matching" ? (
-                  <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : hasMatchedOnce ? (
-                  <>
-                    <Lock className="h-5 w-5" />
-                    Match Again
-                  </>
-                ) : (
-                  <>
-                    <Rocket className="h-5 w-5" />
-                    Start Matching
-                  </>
+            <div className="mx-auto mt-12 w-full max-w-6xl">
+              <div className="grid gap-6 lg:grid-cols-2">
+                <div className="flex min-h-[600px] flex-col">
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-white">
+                      1
+                    </span>
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-white/70">
+                      Your Resume
+                    </h2>
+                  </div>
+                  <div className="flex-1 rounded-xl bg-white p-4 shadow-xl">
+                    <ResumeUpload
+                      file={file}
+                      onFileSelect={handleFileSelect}
+                      onParsed={setParsedResume}
+                      parsedResume={parsedResume}
+                      parseStatus={parseStatus}
+                      parseError={parseError}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col">
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-bold text-white">
+                      2
+                    </span>
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-white/70">
+                      Job Description
+                    </h2>
+                  </div>
+                  <div className="flex-1 rounded-xl bg-white p-4 shadow-xl">
+                    <JobDescriptionInput
+                      value={jobDescription}
+                      onChange={setJobDescription}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-col items-center gap-3">
+                <Button
+                  size="lg"
+                  disabled={
+                    !isReady || matchStatus === "matching" || hasMatchedOnce
+                  }
+                  onClick={handleStartMatching}
+                  className="h-14 rounded-full bg-white px-10 text-base font-semibold text-slate-900 shadow-lg transition-all hover:bg-white/90 hover:shadow-xl disabled:opacity-50"
+                >
+                  {matchStatus === "matching" ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : hasMatchedOnce ? (
+                    <>
+                      <Lock className="h-5 w-5" />
+                      Match Again
+                    </>
+                  ) : (
+                    <>
+                      <Rocket className="h-5 w-5" />
+                      Click to Start Matching
+                    </>
+                  )}
+                </Button>
+
+                {hasMatchedOnce && !matchStatus.startsWith("match") && (
+                  <p className="text-center text-sm text-white/70">
+                    Register or log in to run additional matches.
+                  </p>
                 )}
-              </Button>
 
-              {hasMatchedOnce && !matchStatus.startsWith("match") && (
-                <p className="text-center text-sm text-muted-foreground">
-                  Register or log in to run additional matches.
-                </p>
-              )}
+                {jdModifiedAfterMatch && (
+                  <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2.5 text-sm text-white backdrop-blur-sm">
+                    <Lock className="h-4 w-4 shrink-0" />
+                    You cannot re-run the matching with the changes, please
+                    register or login.
+                  </div>
+                )}
 
-              {jdModifiedAfterMatch && (
-                <div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-2.5 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
-                  <Lock className="h-4 w-4 shrink-0" />
-                  You cannot re-run the matching with the changes, please
-                  register or login.
-                </div>
-              )}
+                {matchStatus === "matching" && (
+                  <p className="text-sm text-black/70">
+                    Reading resume &rarr; Analyzing job &rarr; Matching skills
+                    &rarr; Generating insights&hellip;
+                  </p>
+                )}
 
-              {matchStatus === "matching" && (
-                <p className="text-sm text-muted-foreground">
-                  Reading resume &rarr; Analyzing job &rarr; Matching skills
-                  &rarr; Generating insights&hellip;
-                </p>
-              )}
+                {matchStatus === "error" && (
+                  <p className="text-sm text-red-200">{matchError}</p>
+                )}
 
-              {matchStatus === "error" && (
-                <p className="text-sm text-destructive">{matchError}</p>
-              )}
-
-              {!hasMatchedOnce && matchStatus === "idle" && !isReady && (
-                <p className="text-sm text-muted-foreground">
-                  {parseStatus === "parsing"
-                    ? "Parsing your resume..."
-                    : !file && !jobDescription
-                      ? "Upload your resume and paste a job description to begin"
-                      : !parsedResume
-                        ? "Upload your resume to continue"
-                        : jdWordCount < MIN_JD_WORDS
-                          ? `Add more to the job description (${MIN_JD_WORDS - jdWordCount} more words needed)`
-                          : jdWordCount > MAX_JD_WORDS
-                            ? `Job description is too long (${jdWordCount - MAX_JD_WORDS} words over limit)`
-                            : ""}
-                </p>
-              )}
+                {!hasMatchedOnce && matchStatus === "idle" && !isReady && (
+                  <p className="text-sm text-white/70">
+                    {parseStatus === "parsing"
+                      ? "Parsing your resume..."
+                      : !file && !jobDescription
+                        ? "Upload your resume and paste a job description to begin"
+                        : !parsedResume
+                          ? "Upload your resume to continue"
+                          : jdWordCount < MIN_JD_WORDS
+                            ? `Add more to the job description (${MIN_JD_WORDS - jdWordCount} more words needed)`
+                            : jdWordCount > MAX_JD_WORDS
+                              ? `Job description is too long (${jdWordCount - MAX_JD_WORDS} words over limit)`
+                              : ""}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-
-          {matchResult && (
-            <div ref={resultsRef} className="mt-10 border-t pt-10">
-              <MatchResults
-                score={{
-                  overall: matchResult.overallScore.overall,
-                  dimensions: matchResult.overallScore.dimensions,
-                  summary: matchResult.overallScore.summary,
-                }}
-                skillsBreakdown={matchResult.skillsBreakdown}
-                actionItems={matchResult.actionItems}
-                topStrengths={matchResult.topStrengths}
-              />
-            </div>
-          )}
+          </section>
         </div>
       </div>
-    </section>
+
+      {matchResult && (
+        <div className="mx-auto mt-4 w-[98%] sm:mt-5">
+          <div
+            ref={resultsRef}
+            className="rounded-3xl px-6 py-12 sm:px-10 sm:py-16 lg:px-16"
+            style={{ backgroundColor: "#F5F5F5" }}
+          >
+            <MatchResults
+              score={{
+                overall: matchResult.overallScore.overall,
+                dimensions: matchResult.overallScore.dimensions,
+                summary: matchResult.overallScore.summary,
+              }}
+              skillsBreakdown={matchResult.skillsBreakdown}
+              actionItems={matchResult.actionItems}
+              topStrengths={matchResult.topStrengths}
+              atsKeywords={matchResult.atsKeywords}
+              experienceAlignment={matchResult.experienceAlignment}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -26,6 +26,7 @@ import {
   DollarSign,
   ClipboardCheck,
   Crown,
+  Lock,
   ChevronRight,
   type LucideIcon,
 } from "lucide-react";
@@ -109,8 +110,8 @@ const advancedInsights: Insight[] = [
     icon: Search,
     iconColor: "text-orange-500",
     audience: "jobseeker",
-    access: "registered",
-    available: false,
+    access: "everyone",
+    available: true,
   },
   {
     id: 6,
@@ -120,8 +121,8 @@ const advancedInsights: Insight[] = [
     icon: Briefcase,
     iconColor: "text-indigo-500",
     audience: "both",
-    access: "registered",
-    available: false,
+    access: "everyone",
+    available: true,
   },
   {
     id: 7,
@@ -333,6 +334,12 @@ function InsightCard({ insight }: { insight: Insight }) {
               aria-hidden="true"
             />
           </div>
+          {insight.access === "registered" && (
+            <Lock
+              className="h-5 w-5 shrink-0 text-muted-foreground"
+              aria-label="Login required"
+            />
+          )}
           {insight.access === "pro" && (
             <Crown
               className="h-5 w-5 shrink-0 text-amber-500"

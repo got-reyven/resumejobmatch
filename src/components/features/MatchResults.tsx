@@ -1,8 +1,17 @@
 "use client";
 
-import { Briefcase, User } from "lucide-react";
+import Link from "next/link";
+import {
+  Briefcase,
+  User,
+  LogIn,
+  Save,
+  Sparkles,
+  CheckCircle,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   MatchScoreDisplay,
   type MatchScoreDisplayProps,
@@ -19,12 +28,91 @@ import {
   TopStrengthsDisplay,
   type TopStrengthsDisplayProps,
 } from "@/components/features/TopStrengthsDisplay";
+import {
+  ATSKeywordDisplay,
+  type ATSKeywordDisplayProps,
+} from "@/components/features/ATSKeywordDisplay";
+import {
+  ExperienceAlignmentDisplay,
+  type ExperienceAlignmentDisplayProps,
+} from "@/components/features/ExperienceAlignmentDisplay";
 
 interface MatchResultsProps {
   score: MatchScoreDisplayProps;
   skillsBreakdown: SkillsBreakdownDisplayProps;
   actionItems: ActionItemsDisplayProps;
   topStrengths: TopStrengthsDisplayProps;
+  atsKeywords: ATSKeywordDisplayProps;
+  experienceAlignment: ExperienceAlignmentDisplayProps;
+}
+
+function UnlockMoreCTA() {
+  return (
+    <Card className="flex flex-col justify-center rounded-2xl border-2 border-foreground bg-white shadow-none">
+      <CardContent className="flex flex-col gap-5">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+            <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
+          </div>
+          <h3 className="text-lg font-semibold">Unlock More Insights</h3>
+        </div>
+
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <div className="flex items-center gap-2.5">
+            <Save
+              className="h-5 w-5 shrink-0 text-primary"
+              aria-hidden="true"
+            />
+            <div>
+              <p className="text-sm font-semibold">Login to Save Insights</p>
+              <p className="text-xs text-muted-foreground">
+                Keep your results and access them anytime
+              </p>
+            </div>
+          </div>
+          <div className="mt-3 flex gap-2">
+            <Button asChild size="sm" variant="outline" className="gap-2">
+              <Link href="/auth/login?next=/dashboard">
+                <LogIn className="h-4 w-4" />
+                Login
+              </Link>
+            </Button>
+            <Button asChild size="sm" className="gap-2">
+              <Link href="/register">Register Free</Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-lg border bg-background p-4">
+          <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            With a free account you also get
+          </p>
+          <ul className="space-y-1.5 text-sm text-muted-foreground">
+            <li className="flex items-start gap-2">
+              <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+              Qualification fit &amp; resume section scoring
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+              Interview focus points for hiring managers
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+              Tailored summary &amp; rewrite suggestions
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+              Save match history &amp; share results
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+              .. and many more!
+            </li>
+          </ul>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export function MatchResults({
@@ -32,6 +120,8 @@ export function MatchResults({
   skillsBreakdown,
   actionItems,
   topStrengths,
+  atsKeywords,
+  experienceAlignment,
 }: MatchResultsProps) {
   return (
     <div className="w-full">
@@ -47,43 +137,64 @@ export function MatchResults({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="jobseeker" className="mt-6">
+        <TabsContent value="jobseeker" className="mt-6 space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
-            <Card>
+            <Card className="rounded-2xl border-0 bg-white shadow-none">
               <CardContent>
                 <MatchScoreDisplay {...score} />
               </CardContent>
             </Card>
-            <Card>
+            <Card className="rounded-2xl border-0 bg-white shadow-none">
               <CardContent>
                 <SkillsBreakdownDisplay {...skillsBreakdown} />
               </CardContent>
             </Card>
-            <Card>
+            <Card className="rounded-2xl border-0 bg-white shadow-none">
               <CardContent>
                 <ActionItemsDisplay {...actionItems} />
               </CardContent>
             </Card>
           </div>
+          <div className="grid gap-6 lg:grid-cols-3">
+            <Card className="rounded-2xl border-0 bg-white shadow-none">
+              <CardContent>
+                <ATSKeywordDisplay {...atsKeywords} />
+              </CardContent>
+            </Card>
+            <Card className="rounded-2xl border-0 bg-white shadow-none">
+              <CardContent>
+                <ExperienceAlignmentDisplay {...experienceAlignment} />
+              </CardContent>
+            </Card>
+            <UnlockMoreCTA />
+          </div>
         </TabsContent>
 
-        <TabsContent value="business" className="mt-6">
+        <TabsContent value="business" className="mt-6 space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
-            <Card>
+            <Card className="rounded-2xl border-0 bg-white shadow-none">
               <CardContent>
                 <MatchScoreDisplay {...score} />
               </CardContent>
             </Card>
-            <Card>
+            <Card className="rounded-2xl border-0 bg-white shadow-none">
               <CardContent>
                 <SkillsBreakdownDisplay {...skillsBreakdown} />
               </CardContent>
             </Card>
-            <Card>
+            <Card className="rounded-2xl border-0 bg-white shadow-none">
               <CardContent>
                 <TopStrengthsDisplay {...topStrengths} />
               </CardContent>
             </Card>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-3">
+            <Card className="rounded-2xl border-0 bg-white shadow-none">
+              <CardContent>
+                <ExperienceAlignmentDisplay {...experienceAlignment} />
+              </CardContent>
+            </Card>
+            <UnlockMoreCTA />
           </div>
         </TabsContent>
       </Tabs>

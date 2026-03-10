@@ -32,6 +32,8 @@ export interface MatchResult {
   skillsBreakdown: InsightResult<SkillsBreakdownData>;
   actionItems: InsightResult<ActionItemsData>;
   topStrengths: InsightResult<TopStrengthsData>;
+  atsKeywords: InsightResult<ATSKeywordsData>;
+  experienceAlignment: InsightResult<ExperienceAlignmentData>;
 }
 
 export interface OverallScoreData {
@@ -74,4 +76,29 @@ export interface TopStrengthsData {
     evidence: string;
     relevance: string;
   }[];
+}
+
+export interface ExperienceAlignmentData {
+  total_relevant_years: number;
+  required_years: number | null;
+  seniority_fit: "under" | "match" | "over";
+  industry_alignment: "same" | "adjacent" | "different";
+  role_mapping: {
+    resume_role: string;
+    relevance: "direct" | "transferable" | "unrelated";
+    relevant_aspects: string[];
+  }[];
+  summary: string;
+}
+
+export interface ATSKeywordsData {
+  keywords: {
+    keyword: string;
+    category: "technical" | "tool" | "certification" | "soft_skill" | "other";
+    found_in_resume: boolean;
+    match_type: "exact" | "semantic" | "missing";
+    resume_context: string | null;
+  }[];
+  ats_pass_likelihood: "high" | "medium" | "low";
+  suggestion: string;
 }
