@@ -36,6 +36,7 @@ interface DashboardMatchResultsProps {
   atsKeywords: ATSKeywordDisplayProps;
   experienceAlignment: ExperienceAlignmentDisplayProps;
   userType: string;
+  tier: string;
 }
 
 export function DashboardMatchResults({
@@ -46,81 +47,115 @@ export function DashboardMatchResults({
   atsKeywords,
   experienceAlignment,
   userType,
+  tier,
 }: DashboardMatchResultsProps) {
+  const isPro = tier === "pro";
   const defaultTab = userType === "business" ? "business" : "jobseeker";
+  const showJobseekerTab = isPro || userType === "jobseeker";
+  const showBusinessTab = isPro || userType === "business";
+
+  const cardClass = "break-inside-avoid overflow-hidden mb-6";
+
+  const jobseekerCards = (
+    <div className="[column-count:1] [column-gap:1.5rem] md:[column-count:2] lg:[column-count:3]">
+      <div className={cardClass}>
+        <Card>
+          <CardContent className="overflow-hidden">
+            <MatchScoreDisplay {...score} />
+          </CardContent>
+        </Card>
+      </div>
+      <div className={cardClass}>
+        <Card>
+          <CardContent className="overflow-hidden">
+            <SkillsBreakdownDisplay {...skillsBreakdown} />
+          </CardContent>
+        </Card>
+      </div>
+      <div className={cardClass}>
+        <Card>
+          <CardContent className="overflow-hidden">
+            <ActionItemsDisplay {...actionItems} />
+          </CardContent>
+        </Card>
+      </div>
+      <div className={cardClass}>
+        <Card>
+          <CardContent className="overflow-hidden">
+            <ATSKeywordDisplay {...atsKeywords} />
+          </CardContent>
+        </Card>
+      </div>
+      <div className={cardClass}>
+        <Card>
+          <CardContent className="overflow-hidden">
+            <ExperienceAlignmentDisplay {...experienceAlignment} />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+
+  const businessCards = (
+    <div className="[column-count:1] [column-gap:1.5rem] md:[column-count:2] lg:[column-count:3]">
+      <div className={cardClass}>
+        <Card>
+          <CardContent className="overflow-hidden">
+            <MatchScoreDisplay {...score} />
+          </CardContent>
+        </Card>
+      </div>
+      <div className={cardClass}>
+        <Card>
+          <CardContent className="overflow-hidden">
+            <SkillsBreakdownDisplay {...skillsBreakdown} />
+          </CardContent>
+        </Card>
+      </div>
+      <div className={cardClass}>
+        <Card>
+          <CardContent className="overflow-hidden">
+            <TopStrengthsDisplay {...topStrengths} />
+          </CardContent>
+        </Card>
+      </div>
+      <div className={cardClass}>
+        <Card>
+          <CardContent className="overflow-hidden">
+            <ExperienceAlignmentDisplay {...experienceAlignment} />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="w-full">
+    <div className="max-w-full overflow-hidden">
       <Tabs defaultValue={defaultTab}>
-        <TabsList className="mx-auto w-full max-w-md">
-          <TabsTrigger value="jobseeker" className="flex-1 gap-2">
-            <User className="h-4 w-4" aria-hidden="true" />
-            For Jobseekers
-          </TabsTrigger>
-          <TabsTrigger value="business" className="flex-1 gap-2">
-            <Briefcase className="h-4 w-4" aria-hidden="true" />
-            For Business
-          </TabsTrigger>
-        </TabsList>
+        {isPro && (
+          <TabsList className="mx-auto w-full max-w-md">
+            <TabsTrigger value="jobseeker" className="flex-1 gap-2">
+              <User className="h-4 w-4" aria-hidden="true" />
+              For Jobseekers
+            </TabsTrigger>
+            <TabsTrigger value="business" className="flex-1 gap-2">
+              <Briefcase className="h-4 w-4" aria-hidden="true" />
+              For Business
+            </TabsTrigger>
+          </TabsList>
+        )}
 
-        <TabsContent value="jobseeker" className="mt-6 space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
-            <Card>
-              <CardContent>
-                <MatchScoreDisplay {...score} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent>
-                <SkillsBreakdownDisplay {...skillsBreakdown} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent>
-                <ActionItemsDisplay {...actionItems} />
-              </CardContent>
-            </Card>
-          </div>
-          <div className="grid gap-6 lg:grid-cols-3">
-            <Card>
-              <CardContent>
-                <ATSKeywordDisplay {...atsKeywords} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent>
-                <ExperienceAlignmentDisplay {...experienceAlignment} />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+        {showJobseekerTab && (
+          <TabsContent value="jobseeker" className="mt-6">
+            {jobseekerCards}
+          </TabsContent>
+        )}
 
-        <TabsContent value="business" className="mt-6 space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
-            <Card>
-              <CardContent>
-                <MatchScoreDisplay {...score} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent>
-                <SkillsBreakdownDisplay {...skillsBreakdown} />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent>
-                <TopStrengthsDisplay {...topStrengths} />
-              </CardContent>
-            </Card>
-          </div>
-          <div className="grid gap-6 lg:grid-cols-3">
-            <Card>
-              <CardContent>
-                <ExperienceAlignmentDisplay {...experienceAlignment} />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+        {showBusinessTab && (
+          <TabsContent value="business" className="mt-6">
+            {businessCards}
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

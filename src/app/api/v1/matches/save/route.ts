@@ -5,8 +5,8 @@ import { handleApiError } from "@/lib/utils/api-error-handler";
 import { AuthenticationError } from "@/lib/errors/app-error";
 import { persistMatch } from "@/services/match-persistence";
 
-// POST /api/v1/matches/claim
-// Persists a guest user's match results into their account after authentication
+// POST /api/v1/matches/save
+// Persists match results for an authenticated user running a match from the dashboard
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

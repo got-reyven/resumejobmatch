@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardSidebar } from "@/components/features/DashboardSidebar";
+import { ProfileProvider } from "@/components/features/ProfileContext";
 
 export default async function DashboardLayout({
   children,
@@ -18,35 +19,43 @@ export default async function DashboardLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, user_type, avatar_url")
+    .select("full_name, user_type, tier, avatar_url")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   const userType = profile?.user_type ?? "jobseeker";
+  const tier = profile?.tier ?? "free";
   const displayName = profile?.full_name || user.email?.split("@")[0] || "User";
+  const avatarUrl = profile?.avatar_url ?? null;
 
   return (
-    <div className="flex min-h-screen">
-      <DashboardSidebar
-        userType={userType}
-        displayName={displayName}
-        email={user.email ?? ""}
-      />
+    <ProfileProvider
+      initial={{
+        displayName,
+        email: user.email ?? "",
+        avatarUrl,
+        userType,
+        tier,
+      }}
+    >
+      <div className="flex min-h-screen">
+        <DashboardSidebar />
 
-      <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center border-b px-6 lg:hidden">
-          <Link href="/dashboard" aria-label="Dashboard home">
-            <Image
-              src="/logo.svg"
-              alt="Resume Job Match"
-              width={140}
-              height={21}
-            />
-          </Link>
-        </header>
+        <div className="flex flex-1 flex-col">
+          <header className="flex h-14 items-center border-b px-6 lg:hidden">
+            <Link href="/dashboard" aria-label="Dashboard home">
+              <Image
+                src="/logo-default.svg"
+                alt="Resume Job Match"
+                width={140}
+                height={21}
+              />
+            </Link>
+          </header>
 
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
+          <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
+        </div>
       </div>
-    </div>
+    </ProfileProvider>
   );
 }

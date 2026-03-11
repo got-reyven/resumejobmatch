@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Loader2, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResumeUpload } from "@/components/features/ResumeUpload";
 import { JobDescriptionInput } from "@/components/features/JobDescriptionInput";
 import { DashboardMatchResults } from "@/components/features/DashboardMatchResults";
-import { createClient } from "@/lib/supabase/client";
+import { useProfile } from "@/components/features/ProfileContext";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 import type {
   OverallScoreData,
@@ -44,24 +44,7 @@ export default function DashboardMatchPage() {
     experienceAlignment: ExperienceAlignmentData;
   } | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
-
-  const [userType, setUserType] = useState("jobseeker");
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        supabase
-          .from("profiles")
-          .select("user_type")
-          .eq("id", user.id)
-          .single()
-          .then(({ data }) => {
-            if (data?.user_type) setUserType(data.user_type);
-          });
-      }
-    });
-  }, []);
+  const { userType, tier } = useProfile();
 
   const jdWordCount = countWords(jobDescription);
   const isReady =
@@ -111,7 +94,7 @@ export default function DashboardMatchPage() {
   }, []);
 
   const handleStartMatching = useCallback(async () => {
-    if (!isReady || !parsedResume) return;
+    if (!isReady || !parsedResume || !file) return;
 
     setMatchStatus("matching");
     setMatchError(null);
@@ -134,15 +117,30 @@ export default function DashboardMatchPage() {
         return;
       }
 
-      setMatchResult({
+      const resultData = {
         overallScore: json.data.overallScore.data,
         skillsBreakdown: json.data.skillsBreakdown.data,
         actionItems: json.data.actionItems.data,
         topStrengths: json.data.topStrengths.data,
         atsKeywords: json.data.atsKeywords.data,
         experienceAlignment: json.data.experienceAlignment.data,
-      });
+      };
+
+      setMatchResult(resultData);
       setMatchStatus("matched");
+
+      fetch("/api/v1/matches/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resumeFileName: file.name,
+          resumeFileType: file.type,
+          resumeFileSize: file.size,
+          resumeParsedData: parsedResume,
+          jobDescriptionText: jobDescription,
+          insights: resultData,
+        }),
+      }).catch((err) => console.error("Failed to save match:", err));
 
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({
@@ -154,7 +152,7 @@ export default function DashboardMatchPage() {
       setMatchError("Network error. Please check your connection and retry.");
       setMatchStatus("error");
     }
-  }, [isReady, parsedResume, jobDescription]);
+  }, [isReady, parsedResume, jobDescription, file]);
 
   const handleReset = () => {
     setFile(null);
@@ -285,6 +283,7 @@ export default function DashboardMatchPage() {
             atsKeywords={matchResult.atsKeywords}
             experienceAlignment={matchResult.experienceAlignment}
             userType={userType}
+            tier={tier}
           />
         </div>
       )}
