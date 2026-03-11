@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { Loader2, Rocket } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Loader2, Rocket, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResumeUpload } from "@/components/features/ResumeUpload";
 import { JobDescriptionInput } from "@/components/features/JobDescriptionInput";
 import { DashboardMatchResults } from "@/components/features/DashboardMatchResults";
 import { useProfile } from "@/components/features/ProfileContext";
+import { RATE_LIMITS } from "@/lib/constants/app";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 import type {
   OverallScoreData,
@@ -21,9 +22,17 @@ type ParseStatus = "idle" | "parsing" | "parsed" | "error";
 type MatchStatus = "idle" | "matching" | "matched" | "error";
 const MIN_JD_WORDS = 30;
 const MAX_JD_WORDS = 800;
+const COOLDOWN_SECONDS = 120;
 
 function countWords(text: string): number {
   return text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+}
+
+function formatCountdown(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m > 0) return `${m}m ${s.toString().padStart(2, "0")}s`;
+  return `${s}s`;
 }
 
 export default function DashboardMatchPage() {
@@ -43,8 +52,38 @@ export default function DashboardMatchPage() {
     atsKeywords: ATSKeywordsData;
     experienceAlignment: ExperienceAlignmentData;
   } | null>(null);
+  const [matchCount, setMatchCount] = useState(0);
+  const [cooldown, setCooldown] = useState(0);
   const resultsRef = useRef<HTMLDivElement>(null);
   const { userType, tier } = useProfile();
+
+  const isPro = tier === "pro";
+  const dailyLimit =
+    RATE_LIMITS[userType as "jobseeker" | "business"]?.[tier as "free" | "pro"]
+      ?.dailyMatches ?? 10;
+
+  useEffect(() => {
+    fetch("/api/v1/matches/history?page=1&pageSize=1")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.meta?.total != null) setMatchCount(json.meta.total);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const jdWordCount = countWords(jobDescription);
   const isReady =
@@ -128,6 +167,8 @@ export default function DashboardMatchPage() {
 
       setMatchResult(resultData);
       setMatchStatus("matched");
+      setMatchCount((prev) => prev + 1);
+      setCooldown(COOLDOWN_SECONDS);
 
       fetch("/api/v1/matches/save", {
         method: "POST",
@@ -165,6 +206,8 @@ export default function DashboardMatchPage() {
     setMatchResult(null);
   };
 
+  const isCoolingDown = cooldown > 0;
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -175,9 +218,41 @@ export default function DashboardMatchPage() {
           </p>
         </div>
         {matchResult && (
-          <Button variant="outline" size="sm" onClick={handleReset}>
-            Start Over
-          </Button>
+          <div className="flex items-center gap-3">
+            {!isPro && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="h-1.5 w-20 overflow-hidden rounded-full bg-gray-200">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      matchCount >= dailyLimit ? "bg-red-500" : "bg-[#6696C9]"
+                    }`}
+                    style={{
+                      width: `${Math.min((matchCount / dailyLimit) * 100, 100)}%`,
+                    }}
+                  />
+                </div>
+                <span>
+                  {matchCount}/{dailyLimit} today
+                </span>
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReset}
+              disabled={isCoolingDown}
+              className="gap-1.5"
+            >
+              {isCoolingDown ? (
+                <>
+                  <Timer className="h-3.5 w-3.5" />
+                  Re-run in {formatCountdown(cooldown)}
+                </>
+              ) : (
+                "Re-run Matching"
+              )}
+            </Button>
+          </div>
         )}
       </div>
 

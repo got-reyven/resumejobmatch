@@ -8,6 +8,7 @@ import { ResumeUpload } from "@/components/features/ResumeUpload";
 import { JobDescriptionInput } from "@/components/features/JobDescriptionInput";
 import { MatchResults } from "@/components/features/MatchResults";
 import { saveGuestMatch } from "@/lib/guest-match-storage";
+import { createClient } from "@/lib/supabase/client";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 import type {
   OverallScoreData,
@@ -33,6 +34,8 @@ function formatCount(n: number): string {
 
 export function MatchingHero() {
   const [totalMatches, setTotalMatches] = useState<number | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [savedMatchId, setSavedMatchId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/v1/stats")
@@ -42,6 +45,11 @@ export function MatchingHero() {
           setTotalMatches(json.data.totalMatches);
       })
       .catch(() => {});
+
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) setIsLoggedIn(true);
+    });
   }, []);
 
   const [file, setFile] = useState<File | null>(null);
@@ -157,14 +165,34 @@ export function MatchingHero() {
       setMatchStatus("matched");
 
       if (file && parsedResume) {
-        saveGuestMatch({
-          resumeFileName: file.name,
-          resumeFileType: file.type,
-          resumeFileSize: file.size,
-          resumeParsedData: parsedResume,
-          jobDescriptionText: jobDescription,
-          insights,
-        });
+        if (isLoggedIn) {
+          fetch("/api/v1/matches/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              resumeFileName: file.name,
+              resumeFileType: file.type,
+              resumeFileSize: file.size,
+              resumeParsedData: parsedResume,
+              jobDescriptionText: jobDescription,
+              insights,
+            }),
+          })
+            .then((r) => r.json())
+            .then((json) => {
+              if (json.data?.matchId) setSavedMatchId(json.data.matchId);
+            })
+            .catch((err) => console.error("Failed to save match:", err));
+        } else {
+          saveGuestMatch({
+            resumeFileName: file.name,
+            resumeFileType: file.type,
+            resumeFileSize: file.size,
+            resumeParsedData: parsedResume,
+            jobDescriptionText: jobDescription,
+            insights,
+          });
+        }
       }
 
       setTimeout(() => {
@@ -177,7 +205,7 @@ export function MatchingHero() {
       setMatchError("Network error. Please check your connection and retry.");
       setMatchStatus("error");
     }
-  }, [isReady, parsedResume, jobDescription, file]);
+  }, [isReady, parsedResume, jobDescription, file, isLoggedIn]);
 
   return (
     <>
@@ -346,6 +374,8 @@ export function MatchingHero() {
               topStrengths={matchResult.topStrengths}
               atsKeywords={matchResult.atsKeywords}
               experienceAlignment={matchResult.experienceAlignment}
+              isLoggedIn={isLoggedIn}
+              savedMatchId={savedMatchId}
             />
           </div>
         </div>
