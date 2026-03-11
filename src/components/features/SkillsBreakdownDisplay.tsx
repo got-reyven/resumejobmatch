@@ -67,17 +67,19 @@ export function SkillsBreakdownDisplay({
               <Badge
                 key={m.skill}
                 variant="outline"
-                className="gap-1 border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300"
+                className="max-w-full gap-1 whitespace-normal break-words border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300"
               >
                 {m.type === "semantic" && (
                   <ArrowRightLeft
-                    className="h-3 w-3 opacity-60"
+                    className="h-3 w-3 shrink-0 opacity-60"
                     aria-hidden="true"
                   />
                 )}
-                {m.type === "semantic" && m.resume_term
-                  ? `${m.resume_term} ≈ ${m.skill}`
-                  : m.skill}
+                <span className="break-words">
+                  {m.type === "semantic" && m.resume_term
+                    ? `${m.resume_term} ≈ ${m.skill}`
+                    : m.skill}
+                </span>
               </Badge>
             ))}
           </div>

@@ -1,8 +1,15 @@
 "use client";
 
-import { Briefcase, User } from "lucide-react";
+import { useState } from "react";
+import { Briefcase, User, SlidersHorizontal, Eye, EyeOff } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   MatchScoreDisplay,
   type MatchScoreDisplayProps,
@@ -27,6 +34,13 @@ import {
   ExperienceAlignmentDisplay,
   type ExperienceAlignmentDisplayProps,
 } from "@/components/features/ExperienceAlignmentDisplay";
+
+interface InsightDef {
+  id: string;
+  label: string;
+  tab: "shared" | "jobseeker" | "business";
+  render: () => React.ReactNode;
+}
 
 interface DashboardMatchResultsProps {
   score: MatchScoreDisplayProps;
@@ -54,86 +68,148 @@ export function DashboardMatchResults({
   const showJobseekerTab = isPro || userType === "jobseeker";
   const showBusinessTab = isPro || userType === "business";
 
-  const cardClass = "break-inside-avoid overflow-hidden mb-6";
+  const allInsights: InsightDef[] = [
+    {
+      id: "overallScore",
+      label: "Overall Match Score",
+      tab: "shared",
+      render: () => <MatchScoreDisplay {...score} />,
+    },
+    {
+      id: "skillsBreakdown",
+      label: "Skills Breakdown",
+      tab: "shared",
+      render: () => <SkillsBreakdownDisplay {...skillsBreakdown} />,
+    },
+    {
+      id: "actionItems",
+      label: "Action Items",
+      tab: "jobseeker",
+      render: () => <ActionItemsDisplay {...actionItems} />,
+    },
+    {
+      id: "topStrengths",
+      label: "Top Strengths",
+      tab: "business",
+      render: () => <TopStrengthsDisplay {...topStrengths} />,
+    },
+    {
+      id: "atsKeywords",
+      label: "ATS Keywords",
+      tab: "jobseeker",
+      render: () => <ATSKeywordDisplay {...atsKeywords} />,
+    },
+    {
+      id: "experienceAlignment",
+      label: "Experience Alignment",
+      tab: "shared",
+      render: () => <ExperienceAlignmentDisplay {...experienceAlignment} />,
+    },
+  ];
 
-  const jobseekerCards = (
-    <div className="[column-count:1] [column-gap:1.5rem] md:[column-count:2] lg:[column-count:3]">
-      <div className={cardClass}>
-        <Card>
-          <CardContent className="overflow-hidden">
-            <MatchScoreDisplay {...score} />
-          </CardContent>
-        </Card>
-      </div>
-      <div className={cardClass}>
-        <Card>
-          <CardContent className="overflow-hidden">
-            <SkillsBreakdownDisplay {...skillsBreakdown} />
-          </CardContent>
-        </Card>
-      </div>
-      <div className={cardClass}>
-        <Card>
-          <CardContent className="overflow-hidden">
-            <ActionItemsDisplay {...actionItems} />
-          </CardContent>
-        </Card>
-      </div>
-      <div className={cardClass}>
-        <Card>
-          <CardContent className="overflow-hidden">
-            <ATSKeywordDisplay {...atsKeywords} />
-          </CardContent>
-        </Card>
-      </div>
-      <div className={cardClass}>
-        <Card>
-          <CardContent className="overflow-hidden">
-            <ExperienceAlignmentDisplay {...experienceAlignment} />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+  const jobseekerInsights = allInsights.filter(
+    (i) => i.tab === "shared" || i.tab === "jobseeker"
+  );
+  const businessInsights = allInsights.filter(
+    (i) => i.tab === "shared" || i.tab === "business"
   );
 
-  const businessCards = (
-    <div className="[column-count:1] [column-gap:1.5rem] md:[column-count:2] lg:[column-count:3]">
-      <div className={cardClass}>
-        <Card>
-          <CardContent className="overflow-hidden">
-            <MatchScoreDisplay {...score} />
-          </CardContent>
-        </Card>
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+
+  const toggle = (id: string) => {
+    setHidden((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const activeInsights = isPro
+    ? allInsights
+    : userType === "business"
+      ? businessInsights
+      : jobseekerInsights;
+  const hiddenCount = [...hidden].filter((id) =>
+    activeInsights.some((i) => i.id === id)
+  ).length;
+
+  function renderCards(insights: InsightDef[]) {
+    const visible = insights.filter((i) => !hidden.has(i.id));
+    const rows: InsightDef[][] = [];
+    for (let i = 0; i < visible.length; i += 2) {
+      rows.push(visible.slice(i, i + 2));
+    }
+    return (
+      <div className="space-y-6">
+        {rows.map((row, idx) => (
+          <div key={idx} className="grid gap-6 lg:grid-cols-2">
+            {row.map((insight) => (
+              <Card key={insight.id}>
+                <CardContent>{insight.render()}</CardContent>
+              </Card>
+            ))}
+          </div>
+        ))}
       </div>
-      <div className={cardClass}>
-        <Card>
-          <CardContent className="overflow-hidden">
-            <SkillsBreakdownDisplay {...skillsBreakdown} />
-          </CardContent>
-        </Card>
-      </div>
-      <div className={cardClass}>
-        <Card>
-          <CardContent className="overflow-hidden">
-            <TopStrengthsDisplay {...topStrengths} />
-          </CardContent>
-        </Card>
-      </div>
-      <div className={cardClass}>
-        <Card>
-          <CardContent className="overflow-hidden">
-            <ExperienceAlignmentDisplay {...experienceAlignment} />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+    );
+  }
 
   return (
-    <div className="max-w-full overflow-hidden">
+    <div className="mx-auto max-w-6xl rounded-lg p-6 lg:p-8">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-xl font-bold tracking-tight">
+          Insights and Analysis Results
+        </h2>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2 text-xs">
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              Filter
+              {hiddenCount > 0 && (
+                <span className="ml-1 rounded-full bg-[#6696C9] px-1.5 py-0.5 text-[10px] font-medium leading-none text-white">
+                  {hiddenCount}
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-56 p-2">
+            <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
+              Show / Hide Insights
+            </p>
+            {activeInsights.map((i) => {
+              const isVisible = !hidden.has(i.id);
+              return (
+                <button
+                  key={i.id}
+                  type="button"
+                  onClick={() => toggle(i.id)}
+                  className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted/50"
+                >
+                  {isVisible ? (
+                    <Eye className="h-3.5 w-3.5 shrink-0 text-[#6696C9]" />
+                  ) : (
+                    <EyeOff className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
+                  )}
+                  <span
+                    className={
+                      isVisible
+                        ? "font-medium text-foreground"
+                        : "text-muted-foreground/50 line-through"
+                    }
+                  >
+                    {i.label}
+                  </span>
+                </button>
+              );
+            })}
+          </PopoverContent>
+        </Popover>
+      </div>
+
       <Tabs defaultValue={defaultTab}>
         {isPro && (
-          <TabsList className="mx-auto w-full max-w-md">
+          <TabsList className="mx-auto mb-6 w-full max-w-md">
             <TabsTrigger value="jobseeker" className="flex-1 gap-2">
               <User className="h-4 w-4" aria-hidden="true" />
               For Jobseekers
@@ -146,14 +222,14 @@ export function DashboardMatchResults({
         )}
 
         {showJobseekerTab && (
-          <TabsContent value="jobseeker" className="mt-6">
-            {jobseekerCards}
+          <TabsContent value="jobseeker">
+            {renderCards(jobseekerInsights)}
           </TabsContent>
         )}
 
         {showBusinessTab && (
-          <TabsContent value="business" className="mt-6">
-            {businessCards}
+          <TabsContent value="business">
+            {renderCards(businessInsights)}
           </TabsContent>
         )}
       </Tabs>
