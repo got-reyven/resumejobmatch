@@ -3,6 +3,7 @@
 import { useEffect, useReducer, useRef } from "react";
 import Image from "next/image";
 import {
+  Building2,
   Camera,
   Loader2,
   CheckCircle,
@@ -11,13 +12,17 @@ import {
   Mail,
   Shield,
   Calendar,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfile } from "@/components/features/ProfileContext";
+import { cn } from "@/lib/utils/cn";
+import { INDUSTRIES, EMPLOYEE_RANGES } from "@/lib/constants/industries";
 
 interface Profile {
   id: string;
@@ -29,6 +34,13 @@ interface Profile {
   createdAt: string;
 }
 
+interface OrgData {
+  id: string;
+  name: string;
+  companySize: string | null;
+  industry: string[];
+}
+
 interface SettingsState {
   profile: Profile | null;
   loadStatus: "loading" | "loaded" | "error";
@@ -37,6 +49,12 @@ interface SettingsState {
   saveError: string | null;
   avatarStatus: "idle" | "uploading" | "uploaded" | "error";
   avatarError: string | null;
+  org: OrgData | null;
+  orgName: string;
+  orgSize: string;
+  orgIndustries: string[];
+  orgSaveStatus: "idle" | "saving" | "saved" | "error";
+  orgSaveError: string | null;
 }
 
 type SettingsAction =
@@ -49,7 +67,15 @@ type SettingsAction =
   | { type: "avatar_uploading" }
   | { type: "avatar_uploaded"; url: string }
   | { type: "avatar_error"; message: string }
-  | { type: "reset_feedback" };
+  | { type: "reset_feedback" }
+  | { type: "org_loaded"; org: OrgData }
+  | { type: "set_org_name"; value: string }
+  | { type: "set_org_size"; value: string }
+  | { type: "add_industry"; value: string }
+  | { type: "remove_industry"; value: string }
+  | { type: "org_saving" }
+  | { type: "org_saved"; org: OrgData }
+  | { type: "org_save_error"; message: string };
 
 function reducer(state: SettingsState, action: SettingsAction): SettingsState {
   switch (action.type) {
@@ -98,9 +124,55 @@ function reducer(state: SettingsState, action: SettingsAction): SettingsState {
         saveStatus: "idle",
         avatarStatus: "idle",
         avatarError: null,
+        orgSaveStatus: "idle",
+        orgSaveError: null,
+      };
+    case "org_loaded":
+      return {
+        ...state,
+        org: action.org,
+        orgName: action.org.name,
+        orgSize: action.org.companySize ?? "",
+        orgIndustries: action.org.industry ?? [],
+      };
+    case "set_org_name":
+      return { ...state, orgName: action.value, orgSaveStatus: "idle" };
+    case "set_org_size":
+      return { ...state, orgSize: action.value, orgSaveStatus: "idle" };
+    case "add_industry":
+      if (state.orgIndustries.length >= 3) return state;
+      return {
+        ...state,
+        orgIndustries: [...state.orgIndustries, action.value],
+        orgSaveStatus: "idle",
+      };
+    case "remove_industry":
+      return {
+        ...state,
+        orgIndustries: state.orgIndustries.filter((i) => i !== action.value),
+        orgSaveStatus: "idle",
+      };
+    case "org_saving":
+      return { ...state, orgSaveStatus: "saving", orgSaveError: null };
+    case "org_saved":
+      return {
+        ...state,
+        orgSaveStatus: "saved",
+        org: action.org,
+        orgName: action.org.name,
+        orgSize: action.org.companySize ?? "",
+        orgIndustries: action.org.industry ?? [],
+      };
+    case "org_save_error":
+      return {
+        ...state,
+        orgSaveStatus: "error",
+        orgSaveError: action.message,
       };
   }
 }
+
+const MAX_INDUSTRIES = 3;
 
 export default function SettingsPage() {
   const { updateName: syncName, updateAvatar: syncAvatar } = useProfile();
@@ -112,12 +184,18 @@ export default function SettingsPage() {
     saveError: null,
     avatarStatus: "idle",
     avatarError: null,
+    org: null,
+    orgName: "",
+    orgSize: "",
+    orgIndustries: [],
+    orgSaveStatus: "idle",
+    orgSaveError: null,
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    async function loadProfile() {
+    async function load() {
       try {
         const res = await fetch("/api/v1/profile");
         if (!res.ok) {
@@ -126,11 +204,21 @@ export default function SettingsPage() {
         }
         const json = await res.json();
         dispatch({ type: "profile_loaded", profile: json.data });
+
+        if (json.data.userType === "business") {
+          const orgRes = await fetch("/api/v1/organization");
+          if (orgRes.ok) {
+            const orgJson = await orgRes.json();
+            if (orgJson.data) {
+              dispatch({ type: "org_loaded", org: orgJson.data });
+            }
+          }
+        }
       } catch {
         dispatch({ type: "profile_error" });
       }
     }
-    loadProfile();
+    load();
   }, []);
 
   const handleSaveName = async () => {
@@ -197,6 +285,45 @@ export default function SettingsPage() {
 
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  const handleSaveOrg = async () => {
+    if (!state.orgName.trim()) return;
+    dispatch({ type: "org_saving" });
+
+    try {
+      const res = await fetch("/api/v1/organization", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: state.orgName.trim(),
+          companySize: state.orgSize || null,
+          industry: state.orgIndustries,
+        }),
+      });
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        dispatch({
+          type: "org_save_error",
+          message: json?.error?.message ?? "Failed to save.",
+        });
+        return;
+      }
+
+      const json = await res.json();
+      dispatch({ type: "org_saved", org: json.data });
+      setTimeout(() => dispatch({ type: "reset_feedback" }), 3000);
+    } catch {
+      dispatch({ type: "org_save_error", message: "Network error." });
+    }
+  };
+
+  const orgHasChanged =
+    state.org !== null &&
+    (state.orgName.trim() !== state.org.name ||
+      state.orgSize !== (state.org.companySize ?? "") ||
+      JSON.stringify(state.orgIndustries) !==
+        JSON.stringify(state.org.industry ?? []));
 
   if (state.loadStatus === "loading") {
     return (
@@ -392,6 +519,15 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {profile.userType === "business" && state.org && (
+            <BusinessProfileCard
+              state={state}
+              dispatch={dispatch}
+              orgHasChanged={orgHasChanged}
+              onSave={handleSaveOrg}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="plan" className="mt-6">
@@ -411,5 +547,174 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function BusinessProfileCard({
+  state,
+  dispatch,
+  orgHasChanged,
+  onSave,
+}: {
+  state: SettingsState;
+  dispatch: React.Dispatch<SettingsAction>;
+  orgHasChanged: boolean;
+  onSave: () => void;
+}) {
+  const [industrySearch, setIndustrySearch] = useReducer(
+    (_: string, v: string) => v,
+    ""
+  );
+  const [showDropdown, setShowDropdown] = useReducer(
+    (_: boolean, v: boolean) => v,
+    false
+  );
+
+  const filteredIndustries = INDUSTRIES.filter(
+    (ind) =>
+      ind.toLowerCase().includes(industrySearch.toLowerCase()) &&
+      !state.orgIndustries.includes(ind)
+  );
+
+  return (
+    <Card>
+      <CardContent className="space-y-6">
+        <div className="flex items-center gap-2">
+          <Building2 className="h-5 w-5 text-muted-foreground" />
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Business Profile
+          </h3>
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="orgName">Business Name</Label>
+            <Input
+              id="orgName"
+              value={state.orgName}
+              onChange={(e) =>
+                dispatch({ type: "set_org_name", value: e.target.value })
+              }
+              placeholder="Acme Inc."
+              maxLength={200}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="orgSize">Number of Employees</Label>
+            <select
+              id="orgSize"
+              value={state.orgSize}
+              onChange={(e) =>
+                dispatch({ type: "set_org_size", value: e.target.value })
+              }
+              className={cn(
+                "h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none",
+                "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+                !state.orgSize && "text-muted-foreground"
+              )}
+            >
+              <option value="" disabled>
+                Select range
+              </option>
+              {EMPLOYEE_RANGES.map((range) => (
+                <option key={range.value} value={range.value}>
+                  {range.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>
+              Industry{" "}
+              <span className="font-normal text-muted-foreground">
+                (up to {MAX_INDUSTRIES})
+              </span>
+            </Label>
+
+            {state.orgIndustries.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {state.orgIndustries.map((ind) => (
+                  <Badge key={ind} variant="secondary" className="gap-1 pr-1">
+                    {ind}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        dispatch({ type: "remove_industry", value: ind })
+                      }
+                      className="rounded-full p-0.5 hover:bg-muted-foreground/20"
+                      aria-label={`Remove ${ind}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {state.orgIndustries.length < MAX_INDUSTRIES && (
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search industries..."
+                  value={industrySearch}
+                  onChange={(e) => {
+                    setIndustrySearch(e.target.value);
+                    setShowDropdown(true);
+                  }}
+                  onFocus={() => setShowDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                />
+                {showDropdown && filteredIndustries.length > 0 && (
+                  <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border bg-background py-1 shadow-md">
+                    {filteredIndustries.map((ind) => (
+                      <li key={ind}>
+                        <button
+                          type="button"
+                          className="w-full px-3 py-1.5 text-left text-sm hover:bg-accent"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            dispatch({ type: "add_industry", value: ind });
+                            setIndustrySearch("");
+                            setShowDropdown(false);
+                          }}
+                        >
+                          {ind}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={onSave}
+            disabled={
+              !orgHasChanged ||
+              !state.orgName.trim() ||
+              state.orgSaveStatus === "saving"
+            }
+          >
+            {state.orgSaveStatus === "saving" ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : null}
+            Save Business Profile
+          </Button>
+          {state.orgSaveStatus === "saved" && (
+            <p className="flex items-center gap-1 text-xs text-green-600">
+              <CheckCircle className="h-3 w-3" /> Saved
+            </p>
+          )}
+          {state.orgSaveStatus === "error" && (
+            <p className="text-xs text-destructive">{state.orgSaveError}</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

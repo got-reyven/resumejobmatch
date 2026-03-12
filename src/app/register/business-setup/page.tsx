@@ -64,40 +64,64 @@ export default function BusinessSetupPage() {
         return;
       }
 
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ user_type: "business" })
+        .eq("id", user.id);
+
+      if (profileError) {
+        setError(profileError.message);
+        return;
+      }
+
       const { data: orgs } = await supabase
         .from("organizations")
         .select("id")
         .eq("owner_id", user.id)
         .limit(1);
 
+      let orgId: string;
+
       if (orgs && orgs.length > 0) {
+        orgId = orgs[0].id;
         const { error: updateError } = await supabase
           .from("organizations")
           .update({
             name: companyName.trim(),
-            employee_range: employeeRange,
+            company_size: employeeRange,
             industry: selectedIndustries,
           })
-          .eq("id", orgs[0].id);
+          .eq("id", orgId);
 
         if (updateError) {
           setError(updateError.message);
           return;
         }
       } else {
-        const { error: insertError } = await supabase
+        const { data: newOrg, error: insertError } = await supabase
           .from("organizations")
           .insert({
             owner_id: user.id,
             name: companyName.trim(),
-            employee_range: employeeRange,
+            company_size: employeeRange,
             industry: selectedIndustries,
-          });
+          })
+          .select("id")
+          .single();
 
         if (insertError) {
           setError(insertError.message);
           return;
         }
+        orgId = newOrg.id;
+
+        await supabase.from("organization_members").insert({
+          organization_id: orgId,
+          user_id: user.id,
+          role: "owner",
+          joined_at: new Date().toISOString(),
+          status: "active",
+        });
       }
 
       router.push("/dashboard");

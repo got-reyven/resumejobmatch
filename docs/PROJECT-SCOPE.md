@@ -155,7 +155,7 @@ The landing page _is_ the product. No onboarding, no dashboard required to get v
 | Feature                          | Business Free  | Business Pro ($149/mo)  |
 | -------------------------------- | -------------- | ----------------------- |
 | Auth method                      | Magic link     | Magic link              |
-| Daily matches                    | 10             | Unlimited               |
+| Daily matches                    | 20             | Unlimited               |
 | Hiring Manager + Shared insights | Basic (Tier 1) | All tiers               |
 | Match history                    | 14 days        | 30 days                 |
 | Share results                    | Link sharing   | Link + PDF export       |
@@ -182,7 +182,7 @@ The landing page _is_ the product. No onboarding, no dashboard required to get v
 
 **Business Free** — $0
 
-- 10 matches/day (resets at midnight UTC)
+- 20 matches/day (resets at midnight UTC)
 - Basic hiring insights
 - 14-day match history
 - Share via link

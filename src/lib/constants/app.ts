@@ -9,7 +9,7 @@ export const RATE_LIMITS = {
     pro: { dailyMatches: Infinity },
   },
   business: {
-    free: { dailyMatches: 10 },
+    free: { dailyMatches: 20 },
     pro: { dailyMatches: Infinity },
   },
   abuseCap: { dailyMatches: 1000 },

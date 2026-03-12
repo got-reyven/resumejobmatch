@@ -39,7 +39,7 @@ All AI calls use the platform's system API keys. Rate limits are enforced per us
 | Guest             | 3                 | System key  |
 | Jobseeker Free    | 10                | System key  |
 | Jobseeker Pro     | Unlimited         | System key  |
-| Business Free     | 10                | System key  |
+| Business Free     | 20                | System key  |
 | Business Pro      | Unlimited         | System key  |
 
 - Abuse limits still apply (e.g., max 1000 requests/day to prevent runaway automation)

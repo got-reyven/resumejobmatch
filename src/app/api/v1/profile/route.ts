@@ -59,7 +59,7 @@ async function ensureProfile(user: {
         full_name: meta.full_name ?? meta.name ?? null,
         avatar_url: meta.avatar_url ?? null,
       },
-      { onConflict: "id" }
+      { onConflict: "id", ignoreDuplicates: true }
     )
     .select("*")
     .single();

@@ -52,7 +52,7 @@ const planGroups: PlanGroup[] = [
     freeHref: "/register?type=business",
     proHref: "/register?type=business",
     freeFeatures: [
-      "10 matches per day",
+      "20 matches per day",
       "Basic hiring insights",
       "14-day match history",
       "Share via link",

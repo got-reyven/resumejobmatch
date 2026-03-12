@@ -5,7 +5,7 @@ import { Check, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/cn";
-import { useState } from "react";
+import { useReducer, useEffect } from "react";
 
 interface PlanOption {
   id: "free" | "pro";
@@ -55,7 +55,7 @@ const plans: Record<string, PlanOption[]> = {
       price: "$0",
       period: "forever",
       features: [
-        "10 matches per day",
+        "20 matches per day",
         "Basic hiring insights",
         "14-day match history",
         "Share via link",
@@ -82,28 +82,60 @@ const plans: Record<string, PlanOption[]> = {
   ],
 };
 
-function getUserType() {
-  if (typeof window === "undefined") return "jobseeker";
-  const stored = localStorage.getItem("register_user_type");
-  return stored === "business" ? "business" : "jobseeker";
+type UserType = "jobseeker" | "business";
+type State = { userType: UserType; ready: boolean; loading: boolean };
+type Action = { type: "init"; userType: UserType } | { type: "loading" };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "init":
+      return { ...state, userType: action.userType, ready: true };
+    case "loading":
+      return { ...state, loading: true };
+  }
 }
 
 export default function PlanPage() {
   const router = useRouter();
-  const [userType] = useState(getUserType);
-  const [loading, setLoading] = useState(false);
+  const [state, dispatch] = useReducer(reducer, {
+    userType: "jobseeker",
+    ready: false,
+    loading: false,
+  });
 
+  useEffect(() => {
+    const stored = localStorage.getItem("register_user_type");
+    dispatch({
+      type: "init",
+      userType: stored === "business" ? "business" : "jobseeker",
+    });
+  }, []);
+
+  const { userType, ready, loading } = state;
   const availablePlans = plans[userType] ?? plans.jobseeker;
 
   function handleSelect(plan: PlanOption) {
     if (plan.comingSoon) return;
-    setLoading(true);
+    dispatch({ type: "loading" });
 
     if (userType === "business") {
       router.push("/register/business-setup");
     } else {
       router.push("/dashboard");
     }
+  }
+
+  if (!ready) {
+    return (
+      <div className="w-full max-w-2xl">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold tracking-tight">
+            Choose your plan
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
