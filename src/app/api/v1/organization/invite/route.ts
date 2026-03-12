@@ -16,8 +16,53 @@ const inviteSchema = z.object({
     .max(10, "Maximum 10 emails per invite"),
 });
 
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM =
+  process.env.RESEND_FROM_EMAIL ?? "Resume Job Match <onboarding@resend.dev>";
+
+async function sendInviteEmail(
+  to: string,
+  inviteLink: string,
+  orgName: string
+): Promise<{ success: boolean; error?: string }> {
+  if (!RESEND_API_KEY) {
+    return { success: false, error: "RESEND_API_KEY not configured" };
+  }
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: RESEND_FROM,
+      to: [to],
+      subject: `Resume Job Match: You have been invited to join ${orgName}!`,
+      html: `
+        <h2>You have been invited to Resume Job Match</h2>
+        <p>You have been invited to join <strong>${orgName}</strong> on Resume Job Match.</p>
+        <p>Click the link below to accept the invite and set up your account:</p>
+        <p><a href="${inviteLink}" style="display:inline-block;padding:12px 24px;background:#6696C9;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;">Accept Invite</a></p>
+        <p style="margin-top:16px;color:#666;font-size:14px;">If the button doesn't work, copy and paste this link into your browser:</p>
+        <p style="color:#666;font-size:12px;word-break:break-all;">${inviteLink}</p>
+      `,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    return {
+      success: false,
+      error: body?.message ?? `Resend API error (${res.status})`,
+    };
+  }
+
+  return { success: true };
+}
+
 // POST /api/v1/organization/invite
-// Sends Supabase invite emails and tracks invitations in organization_invitations.
+// Creates invite users via generateLink and sends emails via Resend API.
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -81,37 +126,56 @@ export async function POST(request: NextRequest) {
         const siteUrl =
           process.env.NEXT_PUBLIC_SITE_URL ?? request.nextUrl.origin;
 
-        const { data: inviteData, error: inviteError } =
-          await admin.auth.admin.inviteUserByEmail(email, {
-            redirectTo: `${siteUrl}/auth/callback?next=/accept-invite`,
-            data: {
-              invited_to_org: org.id,
-              invited_to_org_name: org.name,
-              invited_by: user.id,
+        const { data: linkData, error: linkError } =
+          await admin.auth.admin.generateLink({
+            type: "invite",
+            email,
+            options: {
+              redirectTo: `${siteUrl}/auth/callback?next=/accept-invite`,
+              data: {
+                invited_to_org: org.id,
+                invited_to_org_name: org.name,
+                invited_by: user.id,
+              },
             },
           });
 
-        console.log("[invite]", email, {
-          userId: inviteData?.user?.id ?? null,
-          error: inviteError?.message ?? null,
-          redirectTo: `${siteUrl}/auth/callback?next=/accept-invite`,
-        });
+        if (linkError) {
+          console.error(
+            "[invite] generateLink error:",
+            email,
+            linkError.message
+          );
+          results.push({ email, status: "error", message: linkError.message });
+          continue;
+        }
 
-        if (inviteError) {
+        const inviteLink =
+          linkData?.properties?.action_link ??
+          linkData?.properties?.hashed_token;
+
+        if (!inviteLink) {
+          console.error("[invite] no link generated for:", email);
           results.push({
             email,
             status: "error",
-            message: inviteError.message,
+            message: "Failed to generate invite link",
           });
           continue;
         }
 
-        if (!inviteData?.user) {
+        const emailResult = await sendInviteEmail(email, inviteLink, org.name);
+
+        if (!emailResult.success) {
+          console.error(
+            "[invite] email send failed:",
+            email,
+            emailResult.error
+          );
           results.push({
             email,
             status: "error",
-            message:
-              "User was not created. Check Supabase SMTP and auth settings.",
+            message: emailResult.error ?? "Failed to send email",
           });
           continue;
         }
@@ -124,6 +188,7 @@ export async function POST(request: NextRequest) {
           status: "pending",
         });
 
+        console.log("[invite] success:", email);
         results.push({ email, status: "sent" });
       } catch (err) {
         console.error("[invite] exception for", email, err);

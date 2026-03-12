@@ -23,3 +23,13 @@
      - Creates organization + org member rows
   4. `handle_business_signup` trigger kept as safety net but effectively never fires (trigger condition is `WHEN NEW.user_type = 'business'` on INSERT, which never happens)
 - Updated: `register/page.tsx`, `register/business-setup/page.tsx`, `api/v1/profile/route.ts`, migration SQL
+
+## 2026-03-12 — Auth switch: Magic Link → Email + Password
+
+- **Reason**: Supabase built-in SMTP rate limit (3-4 emails/hour free tier) blocks development and testing
+- **Changes**:
+  1. `register/page.tsx`: replaced `signInWithOtp` with `signUp({ email, password })`, added password + confirm password fields
+  2. `auth/login/page.tsx`: replaced `signInWithOtp` with `signInWithPassword`, removed "Check your email" / resend UI
+  3. `register/confirm/page.tsx`: replaced with redirect to `/register` (page no longer needed)
+  4. `auth/callback/route.ts`: kept as-is for invite links and future password reset
+- **Supabase Dashboard**: must disable "Confirm email" in Auth > Providers > Email so `signUp` returns a session immediately

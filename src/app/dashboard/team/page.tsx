@@ -11,6 +11,7 @@ import {
   Clock,
   Mail,
   CheckCircle,
+  X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -301,9 +302,13 @@ function InvitationRow({ invitation }: { invitation: PendingInvite }) {
   );
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function InviteModal({ onInvitesSent }: { onInvitesSent: () => void }) {
   const [open, setOpen] = useState(false);
-  const [emailsText, setEmailsText] = useState("");
+  const [emails, setEmails] = useState<string[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [inputError, setInputError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{
     sent: number;
@@ -312,18 +317,72 @@ function InviteModal({ onInvitesSent }: { onInvitesSent: () => void }) {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const emails = emailsText
-    .split(/[,\n]/)
-    .map((e) => e.trim())
-    .filter((e) => e.length > 0);
+  function addEmail(raw: string) {
+    const email = raw.trim().toLowerCase();
+    if (!email) return;
 
-  const validEmails = emails.filter((e) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)
-  );
-  const hasInvalid = emails.length > 0 && validEmails.length < emails.length;
+    if (!EMAIL_REGEX.test(email)) {
+      setInputError("Invalid email address");
+      return;
+    }
+
+    if (emails.includes(email)) {
+      setInputError("Already added");
+      return;
+    }
+
+    if (emails.length >= 10) {
+      setInputError("Maximum 10 emails");
+      return;
+    }
+
+    setEmails((prev) => [...prev, email]);
+    setInputValue("");
+    setInputError(null);
+  }
+
+  function removeEmail(email: string) {
+    setEmails((prev) => prev.filter((e) => e !== email));
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addEmail(inputValue);
+    }
+
+    if (e.key === "Backspace" && inputValue === "" && emails.length > 0) {
+      setEmails((prev) => prev.slice(0, -1));
+    }
+  }
+
+  function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    e.preventDefault();
+    const text = e.clipboardData.getData("text");
+    const pasted = text.split(/[,\n\s]+/).filter(Boolean);
+
+    const newEmails: string[] = [];
+    for (const raw of pasted) {
+      const email = raw.trim().toLowerCase();
+      if (
+        EMAIL_REGEX.test(email) &&
+        !emails.includes(email) &&
+        !newEmails.includes(email) &&
+        emails.length + newEmails.length < 10
+      ) {
+        newEmails.push(email);
+      }
+    }
+
+    if (newEmails.length > 0) {
+      setEmails((prev) => [...prev, ...newEmails]);
+      setInputValue("");
+      setInputError(null);
+    }
+  }
 
   const handleSend = async () => {
-    if (validEmails.length === 0) return;
+    if (emails.length === 0) return;
     setSending(true);
     setError(null);
     setResult(null);
@@ -332,7 +391,7 @@ function InviteModal({ onInvitesSent }: { onInvitesSent: () => void }) {
       const res = await fetch("/api/v1/organization/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emails: validEmails }),
+        body: JSON.stringify({ emails }),
       });
 
       if (!res.ok) {
@@ -353,7 +412,9 @@ function InviteModal({ onInvitesSent }: { onInvitesSent: () => void }) {
 
   const handleClose = () => {
     setOpen(false);
-    setEmailsText("");
+    setEmails([]);
+    setInputValue("");
+    setInputError(null);
     setResult(null);
     setError(null);
   };
@@ -373,44 +434,55 @@ function InviteModal({ onInvitesSent }: { onInvitesSent: () => void }) {
         <DialogHeader>
           <DialogTitle>Invite Team Members</DialogTitle>
           <DialogDescription>
-            Enter email addresses to invite (one per line or comma-separated).
-            Up to 10 at a time.
+            Type an email and press{" "}
+            <kbd className="rounded border px-1 py-0.5 text-[10px] font-mono">
+              Enter
+            </kbd>{" "}
+            or{" "}
+            <kbd className="rounded border px-1 py-0.5 text-[10px] font-mono">
+              ,
+            </kbd>{" "}
+            to add. Up to 10 at a time.
           </DialogDescription>
         </DialogHeader>
 
         {result ? (
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-green-600">
-              <CheckCircle className="h-5 w-5" />
+              <CheckCircle className="h-5 w-5 shrink-0" />
               <p className="text-sm font-medium">
                 {result.sent} of {result.total} invitation
                 {result.total > 1 ? "s" : ""} sent
               </p>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {result.results.map((r) => (
-                <div
-                  key={r.email}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <span className="truncate">{r.email}</span>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "ml-2 shrink-0 text-[10px]",
-                      r.status === "sent"
-                        ? "border-green-200 text-green-700"
+                <div key={r.email} className="min-w-0 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate text-sm">{r.email}</span>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "shrink-0 text-[10px]",
+                        r.status === "sent"
+                          ? "border-green-200 text-green-700"
+                          : r.status === "already_invited"
+                            ? "border-yellow-200 text-yellow-700"
+                            : "border-red-200 text-red-700"
+                      )}
+                    >
+                      {r.status === "sent"
+                        ? "Sent"
                         : r.status === "already_invited"
-                          ? "border-yellow-200 text-yellow-700"
-                          : "border-red-200 text-red-700"
-                    )}
-                  >
-                    {r.status === "sent"
-                      ? "Sent"
-                      : r.status === "already_invited"
-                        ? "Already invited"
-                        : (r.message ?? "Error")}
-                  </Badge>
+                          ? "Already invited"
+                          : "Error"}
+                    </Badge>
+                  </div>
+                  {r.status === "error" && r.message && (
+                    <p className="text-xs text-destructive break-words">
+                      {r.message}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -421,32 +493,55 @@ function InviteModal({ onInvitesSent }: { onInvitesSent: () => void }) {
         ) : (
           <div className="space-y-4">
             <div className="space-y-2">
-              <textarea
-                value={emailsText}
-                onChange={(e) => setEmailsText(e.target.value)}
-                placeholder={
-                  "alice@company.com\nbob@company.com\ncarol@company.com"
-                }
-                rows={5}
-                disabled={sending}
+              <div
                 className={cn(
-                  "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none resize-none",
-                  "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
-                  "placeholder:text-muted-foreground"
+                  "flex min-h-[42px] flex-wrap items-center gap-1.5 rounded-md border border-input bg-transparent px-3 py-2",
+                  "focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50"
                 )}
-              />
+              >
+                {emails.map((email) => (
+                  <span
+                    key={email}
+                    className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary"
+                  >
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => removeEmail(email)}
+                      className="rounded-full p-0.5 hover:bg-primary/20"
+                      aria-label={`Remove ${email}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+                <input
+                  type="email"
+                  value={inputValue}
+                  onChange={(e) => {
+                    setInputValue(e.target.value);
+                    setInputError(null);
+                  }}
+                  onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
+                  onBlur={() => {
+                    if (inputValue.trim()) addEmail(inputValue);
+                  }}
+                  placeholder={emails.length === 0 ? "name@company.com" : ""}
+                  disabled={sending || emails.length >= 10}
+                  className="min-w-[120px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
+                />
+              </div>
+
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>
-                  {validEmails.length} valid email
-                  {validEmails.length !== 1 ? "s" : ""}
-                  {validEmails.length > 10 && (
-                    <span className="text-destructive"> (max 10)</span>
+                  {emails.length} email{emails.length !== 1 ? "s" : ""} added
+                  {emails.length >= 10 && (
+                    <span className="text-destructive"> (max reached)</span>
                   )}
                 </span>
-                {hasInvalid && (
-                  <span className="text-destructive">
-                    Some emails are invalid
-                  </span>
+                {inputError && (
+                  <span className="text-destructive">{inputError}</span>
                 )}
               </div>
             </div>
@@ -459,9 +554,7 @@ function InviteModal({ onInvitesSent }: { onInvitesSent: () => void }) {
 
             <Button
               onClick={handleSend}
-              disabled={
-                validEmails.length === 0 || validEmails.length > 10 || sending
-              }
+              disabled={emails.length === 0 || sending}
               className="w-full"
             >
               {sending ? (
@@ -470,7 +563,7 @@ function InviteModal({ onInvitesSent }: { onInvitesSent: () => void }) {
                   Sending...
                 </>
               ) : (
-                `Send ${validEmails.length > 0 ? validEmails.length : ""} Invitation${validEmails.length !== 1 ? "s" : ""}`
+                `Send ${emails.length > 0 ? emails.length : ""} Invitation${emails.length !== 1 ? "s" : ""}`
               )}
             </Button>
           </div>

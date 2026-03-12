@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Briefcase, User, Loader2 } from "lucide-react";
+import {
+  Briefcase,
+  User,
+  Loader2,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils/cn";
@@ -26,7 +33,6 @@ export default function RegisterPage() {
 
     async function handleInviteRedirect() {
       const supabase = createClient();
-
       const { data, error } = await supabase.auth.getSession();
 
       if (error || !data.session) {
@@ -62,7 +68,11 @@ export default function RegisterPage() {
       : null
   );
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(
     urlError === "auth_failed"
       ? "Authentication failed. Please try again."
@@ -71,7 +81,17 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!userType || !email) return;
+    if (!userType || !email || !password) return;
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -81,21 +101,33 @@ export default function RegisterPage() {
 
       localStorage.setItem("register_user_type", userType);
 
-      const { error: authError } = await supabase.auth.signInWithOtp({
+      const { data, error: authError } = await supabase.auth.signUp({
         email,
+        password,
         options: {
-          shouldCreateUser: true,
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
       if (authError) {
-        setError(authError.message);
+        if (authError.message.includes("already registered")) {
+          setError(
+            "An account with this email already exists. Please sign in."
+          );
+        } else {
+          setError(authError.message);
+        }
         return;
       }
 
-      const params = new URLSearchParams({ email, type: userType });
-      router.push(`/register/confirm?${params.toString()}`);
+      if (!data.session) {
+        setSuccess(true);
+        return;
+      }
+
+      await fetch("/api/v1/profile");
+
+      router.push("/register/plan");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Something went wrong.";
@@ -114,6 +146,28 @@ export default function RegisterPage() {
     );
   }
 
+  if (success) {
+    return (
+      <div className="mx-auto max-w-md rounded-xl bg-white p-8 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
+          <CheckCircle2 className="h-7 w-7 text-green-600" />
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Registration successful!
+        </h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          We&apos;ve sent a confirmation email to{" "}
+          <span className="font-medium text-foreground">{email}</span>.
+          <br />
+          Please check your inbox and click the link to verify your account.
+        </p>
+        <p className="mt-6 text-xs text-muted-foreground">
+          Didn&apos;t receive it? Check your spam folder.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-md rounded-xl bg-white p-8">
       <div className="text-center">
@@ -123,7 +177,7 @@ export default function RegisterPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+      <form onSubmit={handleSubmit} className="mt-8 space-y-5">
         <fieldset>
           <legend className="mb-3 text-sm font-medium">
             I am registering as
@@ -164,6 +218,62 @@ export default function RegisterPage() {
           />
         </div>
 
+        <div>
+          <label
+            htmlFor="password"
+            className="mb-1.5 block text-sm font-medium"
+          >
+            Password
+          </label>
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="At least 6 characters"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              disabled={loading}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              tabIndex={-1}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="confirm-password"
+            className="mb-1.5 block text-sm font-medium"
+          >
+            Confirm password
+          </label>
+          <Input
+            id="confirm-password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Re-enter your password"
+            required
+            minLength={6}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
+            disabled={loading}
+          />
+        </div>
+
         {error && (
           <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
             {error}
@@ -173,14 +283,12 @@ export default function RegisterPage() {
         <Button
           type="submit"
           className="w-full"
-          disabled={!userType || !email || loading}
+          disabled={
+            !userType || !email || !password || !confirmPassword || loading
+          }
         >
-          {loading ? "Sending magic link..." : "Continue"}
+          {loading ? "Creating account..." : "Create Account"}
         </Button>
-
-        <p className="text-center text-xs text-muted-foreground">
-          We&apos;ll send you a magic link — no password needed.
-        </p>
       </form>
     </div>
   );

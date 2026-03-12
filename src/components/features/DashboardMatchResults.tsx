@@ -145,7 +145,7 @@ export function DashboardMatchResults({
         {rows.map((row, idx) => (
           <div key={idx} className="grid gap-6 lg:grid-cols-2">
             {row.map((insight) => (
-              <Card key={insight.id}>
+              <Card key={insight.id} className="min-w-0 overflow-hidden">
                 <CardContent>{insight.render()}</CardContent>
               </Card>
             ))}
