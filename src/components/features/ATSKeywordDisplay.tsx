@@ -66,7 +66,7 @@ export function ATSKeywordDisplay({
       : 0;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-col">
       <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
         <Search className="h-5 w-5 text-orange-500" aria-hidden="true" />
         ATS Keyword Analysis

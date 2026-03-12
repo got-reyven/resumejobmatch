@@ -54,7 +54,7 @@ export function SkillsBreakdownDisplay({
   coverage_percent,
 }: SkillsBreakdownDisplayProps) {
   return (
-    <div className="flex h-full min-w-0 flex-col overflow-hidden">
+    <div className="flex min-w-0 flex-col overflow-hidden">
       <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
         <Puzzle className="h-5 w-5 text-blue-500" aria-hidden="true" />
         Skills Match Breakdown

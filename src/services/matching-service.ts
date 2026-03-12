@@ -6,6 +6,7 @@ import { computeActionItems } from "./insights/action-items/compute";
 import { computeTopStrengths } from "./insights/top-strengths/compute";
 import { computeATSKeywords } from "./insights/ats-keywords/compute";
 import { computeExperienceAlignment } from "./insights/experience-alignment/compute";
+import { computeQualificationFit } from "./insights/qualification-fit/compute";
 
 export interface MatchInput {
   resume: ParsedResume;
@@ -25,6 +26,7 @@ export async function runMatch(input: MatchInput): Promise<MatchResult> {
     topStrengths,
     atsKeywords,
     experienceAlignment,
+    qualificationFit,
   ] = await Promise.all([
     computeOverallScore(ctx),
     computeSkillsBreakdown(ctx),
@@ -32,6 +34,7 @@ export async function runMatch(input: MatchInput): Promise<MatchResult> {
     computeTopStrengths(ctx),
     computeATSKeywords(ctx),
     computeExperienceAlignment(ctx),
+    computeQualificationFit(ctx),
   ]);
 
   return {
@@ -41,5 +44,6 @@ export async function runMatch(input: MatchInput): Promise<MatchResult> {
     topStrengths,
     atsKeywords,
     experienceAlignment,
+    qualificationFit,
   };
 }

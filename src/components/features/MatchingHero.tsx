@@ -25,6 +25,7 @@ import type {
   TopStrengthsData,
   ATSKeywordsData,
   ExperienceAlignmentData,
+  QualificationFitData,
 } from "@/services/insights/types";
 
 type ParseStatus = "idle" | "parsing" | "parsed" | "error";
@@ -79,6 +80,7 @@ export function MatchingHero() {
     topStrengths: TopStrengthsData;
     atsKeywords: ATSKeywordsData;
     experienceAlignment: ExperienceAlignmentData;
+    qualificationFit?: QualificationFitData;
   } | null>(null);
   const [matchedJdSnapshot, setMatchedJdSnapshot] = useState<string | null>(
     null
@@ -184,6 +186,7 @@ export function MatchingHero() {
         topStrengths: json.data.topStrengths.data,
         atsKeywords: json.data.atsKeywords.data,
         experienceAlignment: json.data.experienceAlignment.data,
+        qualificationFit: json.data.qualificationFit?.data,
       };
 
       setMatchResult(insights);
@@ -414,6 +417,7 @@ export function MatchingHero() {
               topStrengths={matchResult.topStrengths}
               atsKeywords={matchResult.atsKeywords}
               experienceAlignment={matchResult.experienceAlignment}
+              qualificationFit={matchResult.qualificationFit}
               isLoggedIn={isLoggedIn}
               savedMatchId={savedMatchId}
             />

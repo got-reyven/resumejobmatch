@@ -7,7 +7,7 @@ export type TopStrengthsDisplayProps = TopStrengthsData;
 
 export function TopStrengthsDisplay({ strengths }: TopStrengthsDisplayProps) {
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-col">
       <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
         <Trophy className="h-5 w-5 text-amber-500" aria-hidden="true" />
         Top Strengths

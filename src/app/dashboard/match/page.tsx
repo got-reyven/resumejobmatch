@@ -24,6 +24,7 @@ import type {
   TopStrengthsData,
   ATSKeywordsData,
   ExperienceAlignmentData,
+  QualificationFitData,
 } from "@/services/insights/types";
 
 type ParseStatus = "idle" | "parsing" | "parsed" | "error";
@@ -59,6 +60,7 @@ export default function DashboardMatchPage() {
     topStrengths: TopStrengthsData;
     atsKeywords: ATSKeywordsData;
     experienceAlignment: ExperienceAlignmentData;
+    qualificationFit?: QualificationFitData;
   } | null>(null);
   const [matchCount, setMatchCount] = useState(0);
   const [cooldown, setCooldown] = useState(0);
@@ -194,6 +196,7 @@ export default function DashboardMatchPage() {
         topStrengths: json.data.topStrengths.data,
         atsKeywords: json.data.atsKeywords.data,
         experienceAlignment: json.data.experienceAlignment.data,
+        qualificationFit: json.data.qualificationFit?.data,
       };
 
       setMatchResult(resultData);
@@ -391,6 +394,7 @@ export default function DashboardMatchPage() {
             topStrengths={matchResult.topStrengths}
             atsKeywords={matchResult.atsKeywords}
             experienceAlignment={matchResult.experienceAlignment}
+            qualificationFit={matchResult.qualificationFit}
             userType={userType}
             tier={tier}
           />

@@ -62,7 +62,7 @@ export function ExperienceAlignmentDisplay({
   const industry = industryConfig[industry_alignment];
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-col">
       <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
         <Briefcase className="h-5 w-5 text-indigo-500" aria-hidden="true" />
         Experience Alignment

@@ -18,6 +18,11 @@ export const INSIGHT_META: Record<
     tier: 1,
     title: "Experience Alignment",
   },
+  qualificationFit: {
+    tab: "shared",
+    tier: 2,
+    title: "Qualification Fit",
+  },
 };
 
 interface PersistMatchParams {

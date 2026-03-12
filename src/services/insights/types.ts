@@ -34,6 +34,7 @@ export interface MatchResult {
   topStrengths: InsightResult<TopStrengthsData>;
   atsKeywords: InsightResult<ATSKeywordsData>;
   experienceAlignment: InsightResult<ExperienceAlignmentData>;
+  qualificationFit: InsightResult<QualificationFitData>;
 }
 
 export interface OverallScoreData {
@@ -87,6 +88,17 @@ export interface ExperienceAlignmentData {
     resume_role: string;
     relevance: "direct" | "transferable" | "unrelated";
     relevant_aspects: string[];
+  }[];
+  summary: string;
+}
+
+export interface QualificationFitData {
+  qualifications: {
+    requirement: string;
+    type: "required" | "preferred";
+    status: "met" | "partially_met" | "not_found";
+    evidence: string | null;
+    note: string | null;
   }[];
   summary: string;
 }

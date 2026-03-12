@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Briefcase, User, SlidersHorizontal, Eye, EyeOff } from "lucide-react";
+import { useCallback, useState } from "react";
+import {
+  Briefcase,
+  User,
+  SlidersHorizontal,
+  Eye,
+  EyeOff,
+  GraduationCap,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,6 +41,11 @@ import {
   ExperienceAlignmentDisplay,
   type ExperienceAlignmentDisplayProps,
 } from "@/components/features/ExperienceAlignmentDisplay";
+import {
+  QualificationFitDisplay,
+  type QualificationFitDisplayProps,
+} from "@/components/features/QualificationFitDisplay";
+import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 interface InsightDef {
   id: string;
@@ -49,8 +61,10 @@ interface DashboardMatchResultsProps {
   topStrengths: TopStrengthsDisplayProps;
   atsKeywords: ATSKeywordDisplayProps;
   experienceAlignment: ExperienceAlignmentDisplayProps;
+  qualificationFit?: QualificationFitDisplayProps;
   userType: string;
   tier: string;
+  matchId?: string;
 }
 
 export function DashboardMatchResults({
@@ -60,13 +74,48 @@ export function DashboardMatchResults({
   topStrengths,
   atsKeywords,
   experienceAlignment,
+  qualificationFit,
   userType,
   tier,
+  matchId,
 }: DashboardMatchResultsProps) {
   const isPro = tier === "pro";
   const defaultTab = userType === "business" ? "business" : "jobseeker";
   const showJobseekerTab = isPro || userType === "jobseeker";
   const showBusinessTab = isPro || userType === "business";
+
+  const [generated, setGenerated] = useState<Record<string, unknown>>({});
+
+  const onInsightGenerated = useCallback((insightId: string, data: unknown) => {
+    setGenerated((prev) => ({ ...prev, [insightId]: data }));
+  }, []);
+
+  const resolvedQualificationFit =
+    qualificationFit ??
+    (generated.qualificationFit as QualificationFitDisplayProps | undefined);
+
+  function renderGenerateOrDisplay(
+    insightId: string,
+    icon: React.ReactNode,
+    title: string,
+    description: string,
+    displayComponent: React.ReactNode | null
+  ): React.ReactNode {
+    if (displayComponent) return displayComponent;
+
+    if (!matchId) return null;
+
+    return (
+      <InsightGeneratePrompt
+        icon={icon}
+        title={title}
+        description={description}
+        matchId={matchId}
+        insightId={insightId}
+        onGenerated={(data) => onInsightGenerated(insightId, data)}
+      />
+    );
+  }
 
   const allInsights: InsightDef[] = [
     {
@@ -105,6 +154,24 @@ export function DashboardMatchResults({
       tab: "shared",
       render: () => <ExperienceAlignmentDisplay {...experienceAlignment} />,
     },
+    {
+      id: "qualificationFit",
+      label: "Qualification Fit",
+      tab: "shared",
+      render: () =>
+        renderGenerateOrDisplay(
+          "qualificationFit",
+          <GraduationCap
+            className="h-5 w-5 text-purple-500"
+            aria-hidden="true"
+          />,
+          "Qualification Fit",
+          "Evaluate how the candidate's qualifications match the job requirements.",
+          resolvedQualificationFit ? (
+            <QualificationFitDisplay {...resolvedQualificationFit} />
+          ) : null
+        ),
+    },
   ];
 
   const jobseekerInsights = allInsights.filter(
@@ -136,20 +203,15 @@ export function DashboardMatchResults({
 
   function renderCards(insights: InsightDef[]) {
     const visible = insights.filter((i) => !hidden.has(i.id));
-    const rows: InsightDef[][] = [];
-    for (let i = 0; i < visible.length; i += 2) {
-      rows.push(visible.slice(i, i + 2));
-    }
     return (
-      <div className="space-y-6">
-        {rows.map((row, idx) => (
-          <div key={idx} className="grid gap-6 lg:grid-cols-2">
-            {row.map((insight) => (
-              <Card key={insight.id} className="min-w-0 overflow-hidden">
-                <CardContent>{insight.render()}</CardContent>
-              </Card>
-            ))}
-          </div>
+      <div className="columns-1 gap-6 lg:columns-2">
+        {visible.map((insight) => (
+          <Card
+            key={insight.id}
+            className="mb-6 min-w-0 break-inside-avoid overflow-hidden"
+          >
+            <CardContent>{insight.render()}</CardContent>
+          </Card>
         ))}
       </div>
     );

@@ -19,7 +19,7 @@ export function ActionItemsDisplay({ actions }: ActionItemsDisplayProps) {
   const sorted = [...actions].sort((a, b) => a.priority - b.priority);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-col">
       <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
         <Lightbulb className="h-5 w-5 text-yellow-500" aria-hidden="true" />
         Top 3 Action Items
