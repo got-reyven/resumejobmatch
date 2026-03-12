@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PlusCircle, History, Settings, Briefcase, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { GuestMatchBanner } from "@/components/features/GuestMatchBanner";
+import { UsageChart } from "@/components/features/UsageChart";
 import { createClient } from "@/lib/supabase/server";
 import { RATE_LIMITS } from "@/lib/constants/app";
 
@@ -132,6 +133,10 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         </Link>
+      </div>
+
+      <div className="mt-8">
+        <UsageChart />
       </div>
     </div>
   );
