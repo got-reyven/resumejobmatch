@@ -10,6 +10,14 @@ import { MatchResults } from "@/components/features/MatchResults";
 import { saveGuestMatch } from "@/lib/guest-match-storage";
 import { createClient } from "@/lib/supabase/client";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+
+interface SavedResume {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  parsedData: ParsedResume;
+  createdAt: string;
+}
 import type {
   OverallScoreData,
   SkillsBreakdownData,
@@ -57,6 +65,10 @@ export function MatchingHero() {
   const [parseStatus, setParseStatus] = useState<ParseStatus>("idle");
   const [parseError, setParseError] = useState<string | null>(null);
   const [jobDescription, setJobDescription] = useState("");
+  const [savedResumeInfo, setSavedResumeInfo] = useState<{
+    fileName: string;
+    fileSize: number;
+  } | null>(null);
 
   const [matchStatus, setMatchStatus] = useState<MatchStatus>("idle");
   const [matchError, setMatchError] = useState<string | null>(null);
@@ -78,13 +90,27 @@ export function MatchingHero() {
     hasMatchedOnce && jobDescription !== matchedJdSnapshot;
 
   const jdWordCount = countWords(jobDescription);
+  const hasResume =
+    parsedResume !== null && (file !== null || savedResumeInfo !== null);
   const isReady =
-    parsedResume !== null &&
-    jdWordCount >= MIN_JD_WORDS &&
-    jdWordCount <= MAX_JD_WORDS;
+    hasResume && jdWordCount >= MIN_JD_WORDS && jdWordCount <= MAX_JD_WORDS;
+
+  const handleSavedResumeSelect = useCallback((resume: SavedResume) => {
+    setFile(null);
+    setSavedResumeInfo({
+      fileName: resume.fileName,
+      fileSize: resume.fileSize,
+    });
+    setParsedResume(resume.parsedData);
+    setParseStatus("parsed");
+    setParseError(null);
+    setMatchStatus("idle");
+    setMatchResult(null);
+  }, []);
 
   const handleFileSelect = useCallback(async (selectedFile: File | null) => {
     setFile(selectedFile);
+    setSavedResumeInfo(null);
     setParsedResume(null);
     setParseError(null);
     setMatchStatus("idle");
@@ -164,15 +190,20 @@ export function MatchingHero() {
       setMatchedJdSnapshot(jobDescription);
       setMatchStatus("matched");
 
-      if (file && parsedResume) {
+      const resumeFileName =
+        file?.name ?? savedResumeInfo?.fileName ?? "resume.pdf";
+      const resumeFileType = file?.type ?? "application/pdf";
+      const resumeFileSize = file?.size ?? savedResumeInfo?.fileSize ?? 0;
+
+      if (parsedResume && (file || savedResumeInfo)) {
         if (isLoggedIn) {
           fetch("/api/v1/matches/save", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              resumeFileName: file.name,
-              resumeFileType: file.type,
-              resumeFileSize: file.size,
+              resumeFileName,
+              resumeFileType,
+              resumeFileSize,
               resumeParsedData: parsedResume,
               jobDescriptionText: jobDescription,
               insights,
@@ -185,9 +216,9 @@ export function MatchingHero() {
             .catch((err) => console.error("Failed to save match:", err));
         } else {
           saveGuestMatch({
-            resumeFileName: file.name,
-            resumeFileType: file.type,
-            resumeFileSize: file.size,
+            resumeFileName,
+            resumeFileType,
+            resumeFileSize,
             resumeParsedData: parsedResume,
             jobDescriptionText: jobDescription,
             insights,
@@ -205,7 +236,14 @@ export function MatchingHero() {
       setMatchError("Network error. Please check your connection and retry.");
       setMatchStatus("error");
     }
-  }, [isReady, parsedResume, jobDescription, file, isLoggedIn]);
+  }, [
+    isReady,
+    parsedResume,
+    jobDescription,
+    file,
+    savedResumeInfo,
+    isLoggedIn,
+  ]);
 
   return (
     <>
@@ -261,6 +299,8 @@ export function MatchingHero() {
                       parsedResume={parsedResume}
                       parseStatus={parseStatus}
                       parseError={parseError}
+                      isLoggedIn={isLoggedIn}
+                      onSavedResumeSelect={handleSavedResumeSelect}
                     />
                   </div>
                 </div>

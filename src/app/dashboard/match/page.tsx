@@ -9,6 +9,14 @@ import { DashboardMatchResults } from "@/components/features/DashboardMatchResul
 import { useProfile } from "@/components/features/ProfileContext";
 import { RATE_LIMITS } from "@/lib/constants/app";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+
+interface SavedResume {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  parsedData: ParsedResume;
+  createdAt: string;
+}
 import type {
   OverallScoreData,
   SkillsBreakdownData,
@@ -54,6 +62,10 @@ export default function DashboardMatchPage() {
   } | null>(null);
   const [matchCount, setMatchCount] = useState(0);
   const [cooldown, setCooldown] = useState(0);
+  const [savedResumeInfo, setSavedResumeInfo] = useState<{
+    fileName: string;
+    fileSize: number;
+  } | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const { userType, tier } = useProfile();
 
@@ -86,13 +98,27 @@ export default function DashboardMatchPage() {
   }, [cooldown]);
 
   const jdWordCount = countWords(jobDescription);
+  const hasResume =
+    parsedResume !== null && (file !== null || savedResumeInfo !== null);
   const isReady =
-    parsedResume !== null &&
-    jdWordCount >= MIN_JD_WORDS &&
-    jdWordCount <= MAX_JD_WORDS;
+    hasResume && jdWordCount >= MIN_JD_WORDS && jdWordCount <= MAX_JD_WORDS;
+
+  const handleSavedResumeSelect = useCallback((resume: SavedResume) => {
+    setFile(null);
+    setSavedResumeInfo({
+      fileName: resume.fileName,
+      fileSize: resume.fileSize,
+    });
+    setParsedResume(resume.parsedData);
+    setParseStatus("parsed");
+    setParseError(null);
+    setMatchStatus("idle");
+    setMatchResult(null);
+  }, []);
 
   const handleFileSelect = useCallback(async (selectedFile: File | null) => {
     setFile(selectedFile);
+    setSavedResumeInfo(null);
     setParsedResume(null);
     setParseError(null);
     setMatchStatus("idle");
@@ -133,7 +159,12 @@ export default function DashboardMatchPage() {
   }, []);
 
   const handleStartMatching = useCallback(async () => {
-    if (!isReady || !parsedResume || !file) return;
+    if (!isReady || !parsedResume) return;
+
+    const resumeFileName =
+      file?.name ?? savedResumeInfo?.fileName ?? "resume.pdf";
+    const resumeFileType = file?.type ?? "application/pdf";
+    const resumeFileSize = file?.size ?? savedResumeInfo?.fileSize ?? 0;
 
     setMatchStatus("matching");
     setMatchError(null);
@@ -174,9 +205,9 @@ export default function DashboardMatchPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          resumeFileName: file.name,
-          resumeFileType: file.type,
-          resumeFileSize: file.size,
+          resumeFileName,
+          resumeFileType,
+          resumeFileSize,
           resumeParsedData: parsedResume,
           jobDescriptionText: jobDescription,
           insights: resultData,
@@ -193,10 +224,11 @@ export default function DashboardMatchPage() {
       setMatchError("Network error. Please check your connection and retry.");
       setMatchStatus("error");
     }
-  }, [isReady, parsedResume, jobDescription, file]);
+  }, [isReady, parsedResume, jobDescription, file, savedResumeInfo]);
 
   const handleReset = () => {
     setFile(null);
+    setSavedResumeInfo(null);
     setParsedResume(null);
     setParseStatus("idle");
     setParseError(null);
@@ -274,6 +306,8 @@ export default function DashboardMatchPage() {
               parsedResume={parsedResume}
               parseStatus={parseStatus}
               parseError={parseError}
+              isLoggedIn
+              onSavedResumeSelect={handleSavedResumeSelect}
             />
           </div>
         </div>
@@ -331,10 +365,10 @@ export default function DashboardMatchPage() {
           <p className="text-sm text-muted-foreground">
             {parseStatus === "parsing"
               ? "Parsing your resume..."
-              : !file && !jobDescription
-                ? "Upload your resume and paste a job description to begin"
-                : !parsedResume
-                  ? "Upload your resume to continue"
+              : !hasResume && !jobDescription
+                ? "Upload a resume or select a saved one, and paste a job description to begin"
+                : !hasResume
+                  ? "Upload a resume or select a saved one to continue"
                   : jdWordCount < MIN_JD_WORDS
                     ? `Add more to the job description (${MIN_JD_WORDS - jdWordCount} more words needed)`
                     : jdWordCount > MAX_JD_WORDS

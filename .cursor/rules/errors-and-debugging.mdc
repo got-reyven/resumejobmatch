@@ -95,9 +95,31 @@ const [data, setData] = useState(() => JSON.parse(localStorage.getItem("key") ??
 const data = useSyncExternalStore(subscribe, () => JSON.parse(localStorage.getItem("key") ?? "null"), () => null);
 ```
 
-### 2. Avoid `useState` + `setState` inside `useEffect` for initialization
+### 2. Avoid `useState` + `setState` inside `useEffect` body (synchronous calls)
 
-The `react-hooks/set-state-in-effect` lint rule flags `setState` calls inside `useEffect`. While sometimes valid, it triggers lint errors and can cause cascading renders.
+The `react-hooks/set-state-in-effect` lint rule flags `setState` calls inside the `useEffect` body. This applies to **any** synchronous `setState` at the top of an effect — including loading flags.
+
+```typescript
+// BAD — setLoading(true) is synchronous setState in the effect body → lint error
+const [loading, setLoading] = useState(false);
+useEffect(() => {
+  setLoading(true); // ← flagged by react-hooks/set-state-in-effect
+  fetch("/api/data").then(...).finally(() => setLoading(false));
+}, []);
+
+// GOOD — initialize the state to the correct value; only setState in async callbacks
+const [loading, setLoading] = useState(true); // ← start as true
+useEffect(() => {
+  let cancelled = false;
+  fetch("/api/data")
+    .then(r => r.json())
+    .then(json => { if (!cancelled) setData(json); })
+    .finally(() => { if (!cancelled) setLoading(false); });
+  return () => { cancelled = true; };
+}, []);
+```
+
+The key insight: `setState` calls inside `.then()`, `.catch()`, `.finally()` callbacks are fine (they run asynchronously). Only **synchronous** `setState` at the top level of the effect body is flagged.
 
 ### 3. Preferred pattern: `useReducer` + `useEffect`
 
