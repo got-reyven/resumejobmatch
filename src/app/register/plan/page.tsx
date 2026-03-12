@@ -129,10 +129,10 @@ export default function PlanPage() {
     return (
       <div className="w-full max-w-2xl">
         <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight text-white">
             Choose your plan
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
+          <p className="mt-2 text-sm text-white/70">Loading...</p>
         </div>
       </div>
     );
@@ -141,8 +141,10 @@ export default function PlanPage() {
   return (
     <div className="w-full max-w-2xl">
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Choose your plan</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <h1 className="text-2xl font-bold tracking-tight text-white">
+          Choose your plan
+        </h1>
+        <p className="mt-2 text-sm text-white/70">
           {userType === "business"
             ? "Select the plan that fits your hiring needs"
             : "Select the plan that fits your job search"}
@@ -154,7 +156,7 @@ export default function PlanPage() {
           <div
             key={plan.id}
             className={cn(
-              "relative flex flex-col rounded-xl border bg-background shadow-sm",
+              "relative flex flex-col rounded-xl bg-white shadow-sm",
               plan.comingSoon && "opacity-75"
             )}
           >

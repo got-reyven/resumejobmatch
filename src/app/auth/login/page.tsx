@@ -87,7 +87,68 @@ export default function LoginPage() {
 
   if (sent) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 px-4 py-12">
+      <div className="flex min-h-screen bg-muted/30 p-3 sm:p-5">
+        <div className="hero-box flex w-full flex-1 flex-col items-center justify-center overflow-hidden rounded-3xl px-6 py-12 sm:px-10 sm:py-16">
+          <Link href="/" className="mb-8" aria-label="Resume Job Match home">
+            <Image
+              src="/logo.svg"
+              alt="Resume Job Match"
+              width={260}
+              height={50}
+              priority
+            />
+          </Link>
+
+          <div className="w-full max-w-md rounded-xl bg-white p-8 text-center">
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-7 w-7 text-primary" />
+            </div>
+
+            <h1 className="text-2xl font-bold tracking-tight">
+              Check your email
+            </h1>
+            <p className="mt-3 text-sm text-muted-foreground">
+              We sent a magic link to{" "}
+              <span className="font-medium text-foreground">{email}</span>.
+              <br />
+              Click the link to sign in.
+            </p>
+
+            <div className="mt-8 space-y-3">
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled={cooldown > 0 || loading}
+                onClick={handleResend}
+              >
+                {loading
+                  ? "Resending..."
+                  : cooldown > 0
+                    ? `Resend in ${cooldown}s`
+                    : "Resend magic link"}
+              </Button>
+
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => setSent(false)}
+              >
+                Use a different email
+              </Button>
+            </div>
+
+            <p className="mt-6 text-xs text-muted-foreground">
+              Didn&apos;t receive an email? Check your spam folder.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen bg-muted/30 p-3 sm:p-5">
+      <div className="hero-box flex w-full flex-1 flex-col items-center justify-center overflow-hidden rounded-3xl px-6 py-12 sm:px-10 sm:py-16">
         <Link href="/" className="mb-8" aria-label="Resume Job Match home">
           <Image
             src="/logo.svg"
@@ -98,103 +159,53 @@ export default function LoginPage() {
           />
         </Link>
 
-        <div className="w-full max-w-md rounded-xl border bg-background p-8 shadow-sm text-center">
-          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-            <Mail className="h-7 w-7 text-primary" />
-          </div>
-
-          <h1 className="text-2xl font-bold tracking-tight">
-            Check your email
-          </h1>
-          <p className="mt-3 text-sm text-muted-foreground">
-            We sent a magic link to{" "}
-            <span className="font-medium text-foreground">{email}</span>.
-            <br />
-            Click the link to sign in.
-          </p>
-
-          <div className="mt-8 space-y-3">
-            <Button
-              variant="outline"
-              className="w-full"
-              disabled={cooldown > 0 || loading}
-              onClick={handleResend}
-            >
-              {loading
-                ? "Resending..."
-                : cooldown > 0
-                  ? `Resend in ${cooldown}s`
-                  : "Resend magic link"}
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="w-full"
-              onClick={() => setSent(false)}
-            >
-              Use a different email
-            </Button>
-          </div>
-
-          <p className="mt-6 text-xs text-muted-foreground">
-            Didn&apos;t receive an email? Check your spam folder.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 px-4 py-12">
-      <Link href="/" className="mb-8" aria-label="Resume Job Match home">
-        <Image
-          src="/logo.svg"
-          alt="Resume Job Match"
-          width={260}
-          height={50}
-          priority
-        />
-      </Link>
-
-      <div className="w-full max-w-md rounded-xl border bg-background p-8 shadow-sm">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Sign in with your email — no password needed
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-          <div>
-            <label htmlFor="email" className="mb-1.5 block text-sm font-medium">
-              Email address
-            </label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              disabled={loading}
-            />
-          </div>
-
-          {error && (
-            <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
+        <div className="w-full max-w-md rounded-xl bg-white p-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Sign in with your email — no password needed
             </p>
-          )}
+          </div>
 
-          <Button type="submit" className="w-full" disabled={!email || loading}>
-            {loading ? "Sending magic link..." : "Send Magic Link"}
-          </Button>
-        </form>
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm font-medium"
+              >
+                Email address
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                disabled={loading}
+              />
+            </div>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+            {error && (
+              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {error}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={!email || loading}
+            >
+              {loading ? "Sending magic link..." : "Send Magic Link"}
+            </Button>
+          </form>
+        </div>
+
+        <p className="mt-8 text-center text-sm text-white/70">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-medium text-primary underline">
+          <Link href="/register" className="font-medium text-white underline">
             Register
           </Link>
         </p>

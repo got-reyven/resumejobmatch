@@ -43,7 +43,7 @@ export default function ConfirmPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-xl border bg-background p-8 shadow-sm text-center">
+    <div className="mx-auto max-w-md rounded-xl bg-white p-8 text-center">
       <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
         <Mail className="h-7 w-7 text-primary" />
       </div>

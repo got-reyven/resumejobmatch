@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Briefcase, User } from "lucide-react";
+import { Briefcase, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils/cn";
@@ -15,6 +15,46 @@ export default function RegisterPage() {
   const searchParams = useSearchParams();
   const preselected = searchParams.get("type") as UserType | null;
   const urlError = searchParams.get("error");
+
+  const [handlingHash, setHandlingHash] = useState(false);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash || !hash.includes("access_token")) return;
+
+    setHandlingHash(true);
+
+    async function handleInviteRedirect() {
+      const supabase = createClient();
+
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error || !data.session) {
+        setHandlingHash(false);
+        return;
+      }
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setHandlingHash(false);
+        return;
+      }
+
+      await fetch("/api/v1/profile");
+
+      const meta = user.user_metadata ?? {};
+      if (meta.invited_to_org) {
+        router.replace("/accept-invite");
+      } else {
+        router.replace("/register/plan");
+      }
+    }
+
+    handleInviteRedirect();
+  }, [router]);
 
   const [userType, setUserType] = useState<UserType | null>(
     preselected === "jobseeker" || preselected === "business"
@@ -65,8 +105,17 @@ export default function RegisterPage() {
     }
   }
 
+  if (handlingHash) {
+    return (
+      <div className="mx-auto flex max-w-md flex-col items-center justify-center gap-3 py-24">
+        <Loader2 className="h-8 w-8 animate-spin text-white/70" />
+        <p className="text-sm text-white/70">Completing sign in...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-md rounded-xl border bg-background p-8 shadow-sm">
+    <div className="mx-auto max-w-md rounded-xl bg-white p-8">
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight">Create an account</h1>
         <p className="mt-2 text-sm text-muted-foreground">
