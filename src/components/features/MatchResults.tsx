@@ -37,11 +37,6 @@ import {
   ExperienceAlignmentDisplay,
   type ExperienceAlignmentDisplayProps,
 } from "@/components/features/ExperienceAlignmentDisplay";
-import {
-  QualificationFitDisplay,
-  type QualificationFitDisplayProps,
-} from "@/components/features/QualificationFitDisplay";
-
 interface MatchResultsProps {
   score: MatchScoreDisplayProps;
   skillsBreakdown: SkillsBreakdownDisplayProps;
@@ -49,7 +44,6 @@ interface MatchResultsProps {
   topStrengths: TopStrengthsDisplayProps;
   atsKeywords: ATSKeywordDisplayProps;
   experienceAlignment: ExperienceAlignmentDisplayProps;
-  qualificationFit?: QualificationFitDisplayProps;
   isLoggedIn?: boolean;
   savedMatchId?: string | null;
 }
@@ -159,7 +153,6 @@ export function MatchResults({
   topStrengths,
   atsKeywords,
   experienceAlignment,
-  qualificationFit,
   isLoggedIn = false,
   savedMatchId,
 }: MatchResultsProps) {
@@ -212,15 +205,8 @@ export function MatchResults({
                 <ExperienceAlignmentDisplay {...experienceAlignment} />
               </CardContent>
             </Card>
-            {qualificationFit && (
-              <Card className="min-w-0 overflow-hidden rounded-2xl border-0 bg-white">
-                <CardContent>
-                  <QualificationFitDisplay {...qualificationFit} />
-                </CardContent>
-              </Card>
-            )}
+            {ctaCard}
           </div>
-          <div className="grid gap-6 lg:grid-cols-3">{ctaCard}</div>
         </TabsContent>
 
         <TabsContent value="business" className="mt-6 space-y-6">
@@ -247,13 +233,6 @@ export function MatchResults({
                 <ExperienceAlignmentDisplay {...experienceAlignment} />
               </CardContent>
             </Card>
-            {qualificationFit && (
-              <Card className="min-w-0 overflow-hidden rounded-2xl border-0 bg-white">
-                <CardContent>
-                  <QualificationFitDisplay {...qualificationFit} />
-                </CardContent>
-              </Card>
-            )}
             {ctaCard}
           </div>
         </TabsContent>

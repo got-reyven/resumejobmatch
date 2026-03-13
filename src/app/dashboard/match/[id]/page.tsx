@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -14,8 +14,12 @@ import {
   Briefcase,
   User,
   ExternalLink,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { DashboardMatchResults } from "@/components/features/DashboardMatchResults";
 import { useProfile } from "@/components/features/ProfileContext";
@@ -159,7 +163,7 @@ export default function MatchDetailPage() {
           </Link>
         </Button>
 
-        <h1 className="text-2xl font-bold tracking-tight">{jobTitle}</h1>
+        <EditableTitle initialTitle={jobTitle} matchId={match.id} />
         {match.jobDescription.company && (
           <p className="text-muted-foreground">
             {match.jobDescription.company}
@@ -202,6 +206,119 @@ export default function MatchDetailPage() {
         tier={tier}
         matchId={match.id}
       />
+    </div>
+  );
+}
+
+function EditableTitle({
+  initialTitle,
+  matchId,
+}: {
+  initialTitle: string;
+  matchId: string;
+}) {
+  const [title, setTitle] = useState(initialTitle);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(initialTitle);
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [editing]);
+
+  const save = useCallback(async () => {
+    const trimmed = draft.trim();
+    if (!trimmed || trimmed === title) {
+      setDraft(title);
+      setEditing(false);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/v1/matches/${matchId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: trimmed }),
+      });
+
+      if (res.ok) {
+        setTitle(trimmed);
+        setDraft(trimmed);
+      } else {
+        setDraft(title);
+      }
+    } catch {
+      setDraft(title);
+    } finally {
+      setSaving(false);
+      setEditing(false);
+    }
+  }, [draft, title, matchId]);
+
+  const cancel = useCallback(() => {
+    setDraft(title);
+    setEditing(false);
+  }, [title]);
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-2">
+        <Input
+          ref={inputRef}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") save();
+            if (e.key === "Escape") cancel();
+          }}
+          disabled={saving}
+          className="h-10 max-w-lg text-2xl font-bold tracking-tight"
+          aria-label="Edit job title"
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={save}
+          disabled={saving}
+          className="h-8 w-8 shrink-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+          aria-label="Save title"
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Check className="h-4 w-4" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={cancel}
+          disabled={saving}
+          className="h-8 w-8 shrink-0 text-muted-foreground hover:bg-muted"
+          aria-label="Cancel editing"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="group flex items-center gap-2">
+      <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="rounded-md p-1 text-muted-foreground/50 opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label="Edit job title"
+      >
+        <Pencil className="h-4 w-4" />
+      </button>
     </div>
   );
 }

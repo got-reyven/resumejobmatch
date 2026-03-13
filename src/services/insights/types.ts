@@ -34,7 +34,7 @@ export interface MatchResult {
   topStrengths: InsightResult<TopStrengthsData>;
   atsKeywords: InsightResult<ATSKeywordsData>;
   experienceAlignment: InsightResult<ExperienceAlignmentData>;
-  qualificationFit: InsightResult<QualificationFitData>;
+  qualificationFit?: InsightResult<QualificationFitData>;
 }
 
 export interface OverallScoreData {

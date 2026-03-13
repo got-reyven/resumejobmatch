@@ -24,7 +24,6 @@ import type {
   TopStrengthsData,
   ATSKeywordsData,
   ExperienceAlignmentData,
-  QualificationFitData,
 } from "@/services/insights/types";
 
 type ParseStatus = "idle" | "parsing" | "parsed" | "error";
@@ -50,6 +49,7 @@ export default function DashboardMatchPage() {
   const [parseStatus, setParseStatus] = useState<ParseStatus>("idle");
   const [parseError, setParseError] = useState<string | null>(null);
   const [jobDescription, setJobDescription] = useState("");
+  const [jobSourceUrl, setJobSourceUrl] = useState<string | null>(null);
 
   const [matchStatus, setMatchStatus] = useState<MatchStatus>("idle");
   const [matchError, setMatchError] = useState<string | null>(null);
@@ -60,8 +60,8 @@ export default function DashboardMatchPage() {
     topStrengths: TopStrengthsData;
     atsKeywords: ATSKeywordsData;
     experienceAlignment: ExperienceAlignmentData;
-    qualificationFit?: QualificationFitData;
   } | null>(null);
+  const [savedMatchId, setSavedMatchId] = useState<string | null>(null);
   const [matchCount, setMatchCount] = useState(0);
   const [cooldown, setCooldown] = useState(0);
   const [savedResumeInfo, setSavedResumeInfo] = useState<{
@@ -196,7 +196,6 @@ export default function DashboardMatchPage() {
         topStrengths: json.data.topStrengths.data,
         atsKeywords: json.data.atsKeywords.data,
         experienceAlignment: json.data.experienceAlignment.data,
-        qualificationFit: json.data.qualificationFit?.data,
       };
 
       setMatchResult(resultData);
@@ -213,9 +212,15 @@ export default function DashboardMatchPage() {
           resumeFileSize,
           resumeParsedData: parsedResume,
           jobDescriptionText: jobDescription,
+          jobSourceUrl,
           insights: resultData,
         }),
-      }).catch((err) => console.error("Failed to save match:", err));
+      })
+        .then((r) => r.json())
+        .then((json) => {
+          if (json.data?.matchId) setSavedMatchId(json.data.matchId);
+        })
+        .catch((err) => console.error("Failed to save match:", err));
 
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({
@@ -227,7 +232,14 @@ export default function DashboardMatchPage() {
       setMatchError("Network error. Please check your connection and retry.");
       setMatchStatus("error");
     }
-  }, [isReady, parsedResume, jobDescription, file, savedResumeInfo]);
+  }, [
+    isReady,
+    parsedResume,
+    jobDescription,
+    jobSourceUrl,
+    file,
+    savedResumeInfo,
+  ]);
 
   const handleReset = () => {
     setFile(null);
@@ -236,9 +248,11 @@ export default function DashboardMatchPage() {
     setParseStatus("idle");
     setParseError(null);
     setJobDescription("");
+    setJobSourceUrl(null);
     setMatchStatus("idle");
     setMatchError(null);
     setMatchResult(null);
+    setSavedMatchId(null);
   };
 
   const isCoolingDown = cooldown > 0;
@@ -328,6 +342,7 @@ export default function DashboardMatchPage() {
             <JobDescriptionInput
               value={jobDescription}
               onChange={setJobDescription}
+              onSourceUrlChange={setJobSourceUrl}
             />
           </div>
         </div>
@@ -394,9 +409,9 @@ export default function DashboardMatchPage() {
             topStrengths={matchResult.topStrengths}
             atsKeywords={matchResult.atsKeywords}
             experienceAlignment={matchResult.experienceAlignment}
-            qualificationFit={matchResult.qualificationFit}
             userType={userType}
             tier={tier}
+            matchId={savedMatchId ?? undefined}
           />
         </div>
       )}

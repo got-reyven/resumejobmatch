@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
       resumeFileSize: payload.resumeFileSize,
       resumeParsedData: payload.resumeParsedData as Record<string, unknown>,
       jobDescriptionText: payload.jobDescriptionText,
+      jobSourceUrl: payload.jobSourceUrl,
       insights: payload.insights as unknown as Record<string, unknown>,
       overallScore: payload.insights.overallScore.overall,
     });

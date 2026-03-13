@@ -105,6 +105,52 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 }
 
+// PATCH /api/v1/matches/[id]
+// Updates match metadata (currently: job title)
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) throw new AuthenticationError();
+
+    const { id } = await context.params;
+    const body = await request.json();
+    const title = typeof body.title === "string" ? body.title.trim() : null;
+
+    if (title === null || title.length === 0) {
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "Title is required" } },
+        { status: 400 }
+      );
+    }
+
+    const { data: match, error: matchError } = await supabase
+      .from("matches")
+      .select("job_description_id")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .is("deleted_at", null)
+      .single();
+
+    if (matchError || !match) throw new NotFoundError("Match");
+
+    const { error: updateError } = await supabase
+      .from("job_descriptions")
+      .update({ title })
+      .eq("id", match.job_description_id)
+      .eq("user_id", user.id);
+
+    if (updateError) throw updateError;
+
+    return NextResponse.json({ data: { title } }, { status: 200 });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
 // DELETE /api/v1/matches/[id]
 // Soft-deletes a match by setting deleted_at
 export async function DELETE(request: NextRequest, context: RouteContext) {

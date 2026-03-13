@@ -25,7 +25,6 @@ import type {
   TopStrengthsData,
   ATSKeywordsData,
   ExperienceAlignmentData,
-  QualificationFitData,
 } from "@/services/insights/types";
 
 type ParseStatus = "idle" | "parsing" | "parsed" | "error";
@@ -80,11 +79,11 @@ export function MatchingHero() {
     topStrengths: TopStrengthsData;
     atsKeywords: ATSKeywordsData;
     experienceAlignment: ExperienceAlignmentData;
-    qualificationFit?: QualificationFitData;
   } | null>(null);
   const [matchedJdSnapshot, setMatchedJdSnapshot] = useState<string | null>(
     null
   );
+  const [jobSourceUrl, setJobSourceUrl] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const hasMatchedOnce = matchResult !== null;
@@ -186,7 +185,6 @@ export function MatchingHero() {
         topStrengths: json.data.topStrengths.data,
         atsKeywords: json.data.atsKeywords.data,
         experienceAlignment: json.data.experienceAlignment.data,
-        qualificationFit: json.data.qualificationFit?.data,
       };
 
       setMatchResult(insights);
@@ -209,6 +207,7 @@ export function MatchingHero() {
               resumeFileSize,
               resumeParsedData: parsedResume,
               jobDescriptionText: jobDescription,
+              jobSourceUrl,
               insights,
             }),
           })
@@ -224,6 +223,7 @@ export function MatchingHero() {
             resumeFileSize,
             resumeParsedData: parsedResume,
             jobDescriptionText: jobDescription,
+            jobSourceUrl,
             insights,
           });
         }
@@ -243,6 +243,7 @@ export function MatchingHero() {
     isReady,
     parsedResume,
     jobDescription,
+    jobSourceUrl,
     file,
     savedResumeInfo,
     isLoggedIn,
@@ -321,6 +322,7 @@ export function MatchingHero() {
                     <JobDescriptionInput
                       value={jobDescription}
                       onChange={setJobDescription}
+                      onSourceUrlChange={setJobSourceUrl}
                     />
                   </div>
                 </div>
@@ -417,7 +419,6 @@ export function MatchingHero() {
               topStrengths={matchResult.topStrengths}
               atsKeywords={matchResult.atsKeywords}
               experienceAlignment={matchResult.experienceAlignment}
-              qualificationFit={matchResult.qualificationFit}
               isLoggedIn={isLoggedIn}
               savedMatchId={savedMatchId}
             />

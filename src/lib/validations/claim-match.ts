@@ -89,6 +89,7 @@ export const claimMatchSchema = z.object({
   resumeFileSize: z.number().int().positive().max(5_242_880),
   resumeParsedData: parsedResumeSchema,
   jobDescriptionText: z.string().min(1),
+  jobSourceUrl: z.string().url().nullish(),
   insights: insightsSchema,
 });
 

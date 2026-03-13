@@ -133,7 +133,7 @@ const advancedInsights: Insight[] = [
     iconColor: "text-emerald-500",
     audience: "both",
     access: "registered",
-    available: false,
+    available: true,
   },
   {
     id: 8,
@@ -321,10 +321,8 @@ function InsightCard({ insight }: { insight: Insight }) {
     <>
       <div
         className={cn(
-          "group relative flex flex-col rounded-xl border bg-background p-5 transition-shadow",
-          insight.available
-            ? "ring-1 ring-primary/20 hover:shadow-md"
-            : "opacity-50"
+          "group relative flex flex-col rounded-2xl bg-background p-5 transition-shadow",
+          insight.available ? "hover:shadow-md" : "opacity-50"
         )}
       >
         <div className="mb-3 flex items-start justify-between gap-2">
@@ -439,7 +437,7 @@ export function InsightsShowcase() {
       : allInsights.filter((i) => i.access === filter);
 
   return (
-    <section id="insights" className="border-t py-20 sm:py-28">
+    <section id="insights" className="bg-[#F5F5F5] py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
@@ -487,7 +485,7 @@ export function InsightsShowcase() {
           ))}
         </div>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((insight) => (
             <InsightCard key={insight.id} insight={insight} />
           ))}

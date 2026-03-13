@@ -56,3 +56,25 @@ Full end-to-end implementation of Insight #7 (Qualification Fit) following the e
 - `src/components/features/MatchingHero.tsx` — added type, result mapping, prop passing
 - `src/app/dashboard/match/page.tsx` — added type, result mapping, prop passing
 - `src/app/dashboard/match/[id]/page.tsx` — added type and prop passing
+
+## 2026-03-13 — Access Control Update
+
+### What was done
+
+Moved Qualification Fit from automatic computation to on-demand generation only.
+
+**Changes:**
+
+- Removed `computeQualificationFit` from `matching-service.ts` `Promise.all` — no longer computed during matching
+- Made `qualificationFit` optional in `MatchResult` interface
+- Removed QualificationFit from public `MatchResults.tsx` (homepage) entirely
+- Removed `qualificationFit` from `MatchingHero.tsx` result type and prop passing
+- Removed `qualificationFit` from `dashboard/match/page.tsx` result type
+- Added `savedMatchId` tracking to dashboard match page so on-demand generation works for fresh matches
+- Dashboard `DashboardMatchResults` already had the `InsightGeneratePrompt` pattern — works as-is
+
+**Result:**
+
+- Public (guest) matching: 6 core insights only (Overall Score, Skills Breakdown, Experience Alignment, ATS Keywords, Action Items, Top Strengths)
+- Dashboard (registered): Same 6 core insights auto-computed, Qualification Fit available via "Generate" button
+- Future insights follow the same on-demand pattern

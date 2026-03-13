@@ -17,6 +17,7 @@ export interface GuestMatchData {
   resumeFileSize: number;
   resumeParsedData: ParsedResume;
   jobDescriptionText: string;
+  jobSourceUrl?: string | null;
   insights: {
     overallScore: OverallScoreData;
     skillsBreakdown: SkillsBreakdownData;
