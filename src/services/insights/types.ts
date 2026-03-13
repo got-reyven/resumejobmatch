@@ -103,6 +103,23 @@ export interface QualificationFitData {
   summary: string;
 }
 
+export interface SectionStrengthData {
+  sections: {
+    name:
+      | "summary"
+      | "skills"
+      | "experience"
+      | "education"
+      | "certifications"
+      | "other";
+    score: number;
+    feedback: string;
+    suggestion: string | null;
+  }[];
+  weakest: string;
+  summary: string;
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

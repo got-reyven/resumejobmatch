@@ -23,6 +23,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Qualification Fit",
   },
+  sectionStrength: {
+    tab: "jobseeker",
+    tier: 2,
+    title: "Resume Section Strength",
+  },
 };
 
 interface PersistMatchParams {

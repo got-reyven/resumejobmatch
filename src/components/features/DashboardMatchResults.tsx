@@ -8,6 +8,7 @@ import {
   Eye,
   EyeOff,
   GraduationCap,
+  BarChart3,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -45,6 +46,10 @@ import {
   QualificationFitDisplay,
   type QualificationFitDisplayProps,
 } from "@/components/features/QualificationFitDisplay";
+import {
+  SectionStrengthDisplay,
+  type SectionStrengthDisplayProps,
+} from "@/components/features/SectionStrengthDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 interface InsightDef {
@@ -62,6 +67,7 @@ interface DashboardMatchResultsProps {
   atsKeywords: ATSKeywordDisplayProps;
   experienceAlignment: ExperienceAlignmentDisplayProps;
   qualificationFit?: QualificationFitDisplayProps;
+  sectionStrength?: SectionStrengthDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -75,6 +81,7 @@ export function DashboardMatchResults({
   atsKeywords,
   experienceAlignment,
   qualificationFit,
+  sectionStrength,
   userType,
   tier,
   matchId,
@@ -93,6 +100,10 @@ export function DashboardMatchResults({
   const resolvedQualificationFit =
     qualificationFit ??
     (generated.qualificationFit as QualificationFitDisplayProps | undefined);
+
+  const resolvedSectionStrength =
+    sectionStrength ??
+    (generated.sectionStrength as SectionStrengthDisplayProps | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -169,6 +180,21 @@ export function DashboardMatchResults({
           "Evaluate how the candidate's qualifications match the job requirements.",
           resolvedQualificationFit ? (
             <QualificationFitDisplay {...resolvedQualificationFit} />
+          ) : null
+        ),
+    },
+    {
+      id: "sectionStrength",
+      label: "Section Strength",
+      tab: "jobseeker",
+      render: () =>
+        renderGenerateOrDisplay(
+          "sectionStrength",
+          <BarChart3 className="h-5 w-5 text-indigo-500" aria-hidden="true" />,
+          "Resume Section Strength",
+          "Rate each resume section against this job and identify areas to improve.",
+          resolvedSectionStrength ? (
+            <SectionStrengthDisplay {...resolvedSectionStrength} />
           ) : null
         ),
     },

@@ -31,6 +31,7 @@ import type {
   ATSKeywordsData,
   ExperienceAlignmentData,
   QualificationFitData,
+  SectionStrengthData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -55,6 +56,7 @@ interface MatchDetail {
     atsKeywords: ATSKeywordsData;
     experienceAlignment: ExperienceAlignmentData;
     qualificationFit?: QualificationFitData;
+    sectionStrength?: SectionStrengthData;
   };
 }
 
@@ -202,6 +204,7 @@ export default function MatchDetailPage() {
         atsKeywords={match.insights.atsKeywords}
         experienceAlignment={match.insights.experienceAlignment}
         qualificationFit={match.insights.qualificationFit}
+        sectionStrength={match.insights.sectionStrength}
         userType={userType}
         tier={tier}
         matchId={match.id}

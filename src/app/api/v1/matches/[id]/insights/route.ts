@@ -15,6 +15,7 @@ import { computeTopStrengths } from "@/services/insights/top-strengths/compute";
 import { computeATSKeywords } from "@/services/insights/ats-keywords/compute";
 import { computeExperienceAlignment } from "@/services/insights/experience-alignment/compute";
 import { computeQualificationFit } from "@/services/insights/qualification-fit/compute";
+import { computeSectionStrength } from "@/services/insights/section-strength/compute";
 import type { InsightComputeContext } from "@/services/insights/types";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 
@@ -48,6 +49,10 @@ const computeMap: Record<
   },
   qualificationFit: async (ctx) => {
     const r = await computeQualificationFit(ctx);
+    return { data: r.data };
+  },
+  sectionStrength: async (ctx) => {
+    const r = await computeSectionStrength(ctx);
     return { data: r.data };
   },
 };
