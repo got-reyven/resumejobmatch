@@ -126,6 +126,16 @@ export interface TailoredSummaryData {
   key_changes: string[];
 }
 
+export interface RiskAreasData {
+  risks: {
+    area: string;
+    severity: "critical" | "moderate" | "minor";
+    detail: string;
+    mitigation: string | null;
+  }[];
+  summary: string;
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

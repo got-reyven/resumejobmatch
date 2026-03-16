@@ -33,6 +33,7 @@ import type {
   QualificationFitData,
   SectionStrengthData,
   TailoredSummaryData,
+  RiskAreasData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -59,6 +60,7 @@ interface MatchDetail {
     qualificationFit?: QualificationFitData;
     sectionStrength?: SectionStrengthData;
     tailoredSummary?: TailoredSummaryData;
+    riskAreas?: RiskAreasData;
   };
 }
 
@@ -208,6 +210,7 @@ export default function MatchDetailPage() {
         qualificationFit={match.insights.qualificationFit}
         sectionStrength={match.insights.sectionStrength}
         tailoredSummary={match.insights.tailoredSummary}
+        riskAreas={match.insights.riskAreas}
         userType={userType}
         tier={tier}
         matchId={match.id}

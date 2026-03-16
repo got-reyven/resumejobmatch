@@ -33,6 +33,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Tailored Summary Suggestion",
   },
+  riskAreas: {
+    tab: "hiring_manager",
+    tier: 2,
+    title: "Risk Areas & Gaps",
+  },
 };
 
 interface PersistMatchParams {

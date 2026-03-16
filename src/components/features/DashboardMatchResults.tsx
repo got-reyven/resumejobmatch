@@ -10,6 +10,7 @@ import {
   GraduationCap,
   BarChart3,
   FileText,
+  AlertTriangle,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -55,6 +56,10 @@ import {
   TailoredSummaryDisplay,
   type TailoredSummaryDisplayProps,
 } from "@/components/features/TailoredSummaryDisplay";
+import {
+  RiskAreasDisplay,
+  type RiskAreasDisplayProps,
+} from "@/components/features/RiskAreasDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 interface InsightDef {
@@ -74,6 +79,7 @@ interface DashboardMatchResultsProps {
   qualificationFit?: QualificationFitDisplayProps;
   sectionStrength?: SectionStrengthDisplayProps;
   tailoredSummary?: TailoredSummaryDisplayProps;
+  riskAreas?: RiskAreasDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -89,6 +95,7 @@ export function DashboardMatchResults({
   qualificationFit,
   sectionStrength,
   tailoredSummary,
+  riskAreas,
   userType,
   tier,
   matchId,
@@ -115,6 +122,9 @@ export function DashboardMatchResults({
   const resolvedTailoredSummary =
     tailoredSummary ??
     (generated.tailoredSummary as TailoredSummaryDisplayProps | undefined);
+
+  const resolvedRiskAreas =
+    riskAreas ?? (generated.riskAreas as RiskAreasDisplayProps | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -224,6 +234,21 @@ export function DashboardMatchResults({
               {...resolvedTailoredSummary}
               isPro={isPro}
             />
+          ) : null
+        ),
+    },
+    {
+      id: "riskAreas",
+      label: "Risk Areas & Gaps",
+      tab: "business",
+      render: () =>
+        renderGenerateOrDisplay(
+          "riskAreas",
+          <AlertTriangle className="h-5 w-5 text-red-400" aria-hidden="true" />,
+          "Risk Areas & Gaps",
+          "Identify where the candidate falls short of requirements, with severity and mitigation context.",
+          resolvedRiskAreas ? (
+            <RiskAreasDisplay {...resolvedRiskAreas} isPro={isPro} />
           ) : null
         ),
     },
