@@ -9,6 +9,7 @@ import {
   EyeOff,
   GraduationCap,
   BarChart3,
+  FileText,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,6 +51,10 @@ import {
   SectionStrengthDisplay,
   type SectionStrengthDisplayProps,
 } from "@/components/features/SectionStrengthDisplay";
+import {
+  TailoredSummaryDisplay,
+  type TailoredSummaryDisplayProps,
+} from "@/components/features/TailoredSummaryDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 interface InsightDef {
@@ -68,6 +73,7 @@ interface DashboardMatchResultsProps {
   experienceAlignment: ExperienceAlignmentDisplayProps;
   qualificationFit?: QualificationFitDisplayProps;
   sectionStrength?: SectionStrengthDisplayProps;
+  tailoredSummary?: TailoredSummaryDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -82,6 +88,7 @@ export function DashboardMatchResults({
   experienceAlignment,
   qualificationFit,
   sectionStrength,
+  tailoredSummary,
   userType,
   tier,
   matchId,
@@ -104,6 +111,10 @@ export function DashboardMatchResults({
   const resolvedSectionStrength =
     sectionStrength ??
     (generated.sectionStrength as SectionStrengthDisplayProps | undefined);
+
+  const resolvedTailoredSummary =
+    tailoredSummary ??
+    (generated.tailoredSummary as TailoredSummaryDisplayProps | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -195,6 +206,24 @@ export function DashboardMatchResults({
           "Rate each resume section against this job and identify areas to improve.",
           resolvedSectionStrength ? (
             <SectionStrengthDisplay {...resolvedSectionStrength} />
+          ) : null
+        ),
+    },
+    {
+      id: "tailoredSummary",
+      label: "Tailored Summary",
+      tab: "jobseeker",
+      render: () =>
+        renderGenerateOrDisplay(
+          "tailoredSummary",
+          <FileText className="h-5 w-5 text-teal-500" aria-hidden="true" />,
+          "Tailored Summary Suggestion",
+          "Get an AI-optimized professional summary tailored to this specific job.",
+          resolvedTailoredSummary ? (
+            <TailoredSummaryDisplay
+              {...resolvedTailoredSummary}
+              isPro={isPro}
+            />
           ) : null
         ),
     },

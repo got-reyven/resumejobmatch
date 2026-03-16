@@ -32,6 +32,7 @@ import type {
   ExperienceAlignmentData,
   QualificationFitData,
   SectionStrengthData,
+  TailoredSummaryData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -57,6 +58,7 @@ interface MatchDetail {
     experienceAlignment: ExperienceAlignmentData;
     qualificationFit?: QualificationFitData;
     sectionStrength?: SectionStrengthData;
+    tailoredSummary?: TailoredSummaryData;
   };
 }
 
@@ -205,6 +207,7 @@ export default function MatchDetailPage() {
         experienceAlignment={match.insights.experienceAlignment}
         qualificationFit={match.insights.qualificationFit}
         sectionStrength={match.insights.sectionStrength}
+        tailoredSummary={match.insights.tailoredSummary}
         userType={userType}
         tier={tier}
         matchId={match.id}

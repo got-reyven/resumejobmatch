@@ -120,6 +120,12 @@ export interface SectionStrengthData {
   summary: string;
 }
 
+export interface TailoredSummaryData {
+  current_summary: string | null;
+  suggested_summary: string;
+  key_changes: string[];
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

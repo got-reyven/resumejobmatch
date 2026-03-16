@@ -28,6 +28,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Resume Section Strength",
   },
+  tailoredSummary: {
+    tab: "jobseeker",
+    tier: 2,
+    title: "Tailored Summary Suggestion",
+  },
 };
 
 interface PersistMatchParams {
