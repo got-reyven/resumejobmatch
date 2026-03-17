@@ -112,7 +112,7 @@ export default function PlanPage() {
   }, []);
 
   const { userType, ready, loading } = state;
-  const availablePlans = plans[userType] ?? plans.jobseeker;
+  const availablePlans = plans[userType] ?? plans["jobseeker"]!;
 
   function handleSelect(plan: PlanOption) {
     if (plan.comingSoon) return;

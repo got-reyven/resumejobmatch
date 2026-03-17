@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       .from("organization_invitations")
       .update({ status: "accepted" })
       .eq("organization_id", orgId)
-      .eq("email", user.email)
+      .eq("email", user.email!)
       .eq("status", "pending");
 
     return NextResponse.json({ data: { success: true } });

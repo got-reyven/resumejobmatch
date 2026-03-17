@@ -16,7 +16,7 @@ export function buildATSKeywordsPrompt(
 
   const educationContext = resume.education
     .map((ed) =>
-      [ed.degree, ed.institution, ed.field].filter(Boolean).join(" — ")
+      [ed.degree, ed.institution, ed.field_of_study].filter(Boolean).join(" — ")
     )
     .join("\n");
 

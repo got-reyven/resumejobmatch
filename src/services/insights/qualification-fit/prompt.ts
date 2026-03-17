@@ -6,7 +6,7 @@ export function buildQualificationFitPrompt(
 ) {
   const educationContext = resume.education
     .map((ed) =>
-      [ed.degree, ed.field, ed.institution, ed.graduationDate]
+      [ed.degree, ed.field_of_study, ed.institution, ed.year]
         .filter(Boolean)
         .join(" — ")
     )

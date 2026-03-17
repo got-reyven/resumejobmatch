@@ -119,17 +119,19 @@ export async function persistMatch({
 
   if (matchError) throw matchError;
 
-  const insightRows = Object.entries(insights).map(([key, data]) => {
-    const meta = INSIGHT_META[key];
-    return {
-      match_id: match.id,
-      insight_key: key,
-      tab: meta.tab,
-      tier: meta.tier,
-      title: meta.title,
-      data,
-    };
-  });
+  const insightRows = Object.entries(insights)
+    .filter(([key]) => INSIGHT_META[key] !== undefined)
+    .map(([key, data]) => {
+      const meta = INSIGHT_META[key]!;
+      return {
+        match_id: match.id,
+        insight_key: key,
+        tab: meta.tab,
+        tier: meta.tier,
+        title: meta.title,
+        data,
+      };
+    });
 
   const { error: insightsError } = await supabase
     .from("match_insights")

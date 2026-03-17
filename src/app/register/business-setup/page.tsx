@@ -83,7 +83,7 @@ export default function BusinessSetupPage() {
       let orgId: string;
 
       if (orgs && orgs.length > 0) {
-        orgId = orgs[0].id;
+        orgId = orgs[0]!.id;
         const { error: updateError } = await supabase
           .from("organizations")
           .update({

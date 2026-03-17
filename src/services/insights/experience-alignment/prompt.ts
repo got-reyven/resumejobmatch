@@ -9,7 +9,7 @@ export function buildExperienceAlignmentPrompt(
       const parts = [
         e.title,
         e.company,
-        e.startDate && e.endDate ? `${e.startDate} – ${e.endDate}` : null,
+        e.start_date && e.end_date ? `${e.start_date} – ${e.end_date}` : null,
         e.description,
       ].filter(Boolean);
       if (e.highlights.length > 0) parts.push(e.highlights.join("; "));
@@ -19,7 +19,7 @@ export function buildExperienceAlignmentPrompt(
 
   const educationContext = resume.education
     .map((ed) =>
-      [ed.degree, ed.institution, ed.field].filter(Boolean).join(" — ")
+      [ed.degree, ed.institution, ed.field_of_study].filter(Boolean).join(" — ")
     )
     .join("\n");
 
