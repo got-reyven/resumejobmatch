@@ -13,7 +13,7 @@ function extractTitle(rawText: string): string | null {
 
 // GET /api/v1/matches/[id]
 // Returns a single match with all insights for the authenticated user
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const supabase = await createClient();
     const {

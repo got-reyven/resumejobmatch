@@ -188,6 +188,7 @@ export async function POST(request: NextRequest) {
           status: "pending",
         });
 
+        // eslint-disable-next-line no-console
         console.log("[invite] success:", email);
         results.push({ email, status: "sent" });
       } catch (err) {
