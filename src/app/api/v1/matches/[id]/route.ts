@@ -153,7 +153,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
 // DELETE /api/v1/matches/[id]
 // Soft-deletes a match by setting deleted_at
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export async function DELETE(_request: NextRequest, context: RouteContext) {
   try {
     const supabase = await createClient();
     const {
