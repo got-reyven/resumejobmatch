@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Briefcase,
@@ -18,6 +18,20 @@ import { createClient } from "@/lib/supabase/client";
 type UserType = "jobseeker" | "business";
 
 export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto flex max-w-md flex-col items-center justify-center gap-3 py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-white/70" />
+        </div>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselected = searchParams.get("type") as UserType | null;

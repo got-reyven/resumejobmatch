@@ -119,6 +119,37 @@ Warning: Unexpected console statement. no-console
 
 ---
 
+## 6. `useSearchParams()` Requires Suspense Boundary (Next.js 15)
+
+**Error:**
+
+```
+useSearchParams() should be wrapped in a suspense boundary at page "/register".
+Error occurred prerendering page "/register".
+```
+
+**Root cause:** Next.js 15 prerenders pages during the production build. `useSearchParams()` is asynchronous during static generation and requires a `<Suspense>` boundary so Next.js can defer rendering until search params are available.
+
+**Fix:** Extract the component that calls `useSearchParams()` into a child component and wrap it with `<Suspense>` in the page's default export.
+
+```tsx
+export default function Page() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <PageContent /> {/* useSearchParams() lives here */}
+    </Suspense>
+  );
+}
+```
+
+**Files affected:**
+
+- `src/app/register/page.tsx`
+
+**Prevention:** Any page or component that calls `useSearchParams()` must be wrapped in a `<Suspense>` boundary. Apply the same pattern whenever adding `useSearchParams()` to a new page.
+
+---
+
 ## tsconfig.json Strict Settings Reference
 
 These settings cause most build-time errors. All code must comply:
