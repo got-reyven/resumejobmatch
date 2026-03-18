@@ -136,6 +136,15 @@ export interface RiskAreasData {
   summary: string;
 }
 
+export interface InterviewFocusData {
+  questions: {
+    question: string;
+    rationale: string;
+    category: "technical" | "experience" | "culture" | "growth";
+    listen_for: string;
+  }[];
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

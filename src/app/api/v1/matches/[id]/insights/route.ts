@@ -18,6 +18,7 @@ import { computeQualificationFit } from "@/services/insights/qualification-fit/c
 import { computeSectionStrength } from "@/services/insights/section-strength/compute";
 import { computeTailoredSummary } from "@/services/insights/tailored-summary/compute";
 import { computeRiskAreas } from "@/services/insights/risk-areas/compute";
+import { computeInterviewFocus } from "@/services/insights/interview-focus/compute";
 import type { InsightComputeContext } from "@/services/insights/types";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 
@@ -63,6 +64,10 @@ const computeMap: Record<
   },
   riskAreas: async (ctx) => {
     const r = await computeRiskAreas(ctx);
+    return { data: r.data };
+  },
+  interviewFocus: async (ctx) => {
+    const r = await computeInterviewFocus(ctx);
     return { data: r.data };
   },
 };

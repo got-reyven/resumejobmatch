@@ -34,6 +34,7 @@ import type {
   SectionStrengthData,
   TailoredSummaryData,
   RiskAreasData,
+  InterviewFocusData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -61,6 +62,7 @@ interface MatchDetail {
     sectionStrength?: SectionStrengthData;
     tailoredSummary?: TailoredSummaryData;
     riskAreas?: RiskAreasData;
+    interviewFocus?: InterviewFocusData;
   };
 }
 
@@ -211,6 +213,7 @@ export default function MatchDetailPage() {
         sectionStrength={match.insights.sectionStrength}
         tailoredSummary={match.insights.tailoredSummary}
         riskAreas={match.insights.riskAreas}
+        interviewFocus={match.insights.interviewFocus}
         userType={userType}
         tier={tier}
         matchId={match.id}

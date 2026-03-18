@@ -11,6 +11,7 @@ import {
   BarChart3,
   FileText,
   AlertTriangle,
+  MessageCircleQuestion,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,6 +61,10 @@ import {
   RiskAreasDisplay,
   type RiskAreasDisplayProps,
 } from "@/components/features/RiskAreasDisplay";
+import {
+  InterviewFocusDisplay,
+  type InterviewFocusDisplayProps,
+} from "@/components/features/InterviewFocusDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 interface InsightDef {
@@ -80,6 +85,7 @@ interface DashboardMatchResultsProps {
   sectionStrength?: SectionStrengthDisplayProps;
   tailoredSummary?: TailoredSummaryDisplayProps;
   riskAreas?: RiskAreasDisplayProps;
+  interviewFocus?: InterviewFocusDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -96,6 +102,7 @@ export function DashboardMatchResults({
   sectionStrength,
   tailoredSummary,
   riskAreas,
+  interviewFocus,
   userType,
   tier,
   matchId,
@@ -125,6 +132,10 @@ export function DashboardMatchResults({
 
   const resolvedRiskAreas =
     riskAreas ?? (generated.riskAreas as RiskAreasDisplayProps | undefined);
+
+  const resolvedInterviewFocus =
+    interviewFocus ??
+    (generated.interviewFocus as InterviewFocusDisplayProps | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -249,6 +260,24 @@ export function DashboardMatchResults({
           "Identify where the candidate falls short of requirements, with severity and mitigation context.",
           resolvedRiskAreas ? (
             <RiskAreasDisplay {...resolvedRiskAreas} isPro={isPro} />
+          ) : null
+        ),
+    },
+    {
+      id: "interviewFocus",
+      label: "Interview Focus Points",
+      tab: "business",
+      render: () =>
+        renderGenerateOrDisplay(
+          "interviewFocus",
+          <MessageCircleQuestion
+            className="h-5 w-5 text-violet-500"
+            aria-hidden="true"
+          />,
+          "Interview Focus Points",
+          "Generate targeted interview questions based on gaps identified in the match analysis.",
+          resolvedInterviewFocus ? (
+            <InterviewFocusDisplay {...resolvedInterviewFocus} isPro={isPro} />
           ) : null
         ),
     },

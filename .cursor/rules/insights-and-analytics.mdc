@@ -477,16 +477,22 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Hiring Manager only |
-| **Tier** | 2 (Free: 2 questions, Pro: all questions) |
+| **Tier** | 2 (Business Free: 3 questions, Business Pro: up to 10 questions) |
 | **Phase** | v0.3 |
+| **Status** | Implemented |
 
 **Why it matters**
 Turns gap analysis into interview strategy. Instead of generic behavioral questions, hiring managers get questions tailored to this specific candidate's profile against this specific role. Significantly improves interview quality.
 
 **Implementation**
-- AI generates questions based on identified gaps and ambiguous areas
+- AI generates up to 10 questions based on identified gaps and ambiguous areas
 - Each question targets a specific concern with context on what to listen for
-- Questions are categorized: technical verification, experience depth, culture fit
+- Questions are categorized: technical verification, experience depth, culture fit, growth potential
+- On-demand generation only (registered users, via Generate button in business tab)
+
+**Tier gating**
+- Business Free: shows first 3 questions
+- Business Pro: shows all questions (up to 10 max)
 
 **Output schema**
 ```typescript

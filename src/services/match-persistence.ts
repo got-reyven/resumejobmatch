@@ -38,6 +38,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Risk Areas & Gaps",
   },
+  interviewFocus: {
+    tab: "hiring_manager",
+    tier: 2,
+    title: "Interview Focus Points",
+  },
 };
 
 interface PersistMatchParams {
