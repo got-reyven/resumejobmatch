@@ -313,6 +313,72 @@ const advancedInsights: Insight[] = [
   },
 ];
 
+function getAvailabilityBadges(
+  access: Access,
+  audience: Audience
+): { label: string; className: string }[] {
+  if (access === "everyone") {
+    return [
+      {
+        label: "Free",
+        className: "bg-green-100 text-green-700 border-green-200",
+      },
+    ];
+  }
+
+  if (access === "registered") {
+    if (audience === "jobseeker")
+      return [
+        {
+          label: "Jobseeker Free",
+          className: "bg-blue-100 text-blue-700 border-blue-200",
+        },
+      ];
+    if (audience === "hiring_manager")
+      return [
+        {
+          label: "Business Free",
+          className: "bg-indigo-100 text-indigo-700 border-indigo-200",
+        },
+      ];
+    return [
+      {
+        label: "Jobseeker Free",
+        className: "bg-blue-100 text-blue-700 border-blue-200",
+      },
+      {
+        label: "Business Free",
+        className: "bg-indigo-100 text-indigo-700 border-indigo-200",
+      },
+    ];
+  }
+
+  if (audience === "jobseeker")
+    return [
+      {
+        label: "Jobseeker Pro",
+        className: "bg-purple-100 text-purple-700 border-purple-200",
+      },
+    ];
+  if (audience === "hiring_manager")
+    return [
+      {
+        label: "Business Pro",
+        className: "bg-amber-100 text-amber-700 border-amber-200",
+      },
+    ];
+  return [
+    {
+      label: "Jobseeker Pro",
+      className: "bg-purple-100 text-purple-700 border-purple-200",
+    },
+    {
+      label: "Business Pro",
+      className: "bg-amber-100 text-amber-700 border-amber-200",
+    },
+  ];
+}
+
 function InsightCard({ insight }: { insight: Insight }) {
   const [open, setOpen] = useState(false);
   const detail = insightDetails[insight.id];
@@ -321,7 +387,7 @@ function InsightCard({ insight }: { insight: Insight }) {
     <>
       <div
         className={cn(
-          "group relative flex flex-col rounded-2xl bg-background p-5 transition-shadow",
+          "group relative flex flex-col rounded-3xl bg-background p-7 transition-shadow",
           insight.available ? "hover:shadow-md" : "opacity-50"
         )}
       >
@@ -346,8 +412,8 @@ function InsightCard({ insight }: { insight: Insight }) {
           )}
         </div>
 
-        <h3 className="text-sm font-semibold leading-snug">{insight.name}</h3>
-        <p className="mt-1.5 flex-1 text-xs leading-relaxed text-muted-foreground">
+        <h3 className="text-base font-semibold leading-snug">{insight.name}</h3>
+        <p className="mt-1.5 flex-1 text-sm leading-relaxed text-muted-foreground">
           {insight.description}
         </p>
 
@@ -355,7 +421,7 @@ function InsightCard({ insight }: { insight: Insight }) {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="mt-3 inline-flex items-center gap-0.5 self-start text-xs font-medium text-primary transition-colors hover:text-primary/80"
+            className="mt-4 inline-flex items-center gap-0.5 self-start text-sm font-medium text-primary transition-colors hover:text-primary/80"
           >
             <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
             Learn More
@@ -365,7 +431,7 @@ function InsightCard({ insight }: { insight: Insight }) {
 
       {detail && (
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
             <DialogHeader>
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -409,6 +475,25 @@ function InsightCard({ insight }: { insight: Insight }) {
                   </ul>
                 </div>
               )}
+
+              <div className="flex flex-wrap gap-2 border-t pt-4">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Available in:
+                </span>
+                {getAvailabilityBadges(insight.access, insight.audience).map(
+                  (badge) => (
+                    <span
+                      key={badge.label}
+                      className={cn(
+                        "inline-flex items-center rounded-full border px-3 py-0.5 text-xs font-semibold",
+                        badge.className
+                      )}
+                    >
+                      {badge.label}
+                    </span>
+                  )
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
@@ -485,7 +570,7 @@ export function InsightsShowcase() {
           ))}
         </div>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3">
           {filtered.map((insight) => (
             <InsightCard key={insight.id} insight={insight} />
           ))}

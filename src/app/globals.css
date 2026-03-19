@@ -127,6 +127,16 @@
       "rlig" 1,
       "calt" 1;
   }
+
+  button,
+  a,
+  [role="button"],
+  [type="button"],
+  [type="submit"],
+  [type="reset"],
+  summary {
+    cursor: pointer;
+  }
 }
 
 .hero-box {
