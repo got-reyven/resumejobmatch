@@ -40,10 +40,18 @@ Rules:
 5. Do NOT list weaknesses or gaps — this insight is purely about what the candidate brings.
 6. Be factual and evidence-based — never speculate beyond what the resume states.`;
 
+  const responsibilitiesContext =
+    resume.key_responsibilities.length > 0
+      ? resume.key_responsibilities.join("; ")
+      : "None listed";
+
   const userPrompt = `Identify the top strengths of this candidate for the given job.
 
 === CANDIDATE SKILLS ===
 ${resumeSkills || "None listed"}
+
+=== CANDIDATE KEY RESPONSIBILITIES ===
+${responsibilitiesContext}
 
 === CANDIDATE EXPERIENCE ===
 ${experienceContext || "None listed"}

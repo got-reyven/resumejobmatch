@@ -436,6 +436,25 @@ function ParsedResumePreview({ data }: { data: ParsedResume }) {
         </div>
       )}
 
+      {data.key_responsibilities.length > 0 && (
+        <div>
+          <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Key Responsibilities
+          </p>
+          <ul className="space-y-0.5">
+            {data.key_responsibilities.map((item, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-1.5 text-xs text-muted-foreground"
+              >
+                <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {data.experience.length > 0 && (
         <div>
           <p className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">

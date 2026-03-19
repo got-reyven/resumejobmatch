@@ -65,11 +65,16 @@ Rules:
 - Include at least one question about the candidate's strongest area to assess depth.
 - Generate between 5 and 10 questions total.`;
 
+  const responsibilitiesContext =
+    resume.key_responsibilities.length > 0
+      ? resume.key_responsibilities.join("; ")
+      : "";
+
   const userPrompt = `Generate targeted interview questions for this candidate against the target job.
 
 === CANDIDATE SKILLS ===
 ${skillsList}
-
+${responsibilitiesContext ? `\n=== CANDIDATE KEY RESPONSIBILITIES ===\n${responsibilitiesContext}` : ""}
 === CANDIDATE EXPERIENCE ===
 ${experienceContext}
 

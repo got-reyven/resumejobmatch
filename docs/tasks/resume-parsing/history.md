@@ -22,3 +22,12 @@
 - MatchingHero orchestrates file upload → API call → display parsed resume
 - Fixed Zod v4 z.record() signatures (requires key + value schemas)
 - All checks pass: tsc --noEmit, eslint, dev server compiles clean
+
+## 2026-03-18 — ai-engineer / ui-ux-engineer
+
+- Added `key_responsibilities` field to ParsedResume schema (array of strings, defaults to empty)
+- Updated resume parsing prompt to explicitly extract standalone "Key Responsibilities" sections
+- Updated ParsedResumePreview (ResumeUpload.tsx) to display key responsibilities with bullet list
+- Updated ResumeDetailPanel (match detail page) to display key responsibilities
+- Updated all 11 insight prompt templates to include key responsibilities context in AI calls
+- This fixes resumes that list responsibilities separately from skills/experience being underrepresented in matching

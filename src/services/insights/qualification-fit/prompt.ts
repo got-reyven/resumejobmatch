@@ -44,6 +44,11 @@ Rules:
 - Be specific in evidence — cite the actual degree, certification, or credential from the resume.
 - Order qualifications with required items first, then preferred.`;
 
+  const responsibilitiesContext =
+    resume.key_responsibilities.length > 0
+      ? resume.key_responsibilities.join("; ")
+      : "";
+
   const userPrompt = `Evaluate the candidate's qualification fit for this role.
 
 === CANDIDATE EDUCATION ===
@@ -54,7 +59,7 @@ ${certContext}
 
 === CANDIDATE EXPERIENCE ===
 ${experienceContext}
-
+${responsibilitiesContext ? `\n=== CANDIDATE KEY RESPONSIBILITIES ===\n${responsibilitiesContext}` : ""}
 === CANDIDATE SKILLS ===
 ${resume.skills.join(", ")}
 

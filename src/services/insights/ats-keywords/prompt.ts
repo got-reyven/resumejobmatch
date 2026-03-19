@@ -44,11 +44,16 @@ Rules:
 - Be accurate about match classification — don't inflate found_in_resume
 - Order keywords by importance (most critical for the role first)`;
 
+  const responsibilitiesContext =
+    resume.key_responsibilities.length > 0
+      ? resume.key_responsibilities.join("; ")
+      : "";
+
   const userPrompt = `Analyze the ATS keyword match between this resume and job description.
 
 === CANDIDATE SKILLS ===
 ${resumeSkills}
-
+${responsibilitiesContext ? `\n=== CANDIDATE KEY RESPONSIBILITIES ===\n${responsibilitiesContext}` : ""}
 === CANDIDATE EXPERIENCE ===
 ${experienceContext}
 

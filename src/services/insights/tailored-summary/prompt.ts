@@ -42,6 +42,11 @@ Rules:
 - For current_summary, return the candidate's existing summary text as-is (or null if none exists).
 - For key_changes, list 2–5 specific improvements (e.g., "Added React and TypeScript keywords from job requirements", "Reframed 8 years of experience to emphasize frontend architecture").`;
 
+  const responsibilitiesContext =
+    resume.key_responsibilities.length > 0
+      ? resume.key_responsibilities.join("; ")
+      : "";
+
   const userPrompt = `Write a tailored professional summary for this candidate targeting the job below.
 
 === CURRENT SUMMARY ===
@@ -49,7 +54,7 @@ ${currentSummary}
 
 === CANDIDATE SKILLS ===
 ${skillsList}
-
+${responsibilitiesContext ? `\n=== CANDIDATE KEY RESPONSIBILITIES ===\n${responsibilitiesContext}` : ""}
 === CANDIDATE EXPERIENCE (most recent) ===
 ${experienceContext}
 

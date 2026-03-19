@@ -49,11 +49,16 @@ Rules:
 - relevant_aspects should be specific (e.g., "3 years managing React applications" not just "React")
 - Order role_mapping from most relevant to least relevant`;
 
+  const responsibilitiesContext =
+    resume.key_responsibilities.length > 0
+      ? resume.key_responsibilities.join("; ")
+      : "";
+
   const userPrompt = `Analyze the experience alignment between this candidate and the job.
 
 === CANDIDATE EXPERIENCE ===
 ${experienceContext}
-
+${responsibilitiesContext ? `\n=== CANDIDATE KEY RESPONSIBILITIES ===\n${responsibilitiesContext}` : ""}
 === CANDIDATE EDUCATION ===
 ${educationContext}
 

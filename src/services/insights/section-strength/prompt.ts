@@ -72,6 +72,11 @@ Rules:
 - Order sections as: summary, skills, experience, education, certifications.
 - The "weakest" field should contain the name value (e.g., "skills", "experience").`;
 
+  const responsibilitiesSection =
+    resume.key_responsibilities.length > 0
+      ? resume.key_responsibilities.join("; ")
+      : "(no key responsibilities section)";
+
   const userPrompt = `Evaluate each resume section against this job description.
 
 === RESUME: SUMMARY ===
@@ -79,6 +84,9 @@ ${summarySection}
 
 === RESUME: SKILLS ===
 ${skillsSection}
+
+=== RESUME: KEY RESPONSIBILITIES ===
+${responsibilitiesSection}
 
 === RESUME: EXPERIENCE ===
 ${experienceSection}

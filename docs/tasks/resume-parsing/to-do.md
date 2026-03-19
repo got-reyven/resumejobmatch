@@ -11,3 +11,6 @@
 | 7   | Create API endpoint POST /api/v1/resumes/parse | api-engineer    | done   | src/app/api/v1/resumes/parse/route.ts           |
 | 8   | Wire frontend + parsed preview                 | ui-ux-engineer  | done   | Updated ResumeUpload + MatchingHero             |
 | 9   | Verify end-to-end flow                         | qa-engineer     | done   | tsc passes, eslint passes, 400 on empty request |
+| 10  | Add key_responsibilities to schema + prompt    | ai-engineer     | done   | Extracts standalone responsibilities sections   |
+| 11  | Display key_responsibilities in UI             | ui-ux-engineer  | done   | ParsedResumePreview + ResumeDetailPanel         |
+| 12  | Add key_responsibilities to insight prompts    | ai-engineer     | done   | All 11 insight prompts updated                  |

@@ -11,6 +11,7 @@ Rules:
 - If a field cannot be determined from the text, use null
 - Skills should be individual items (e.g. "TypeScript", "React"), not grouped phrases
 - For experience entries, include the role title, company, dates, and key responsibilities
+- key_responsibilities: extract items from any standalone "Key Responsibilities", "Core Responsibilities", "Areas of Responsibility", or similarly labeled section that is separate from skills and experience bullet points. Each item should be a concise responsibility statement. If no such section exists, return an empty array
 - Estimate total_years_experience from the employment history dates
 - Dates should be in readable format (e.g. "Jan 2020", "2019")
 - Do NOT fabricate or infer information that is not present in the text

@@ -8,6 +8,12 @@ function formatResume(resume: ParsedResume): string {
   if (resume.skills.length > 0)
     sections.push(`Skills: ${resume.skills.join(", ")}`);
 
+  if (resume.key_responsibilities.length > 0) {
+    sections.push(
+      `Key Responsibilities: ${resume.key_responsibilities.join("; ")}`
+    );
+  }
+
   if (resume.experience.length > 0) {
     const expLines = resume.experience.map((e) => {
       let line = `- ${e.title} at ${e.company}`;

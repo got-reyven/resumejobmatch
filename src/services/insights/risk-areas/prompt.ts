@@ -63,11 +63,16 @@ Rules:
 - Aim for 3–7 risks total. Only go higher if the candidate has significant misalignment.
 - Never fabricate gaps that aren't supported by the job description's actual requirements.`;
 
+  const responsibilitiesContext =
+    resume.key_responsibilities.length > 0
+      ? resume.key_responsibilities.join("; ")
+      : "";
+
   const userPrompt = `Identify risk areas and gaps for this candidate against the target job.
 
 === CANDIDATE SKILLS ===
 ${skillsList}
-
+${responsibilitiesContext ? `\n=== CANDIDATE KEY RESPONSIBILITIES ===\n${responsibilitiesContext}` : ""}
 === CANDIDATE EXPERIENCE ===
 ${experienceContext}
 

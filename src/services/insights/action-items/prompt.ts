@@ -42,10 +42,18 @@ Rules:
 7. Prioritize adding missing required skills over refining existing content.
 8. Be specific to this job — generic advice like "tailor your resume" is not acceptable.`;
 
+  const responsibilitiesContext =
+    resume.key_responsibilities.length > 0
+      ? resume.key_responsibilities.join("; ")
+      : "None listed";
+
   const userPrompt = `Analyze this resume against the job description and provide the top 3 action items to improve the match.
 
 === CANDIDATE SKILLS ===
 ${resumeSkills || "None listed"}
+
+=== CANDIDATE KEY RESPONSIBILITIES ===
+${responsibilitiesContext}
 
 === CANDIDATE EXPERIENCE ===
 ${experienceSummary || "None listed"}

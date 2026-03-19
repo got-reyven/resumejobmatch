@@ -29,6 +29,7 @@ export const parsedResumeSchema = z.object({
   location: z.string().nullable(),
   summary: z.string().nullable(),
   skills: z.array(z.string()),
+  key_responsibilities: z.array(z.string()).default([]),
   experience: z.array(experienceSchema),
   education: z.array(educationSchema),
   certifications: z.array(certificationSchema).default([]),

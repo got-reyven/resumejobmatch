@@ -33,11 +33,16 @@ Rules:
 - Group closely related variants as one skill (e.g., don't list "React" and "React.js" separately)
 - Order matched skills by relevance; order missing skills with required first`;
 
+  const responsibilitiesContext =
+    resume.key_responsibilities.length > 0
+      ? resume.key_responsibilities.join("; ")
+      : "";
+
   const userPrompt = `Analyze the skills match between this resume and job description.
 
 === CANDIDATE SKILLS ===
 ${resumeSkills}
-
+${responsibilitiesContext ? `\n=== CANDIDATE KEY RESPONSIBILITIES ===\n${responsibilitiesContext}` : ""}
 === CANDIDATE EXPERIENCE ===
 ${experienceContext}
 
