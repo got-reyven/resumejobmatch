@@ -83,7 +83,7 @@ function FeatureList({ items }: { items: string[] }) {
 
 function PlanGroupCard({ group }: { group: PlanGroup }) {
   return (
-    <div className="overflow-hidden rounded-xl border bg-background">
+    <div className="overflow-hidden rounded-3xl bg-background">
       <div className="border-b bg-muted/40 px-6 py-5 text-center">
         <h3 className="text-lg font-semibold">{group.audience}</h3>
         <p className="mt-1 text-sm text-muted-foreground">{group.subtitle}</p>
@@ -151,26 +151,32 @@ function PlanGroupCard({ group }: { group: PlanGroup }) {
 
 export function Pricing() {
   return (
-    <section id="pricing" className="border-t py-20 sm:py-28">
+    <section id="pricing" className="hero-box py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Simple, Transparent Pricing
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
+          <p className="mt-4 text-lg text-white/80">
             Start free. Upgrade when you&apos;re ready. Cancel anytime.
           </p>
         </div>
 
-        <div className="mx-auto mt-10 flex max-w-6xl flex-col items-center justify-between gap-4 rounded-lg border border-dashed bg-muted/30 px-6 py-5 sm:flex-row sm:items-center">
+        <div className="mx-auto mt-10 flex max-w-6xl flex-col items-center justify-between gap-4 rounded-3xl bg-white/10 px-6 py-5 backdrop-blur-sm sm:flex-row sm:items-center">
           <div>
-            <h3 className="font-semibold">No account needed to start</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h3 className="font-semibold text-white">
+              No account needed to start
+            </h3>
+            <p className="mt-1 text-sm text-white/70">
               Try the app as a guest with up to 3 matches per day and basic
               insights — completely free, no signup required.
             </p>
           </div>
-          <Button variant="outline" className="shrink-0" asChild>
+          <Button
+            variant="outline"
+            className="shrink-0 border-white/30 bg-white text-foreground hover:bg-white/90"
+            asChild
+          >
             <Link href="#hero">Try Matching Resumes Now</Link>
           </Button>
         </div>
@@ -181,7 +187,7 @@ export function Pricing() {
           ))}
         </div>
 
-        <p className="mt-10 text-center text-sm text-muted-foreground">
+        <p className="mt-10 text-center text-sm text-white/70">
           All prices in USD. Cancel anytime — no long-term contracts.
         </p>
       </div>
