@@ -1,23 +1,26 @@
-import { Upload, FileSearch, BarChart3 } from "lucide-react";
+import Image from "next/image";
 
 const steps = [
   {
-    icon: Upload,
+    number: 1,
     title: "Upload Your Resume",
     description:
       "Drag and drop your PDF or DOCX resume. We extract the text instantly — no account needed.",
+    illustration: "/01-upload-resume.svg",
   },
   {
-    icon: FileSearch,
+    number: 2,
     title: "Add the Job Description",
     description:
       "Paste the full job description or drop in a public job listing URL. We parse it automatically.",
+    illustration: "/02-add-job-description.svg",
   },
   {
-    icon: BarChart3,
+    number: 3,
     title: "Get Actionable Insights",
     description:
       "See your match score, skills breakdown, and specific steps to improve — all in seconds.",
+    illustration: "/03-actionable-insights.svg",
   },
 ];
 
@@ -36,22 +39,32 @@ export function HowItWorks() {
         </div>
       </div>
 
-      <div className="mt-14 grid gap-4 px-4 sm:grid-cols-3 sm:gap-5 sm:px-5">
-        {steps.map((step, i) => (
+      <div className="mt-14 grid gap-6 px-4 sm:grid-cols-3 sm:gap-8 sm:px-5">
+        {steps.map((step) => (
           <div
-            key={step.title}
-            className="flex flex-col items-center rounded-2xl bg-[#F5F5F5] px-6 py-10 text-center"
+            key={step.number}
+            className="relative overflow-hidden rounded-3xl bg-[#F5F5F5]"
           >
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-              <step.icon className="h-7 w-7" aria-hidden="true" />
+            <div className="flex h-44 items-end justify-end px-8 pt-8">
+              <Image
+                src={step.illustration}
+                alt=""
+                width={140}
+                height={120}
+                className="object-contain"
+                aria-hidden="true"
+              />
             </div>
-            <span className="mt-4 text-sm font-semibold text-primary">
-              Step {i + 1}
-            </span>
-            <h3 className="mt-2 text-lg font-semibold">{step.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {step.description}
-            </p>
+
+            <div className="px-8 pb-10 pt-6">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-black text-sm font-bold text-white">
+                {step.number}
+              </span>
+              <h3 className="mt-3 text-lg font-semibold">{step.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {step.description}
+              </p>
+            </div>
           </div>
         ))}
       </div>
