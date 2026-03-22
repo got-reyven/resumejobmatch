@@ -10,6 +10,9 @@ import {
   Loader2,
   Search,
   Clock,
+  Mail,
+  Phone,
+  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { FILE_LIMITS } from "@/lib/constants/app";
@@ -413,11 +416,27 @@ function ParsedResumePreview({ data }: { data: ParsedResume }) {
     <div className="flex-1 space-y-3 overflow-y-auto text-sm">
       <div>
         <p className="font-semibold">{data.name}</p>
-        {data.email && (
-          <p className="text-xs text-muted-foreground">{data.email}</p>
-        )}
-        {data.location && (
-          <p className="text-xs text-muted-foreground">{data.location}</p>
+        {(data.email || data.phone || data.location) && (
+          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+            {data.email && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <Mail className="h-3 w-3 shrink-0" />
+                {data.email}
+              </span>
+            )}
+            {data.phone && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <Phone className="h-3 w-3 shrink-0" />
+                {data.phone}
+              </span>
+            )}
+            {data.location && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3 w-3 shrink-0" />
+                {data.location}
+              </span>
+            )}
+          </div>
         )}
       </div>
 

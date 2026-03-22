@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
+    console.error("[resume-parse] Error:", error);
     return handleApiError(error);
   }
 }

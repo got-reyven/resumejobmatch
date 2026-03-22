@@ -30,14 +30,25 @@ export function createOpenAIProvider(config: AIProviderConfig): AIProvider {
         response_format: zodResponseFormat(params.schema, params.schemaName),
       });
 
-      const message = completion.choices[0]?.message;
+      const choice = completion.choices[0];
+      const message = choice?.message;
 
       if (message?.refusal) {
         throw new Error(`OpenAI refused the request: ${message.refusal}`);
       }
 
+      if (choice?.finish_reason === "length") {
+        console.error(
+          `[openai] Output truncated for schema "${params.schemaName}" — increase maxTokens`
+        );
+      }
+
       const parsed = message?.parsed;
       if (!parsed) {
+        console.error(
+          `[openai] No parsed output. finish_reason=${choice?.finish_reason}, raw content:`,
+          message?.content?.slice(0, 500)
+        );
         throw new Error("OpenAI returned no structured output");
       }
 

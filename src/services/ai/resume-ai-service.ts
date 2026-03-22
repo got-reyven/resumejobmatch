@@ -19,7 +19,7 @@ export async function parseResumeWithAI(
         prompt: userPrompt,
         schema: parsedResumeSchema,
         schemaName: "parsed_resume",
-        maxTokens: 3000,
+        maxTokens: 4096,
         temperature: 0.1,
       }),
     { maxRetries: 2, timeoutMs: 30000 }

@@ -24,7 +24,7 @@ export const certificationSchema = z.object({
 
 export const parsedResumeSchema = z.object({
   name: z.string(),
-  email: z.string().email().nullable(),
+  email: z.string().nullable(),
   phone: z.string().nullable(),
   location: z.string().nullable(),
   summary: z.string().nullable(),

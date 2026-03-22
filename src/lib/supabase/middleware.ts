@@ -25,7 +25,18 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getUser();
+  const { error } = await supabase.auth.getUser();
+
+  if (error) {
+    // Clear stale auth cookies so the error doesn't repeat on every request
+    const cookieNames = request.cookies
+      .getAll()
+      .map((c) => c.name)
+      .filter((n) => n.startsWith("sb-"));
+    for (const name of cookieNames) {
+      supabaseResponse.cookies.delete(name);
+    }
+  }
 
   return supabaseResponse;
 }
