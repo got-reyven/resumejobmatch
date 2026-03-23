@@ -25,7 +25,13 @@ export function buildRiskAreasPrompt(
     resume.education.length > 0
       ? resume.education
           .map((ed) =>
-            [ed.degree, ed.field_of_study, ed.institution, ed.year]
+            [
+              ed.degree,
+              ed.field_of_study,
+              ed.institution,
+              ed.start_year,
+              ed.end_year,
+            ]
               .filter(Boolean)
               .join(" — ")
           )

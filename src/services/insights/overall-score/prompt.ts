@@ -37,7 +37,8 @@ function formatResume(resume: ParsedResume): string {
       let line = `- ${e.degree}`;
       if (e.field_of_study) line += ` in ${e.field_of_study}`;
       line += ` — ${e.institution}`;
-      if (e.year) line += ` (${e.year})`;
+      if (e.start_year || e.end_year)
+        line += ` (${e.start_year ?? ""}–${e.end_year ?? ""})`;
       return line;
     });
     sections.push(`Education:\n${eduLines.join("\n")}`);
