@@ -100,7 +100,7 @@ function useCountUp(target: number, duration = 1500) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !hasStarted) {
+        if (entry?.isIntersecting && !hasStarted) {
           setHasStarted(true);
         }
       },
