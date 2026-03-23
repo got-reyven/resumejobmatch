@@ -364,12 +364,12 @@ function ResumeDetailPanel({
     | undefined;
 
   return (
-    <Card>
+    <Card className="py-0">
       <CardContent className="p-0">
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-muted/40"
+          className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-muted/40"
         >
           <span className="flex items-center gap-2 text-sm font-semibold">
             <User className="h-4 w-4 text-[#6696C9]" />
@@ -503,12 +503,12 @@ function JobDetailPanel({
   const [open, setOpen] = useState(false);
 
   return (
-    <Card>
+    <Card className="py-0">
       <CardContent className="p-0">
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-muted/40"
+          className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-muted/40"
         >
           <span className="flex items-center gap-2 text-sm font-semibold">
             <Briefcase className="h-4 w-4 text-[#6696C9]" />

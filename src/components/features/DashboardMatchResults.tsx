@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import {
   Briefcase,
   User,
@@ -12,8 +12,11 @@ import {
   FileText,
   AlertTriangle,
   MessageCircleQuestion,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils/cn";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,6 +69,75 @@ import {
   type InterviewFocusDisplayProps,
 } from "@/components/features/InterviewFocusDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
+
+const COLLAPSED_HEIGHT = 300;
+
+function CollapsibleInsight({
+  children,
+  onExpandChange,
+}: {
+  children: React.ReactNode;
+  onExpandChange?: (expanded: boolean) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [needsCollapse, setNeedsCollapse] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const check = () =>
+      setNeedsCollapse(el.scrollHeight > COLLAPSED_HEIGHT + 40);
+    check();
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [children]);
+
+  return (
+    <div className="relative">
+      <div
+        ref={contentRef}
+        className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
+        style={{
+          maxHeight:
+            expanded || !needsCollapse ? "none" : `${COLLAPSED_HEIGHT}px`,
+        }}
+      >
+        {children}
+      </div>
+
+      {needsCollapse && (
+        <>
+          {!expanded && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white to-transparent dark:from-card" />
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setExpanded((v) => {
+                const next = !v;
+                onExpandChange?.(next);
+                return next;
+              });
+            }}
+            className="absolute top-0 right-0 z-10 flex items-center gap-1 rounded-full border border-[#6696C9] bg-[#B5DAF2]/30 px-2.5 py-0.5 text-[10px] font-medium text-foreground transition-colors hover:bg-[#B5DAF2]/50"
+          >
+            {expanded ? (
+              <>
+                Less <ChevronUp className="h-3 w-3" />
+              </>
+            ) : (
+              <>
+                More <ChevronDown className="h-3 w-3" />
+              </>
+            )}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
 
 interface InsightDef {
   id: string;
@@ -291,6 +363,16 @@ export function DashboardMatchResults({
   );
 
   const [hidden, setHidden] = useState<Set<string>>(new Set());
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = useCallback((id: string, isExpanded: boolean) => {
+    setExpandedCards((prev) => {
+      const next = new Set(prev);
+      if (isExpanded) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
 
   const toggle = (id: string) => {
     setHidden((prev) => {
@@ -317,9 +399,18 @@ export function DashboardMatchResults({
         {visible.map((insight) => (
           <Card
             key={insight.id}
-            className="mb-6 min-w-0 break-inside-avoid overflow-hidden"
+            className={cn(
+              "mb-6 min-w-0 break-inside-avoid overflow-hidden transition-shadow duration-200",
+              expandedCards.has(insight.id) ? "border-foreground shadow-md" : ""
+            )}
           >
-            <CardContent>{insight.render()}</CardContent>
+            <CardContent>
+              <CollapsibleInsight
+                onExpandChange={(exp) => toggleExpanded(insight.id, exp)}
+              >
+                {insight.render()}
+              </CollapsibleInsight>
+            </CardContent>
           </Card>
         ))}
       </div>
