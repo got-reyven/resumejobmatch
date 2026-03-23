@@ -8,11 +8,12 @@ Enable users to upload a PDF resume and have it automatically parsed into struct
 
 **In scope:**
 
-- PDF text extraction via `pdf-parse`
+- PDF file sent directly to OpenAI via Responses API for visual + text extraction
+- Text-based fallback extraction via `unpdf` for non-PDF flows
 - AI provider abstraction layer (OpenAI first)
 - Structured resume parsing with Zod-validated output
 - API endpoint for upload + parse
-- Frontend integration with parsed data preview
+- Frontend integration with parsed data preview (contact details, skills, experience, education with year ranges)
 - Reliability patterns (retry, timeout)
 
 **Out of scope:**

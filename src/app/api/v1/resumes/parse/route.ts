@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     const extracted = await extractTextFromPdf(buffer);
-    const parsed = await parseResumeWithAI(extracted.text);
+    const parsed = await parseResumeWithAI(extracted.text, buffer);
 
     return NextResponse.json(
       {

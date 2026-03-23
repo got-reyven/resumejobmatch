@@ -13,7 +13,8 @@ export const educationSchema = z.object({
   degree: z.string(),
   institution: z.string(),
   field_of_study: z.string().nullable(),
-  year: z.number().nullable(),
+  start_year: z.number().nullable(),
+  end_year: z.number().nullable(),
 });
 
 export const certificationSchema = z.object({

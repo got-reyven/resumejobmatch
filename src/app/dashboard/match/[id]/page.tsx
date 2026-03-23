@@ -355,7 +355,12 @@ function ResumeDetailPanel({
     | Array<{ title?: string; company?: string; years?: number }>
     | undefined;
   const education = parsedData.education as
-    | Array<{ degree?: string; institution?: string }>
+    | Array<{
+        degree?: string;
+        institution?: string;
+        start_year?: number;
+        end_year?: number;
+      }>
     | undefined;
 
   return (
@@ -465,6 +470,15 @@ function ResumeDetailPanel({
                         <span className="text-muted-foreground">
                           {" "}
                           — {edu.institution}
+                        </span>
+                      )}
+                      {(edu.start_year || edu.end_year) && (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          &middot;{" "}
+                          {edu.start_year && edu.end_year
+                            ? `${edu.start_year}–${edu.end_year}`
+                            : (edu.end_year ?? edu.start_year)}
                         </span>
                       )}
                     </li>

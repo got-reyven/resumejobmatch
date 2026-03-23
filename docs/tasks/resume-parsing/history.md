@@ -31,3 +31,23 @@
 - Updated ResumeDetailPanel (match detail page) to display key responsibilities
 - Updated all 11 insight prompt templates to include key responsibilities context in AI calls
 - This fixes resumes that list responsibilities separately from skills/experience being underrepresented in matching
+
+## 2026-03-18 — ai-engineer / api-engineer / ui-ux-engineer
+
+### PDF extraction overhaul
+
+- **Problem**: `pdf-parse` library failed to extract contact details (name, email, phone, location) from PDFs with header/sidebar layouts
+- **Root cause**: `pdf-parse` uses basic text concatenation following internal PDF object order, missing text in positioned elements (headers, columns, styled sections)
+- **Solution**: Send the raw PDF file directly to OpenAI via the Responses API (`input_file` with base64), letting OpenAI extract both text and visual layout natively
+- Replaced `pdf-parse` with `unpdf` for the text fallback path (server-side `pdfjs-dist` wrapper with no worker issues)
+- Resume parsing now uses `client.responses.parse()` with `zodTextFormat` for structured output from the Responses API
+
+### Schema and display improvements
+
+- Removed `.email()` Zod refinement from email field — OpenAI's structured output doesn't enforce format refinements, causing false 400 errors
+- Added `start_year` and `end_year` fields to education schema (replaced single `year` field) for full year ranges (e.g. "2018–2022")
+- Added contact details display (email, phone, location) with Lucide icons (Mail, Phone, MapPin) in ParsedResumePreview
+- Updated education display in both ParsedResumePreview and ResumeDetailPanel to show year ranges
+- Increased AI `maxTokens` from 3000 to 4096 for longer resumes
+- Added error logging in API route and OpenAI provider for easier debugging
+- Added stale Supabase auth cookie cleanup in middleware to prevent repeated `RefreshTokenNotFound` errors

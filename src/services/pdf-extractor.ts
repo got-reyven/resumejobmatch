@@ -9,22 +9,21 @@ export async function extractTextFromPdf(
   buffer: Buffer
 ): Promise<ExtractedText> {
   try {
-    // Import from lib/pdf-parse directly to bypass the index.js test runner
-    // that tries to open a non-existent test file when module.parent is falsy
-    const pdfParse = (await import("pdf-parse/lib/pdf-parse.js")).default;
-    const data = await pdfParse(buffer);
+    const { extractText, getDocumentProxy } = await import("unpdf");
 
-    const text = data.text?.trim() ?? "";
-    if (!text) {
+    const uint8 = new Uint8Array(buffer);
+    const pdf = await getDocumentProxy(uint8);
+    const { totalPages, text } = await extractText(pdf, { mergePages: true });
+
+    const cleaned = (text as string).trim();
+
+    if (!cleaned) {
       throw new ValidationError("The PDF appears to be empty or image-based.", {
         file: ["No extractable text found in the PDF"],
       });
     }
 
-    return {
-      text,
-      pageCount: data.numpages,
-    };
+    return { text: cleaned, pageCount: totalPages };
   } catch (error) {
     if (error instanceof ValidationError) throw error;
 

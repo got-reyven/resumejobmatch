@@ -512,6 +512,15 @@ function ParsedResumePreview({ data }: { data: ParsedResume }) {
                 </span>
                 {edu.field_of_study && ` in ${edu.field_of_study}`} —{" "}
                 {edu.institution}
+                {(edu.start_year || edu.end_year) && (
+                  <span>
+                    {" "}
+                    &middot;{" "}
+                    {edu.start_year && edu.end_year
+                      ? `${edu.start_year}–${edu.end_year}`
+                      : (edu.end_year ?? edu.start_year)}
+                  </span>
+                )}
               </li>
             ))}
           </ul>
