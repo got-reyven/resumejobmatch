@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendWelcomeEmail } from "@/lib/email/welcome";
 import type { EmailOtpType } from "@supabase/supabase-js";
 
 export async function GET(request: NextRequest) {
@@ -33,6 +34,14 @@ export async function GET(request: NextRequest) {
       const admin = createAdminClient();
       const meta = user.user_metadata ?? {};
 
+      const { data: existingProfile } = await admin
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .single();
+
+      const isNewUser = !existingProfile;
+
       await admin.from("profiles").upsert(
         {
           id: user.id,
@@ -42,6 +51,12 @@ export async function GET(request: NextRequest) {
         },
         { onConflict: "id", ignoreDuplicates: true }
       );
+
+      if (isNewUser && user.email) {
+        sendWelcomeEmail(user.email, meta.full_name ?? meta.name ?? null).catch(
+          (err) => console.error("[auth/callback] Welcome email failed:", err)
+        );
+      }
 
       if (meta.invited_to_org) {
         return NextResponse.redirect(`${origin}/accept-invite`);
