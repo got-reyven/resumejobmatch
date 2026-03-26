@@ -12,6 +12,7 @@ import {
   FileText,
   AlertTriangle,
   MessageCircleQuestion,
+  Scale,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -68,6 +69,10 @@ import {
   InterviewFocusDisplay,
   type InterviewFocusDisplayProps,
 } from "@/components/features/InterviewFocusDisplay";
+import {
+  OverqualificationDisplay,
+  type OverqualificationDisplayProps,
+} from "@/components/features/OverqualificationDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 const COLLAPSED_HEIGHT = 300;
@@ -158,6 +163,7 @@ interface DashboardMatchResultsProps {
   tailoredSummary?: TailoredSummaryDisplayProps;
   riskAreas?: RiskAreasDisplayProps;
   interviewFocus?: InterviewFocusDisplayProps;
+  overqualification?: OverqualificationDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -175,6 +181,7 @@ export function DashboardMatchResults({
   tailoredSummary,
   riskAreas,
   interviewFocus,
+  overqualification,
   userType,
   tier,
   matchId,
@@ -208,6 +215,10 @@ export function DashboardMatchResults({
   const resolvedInterviewFocus =
     interviewFocus ??
     (generated.interviewFocus as InterviewFocusDisplayProps | undefined);
+
+  const resolvedOverqualification =
+    overqualification ??
+    (generated.overqualification as OverqualificationDisplayProps | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -350,6 +361,21 @@ export function DashboardMatchResults({
           "Generate targeted interview questions based on gaps identified in the match analysis.",
           resolvedInterviewFocus ? (
             <InterviewFocusDisplay {...resolvedInterviewFocus} isPro={isPro} />
+          ) : null
+        ),
+    },
+    {
+      id: "overqualification",
+      label: "Overqualification Assessment",
+      tab: "business",
+      render: () =>
+        renderGenerateOrDisplay(
+          "overqualification",
+          <Scale className="h-5 w-5 text-pink-500" aria-hidden="true" />,
+          "Overqualification Assessment",
+          "Assess whether the candidate is significantly overqualified for this role, with indicators and recommendations.",
+          resolvedOverqualification ? (
+            <OverqualificationDisplay {...resolvedOverqualification} />
           ) : null
         ),
     },

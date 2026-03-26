@@ -188,7 +188,7 @@ const advancedInsights: Insight[] = [
     iconColor: "text-pink-500",
     audience: "hiring_manager",
     access: "registered",
-    available: false,
+    available: true,
   },
   {
     id: 13,

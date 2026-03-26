@@ -145,6 +145,13 @@ export interface InterviewFocusData {
   }[];
 }
 
+export interface OverqualificationData {
+  is_overqualified: boolean;
+  confidence: "high" | "moderate" | "low";
+  indicators: string[];
+  recommendation: string;
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

@@ -515,6 +515,7 @@ z.object({
 | **Tab** | Hiring Manager only |
 | **Tier** | 2 |
 | **Phase** | v0.4 |
+| **Status** | Implemented |
 
 **Why it matters**
 Overqualified candidates can be flight risks or salary mismatches. This flags the situation early so hiring managers can set appropriate expectations during interviews, reducing costly mis-hires.

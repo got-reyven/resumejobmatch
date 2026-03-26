@@ -35,6 +35,7 @@ import type {
   TailoredSummaryData,
   RiskAreasData,
   InterviewFocusData,
+  OverqualificationData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -63,6 +64,7 @@ interface MatchDetail {
     tailoredSummary?: TailoredSummaryData;
     riskAreas?: RiskAreasData;
     interviewFocus?: InterviewFocusData;
+    overqualification?: OverqualificationData;
   };
 }
 
@@ -214,6 +216,7 @@ export default function MatchDetailPage() {
         tailoredSummary={match.insights.tailoredSummary}
         riskAreas={match.insights.riskAreas}
         interviewFocus={match.insights.interviewFocus}
+        overqualification={match.insights.overqualification}
         userType={userType}
         tier={tier}
         matchId={match.id}
