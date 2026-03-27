@@ -36,6 +36,7 @@ import type {
   RiskAreasData,
   InterviewFocusData,
   OverqualificationData,
+  RewriteSuggestionsData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -65,6 +66,7 @@ interface MatchDetail {
     riskAreas?: RiskAreasData;
     interviewFocus?: InterviewFocusData;
     overqualification?: OverqualificationData;
+    rewriteSuggestions?: RewriteSuggestionsData;
   };
 }
 
@@ -217,6 +219,7 @@ export default function MatchDetailPage() {
         riskAreas={match.insights.riskAreas}
         interviewFocus={match.insights.interviewFocus}
         overqualification={match.insights.overqualification}
+        rewriteSuggestions={match.insights.rewriteSuggestions}
         userType={userType}
         tier={tier}
         matchId={match.id}

@@ -48,6 +48,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Overqualification Assessment",
   },
+  rewriteSuggestions: {
+    tab: "jobseeker",
+    tier: 2,
+    title: "Rewrite Suggestions",
+  },
 };
 
 interface PersistMatchParams {

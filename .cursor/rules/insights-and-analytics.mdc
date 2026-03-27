@@ -542,8 +542,9 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Jobseeker only |
-| **Tier** | 3 (Pro only) |
+| **Tier** | 2 (Jobseeker Free: 1 suggestion, Jobseeker Pro: up to 5 suggestions) |
 | **Phase** | v0.4 |
+| **Status** | Implemented |
 
 **Why it matters**
 Goes beyond "what to change" to "here's the exact wording." Bullet-by-bullet rewrites using the job's language and power verbs. The highest-effort insight but also the highest perceived value — a key Pro conversion driver.

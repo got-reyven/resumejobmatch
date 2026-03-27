@@ -152,6 +152,15 @@ export interface OverqualificationData {
   recommendation: string;
 }
 
+export interface RewriteSuggestionsData {
+  rewrites: {
+    original: string;
+    suggested: string;
+    rationale: string;
+    section: string;
+  }[];
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

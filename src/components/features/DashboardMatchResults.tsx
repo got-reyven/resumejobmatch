@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   MessageCircleQuestion,
   Scale,
+  PenLine,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -73,6 +74,10 @@ import {
   OverqualificationDisplay,
   type OverqualificationDisplayProps,
 } from "@/components/features/OverqualificationDisplay";
+import {
+  RewriteSuggestionsDisplay,
+  type RewriteSuggestionsDisplayProps,
+} from "@/components/features/RewriteSuggestionsDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 const COLLAPSED_HEIGHT = 300;
@@ -97,7 +102,7 @@ function CollapsibleInsight({
     const observer = new ResizeObserver(check);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [children]);
+  }, []);
 
   return (
     <div className="relative">
@@ -120,11 +125,9 @@ function CollapsibleInsight({
           <button
             type="button"
             onClick={() => {
-              setExpanded((v) => {
-                const next = !v;
-                onExpandChange?.(next);
-                return next;
-              });
+              const next = !expanded;
+              setExpanded(next);
+              onExpandChange?.(next);
             }}
             className="absolute top-0 right-0 z-10 flex items-center gap-1 rounded-full border border-[#6696C9] bg-[#B5DAF2]/30 px-2.5 py-0.5 text-[10px] font-medium text-foreground transition-colors hover:bg-[#B5DAF2]/50"
           >
@@ -164,6 +167,7 @@ interface DashboardMatchResultsProps {
   riskAreas?: RiskAreasDisplayProps;
   interviewFocus?: InterviewFocusDisplayProps;
   overqualification?: OverqualificationDisplayProps;
+  rewriteSuggestions?: RewriteSuggestionsDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -182,6 +186,7 @@ export function DashboardMatchResults({
   riskAreas,
   interviewFocus,
   overqualification,
+  rewriteSuggestions,
   userType,
   tier,
   matchId,
@@ -219,6 +224,12 @@ export function DashboardMatchResults({
   const resolvedOverqualification =
     overqualification ??
     (generated.overqualification as OverqualificationDisplayProps | undefined);
+
+  const resolvedRewriteSuggestions =
+    rewriteSuggestions ??
+    (generated.rewriteSuggestions as
+      | RewriteSuggestionsDisplayProps
+      | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -326,6 +337,24 @@ export function DashboardMatchResults({
           resolvedTailoredSummary ? (
             <TailoredSummaryDisplay
               {...resolvedTailoredSummary}
+              isPro={isPro}
+            />
+          ) : null
+        ),
+    },
+    {
+      id: "rewriteSuggestions",
+      label: "Rewrite Suggestions",
+      tab: "jobseeker",
+      render: () =>
+        renderGenerateOrDisplay(
+          "rewriteSuggestions",
+          <PenLine className="h-5 w-5 text-rose-500" aria-hidden="true" />,
+          "Rewrite Suggestions",
+          "Get AI-powered rewrites of your experience bullets using the job's language and power verbs.",
+          resolvedRewriteSuggestions ? (
+            <RewriteSuggestionsDisplay
+              {...resolvedRewriteSuggestions}
               isPro={isPro}
             />
           ) : null

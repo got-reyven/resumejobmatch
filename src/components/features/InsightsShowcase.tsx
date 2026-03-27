@@ -198,8 +198,8 @@ const advancedInsights: Insight[] = [
     icon: PenLine,
     iconColor: "text-rose-500",
     audience: "jobseeker",
-    access: "pro",
-    available: false,
+    access: "registered",
+    available: true,
   },
   {
     id: 14,

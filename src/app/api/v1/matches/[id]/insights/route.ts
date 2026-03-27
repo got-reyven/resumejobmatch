@@ -20,6 +20,7 @@ import { computeTailoredSummary } from "@/services/insights/tailored-summary/com
 import { computeRiskAreas } from "@/services/insights/risk-areas/compute";
 import { computeInterviewFocus } from "@/services/insights/interview-focus/compute";
 import { computeOverqualification } from "@/services/insights/overqualification/compute";
+import { computeRewriteSuggestions } from "@/services/insights/rewrite-suggestions/compute";
 import type { InsightComputeContext } from "@/services/insights/types";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 
@@ -73,6 +74,10 @@ const computeMap: Record<
   },
   overqualification: async (ctx) => {
     const r = await computeOverqualification(ctx);
+    return { data: r.data };
+  },
+  rewriteSuggestions: async (ctx) => {
+    const r = await computeRewriteSuggestions(ctx);
     return { data: r.data };
   },
 };
