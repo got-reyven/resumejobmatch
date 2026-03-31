@@ -161,6 +161,25 @@ export interface RewriteSuggestionsData {
   }[];
 }
 
+export interface ResumeIntegrityData {
+  risk_level: "none" | "low" | "medium" | "high";
+  is_clean: boolean;
+  findings: {
+    type:
+      | "score_inflation"
+      | "instruction_override"
+      | "ranking_manipulation"
+      | "system_prompt_leak"
+      | "role_hijack"
+      | "suspicious_content";
+    description: string;
+    excerpt: string;
+    severity: "warning" | "critical";
+  }[];
+  summary: string;
+  recommendation: string;
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

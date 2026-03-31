@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildInterviewFocusPrompt(
   resume: ParsedResume,
@@ -69,7 +70,8 @@ Rules:
 - Reference actual resume content and job requirements in your rationale.
 - Focus on areas where the resume is ambiguous, incomplete, or misaligned.
 - Include at least one question about the candidate's strongest area to assess depth.
-- Generate between 5 and 10 questions total.`;
+- Generate between 5 and 10 questions total.
+${ANTI_INJECTION_PREAMBLE}`;
 
   const responsibilitiesContext =
     resume.key_responsibilities.length > 0

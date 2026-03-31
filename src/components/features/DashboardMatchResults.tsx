@@ -14,6 +14,7 @@ import {
   MessageCircleQuestion,
   Scale,
   PenLine,
+  ShieldCheck,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -78,6 +79,10 @@ import {
   RewriteSuggestionsDisplay,
   type RewriteSuggestionsDisplayProps,
 } from "@/components/features/RewriteSuggestionsDisplay";
+import {
+  ResumeIntegrityDisplay,
+  type ResumeIntegrityDisplayProps,
+} from "@/components/features/ResumeIntegrityDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 const COLLAPSED_HEIGHT = 300;
@@ -168,6 +173,7 @@ interface DashboardMatchResultsProps {
   interviewFocus?: InterviewFocusDisplayProps;
   overqualification?: OverqualificationDisplayProps;
   rewriteSuggestions?: RewriteSuggestionsDisplayProps;
+  resumeIntegrity?: ResumeIntegrityDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -187,6 +193,7 @@ export function DashboardMatchResults({
   interviewFocus,
   overqualification,
   rewriteSuggestions,
+  resumeIntegrity,
   userType,
   tier,
   matchId,
@@ -230,6 +237,10 @@ export function DashboardMatchResults({
     (generated.rewriteSuggestions as
       | RewriteSuggestionsDisplayProps
       | undefined);
+
+  const resolvedResumeIntegrity =
+    resumeIntegrity ??
+    (generated.resumeIntegrity as ResumeIntegrityDisplayProps | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -405,6 +416,21 @@ export function DashboardMatchResults({
           "Assess whether the candidate is significantly overqualified for this role, with indicators and recommendations.",
           resolvedOverqualification ? (
             <OverqualificationDisplay {...resolvedOverqualification} />
+          ) : null
+        ),
+    },
+    {
+      id: "resumeIntegrity",
+      label: "Resume Integrity Check",
+      tab: "business",
+      render: () =>
+        renderGenerateOrDisplay(
+          "resumeIntegrity",
+          <ShieldCheck className="h-5 w-5 text-sky-500" aria-hidden="true" />,
+          "Resume Integrity Check",
+          "Scan the resume for prompt injection attacks, hidden instructions, and manipulation attempts.",
+          resolvedResumeIntegrity ? (
+            <ResumeIntegrityDisplay {...resolvedResumeIntegrity} />
           ) : null
         ),
     },

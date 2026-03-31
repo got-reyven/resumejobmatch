@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildRiskAreasPrompt(
   resume: ParsedResume,
@@ -67,7 +68,8 @@ Rules:
 - Be fair — acknowledge transferable skills and adjacent experience.
 - If the candidate is a strong match with minimal gaps, return fewer risks and note it in the summary.
 - Aim for 3–7 risks total. Only go higher if the candidate has significant misalignment.
-- Never fabricate gaps that aren't supported by the job description's actual requirements.`;
+- Never fabricate gaps that aren't supported by the job description's actual requirements.
+${ANTI_INJECTION_PREAMBLE}`;
 
   const responsibilitiesContext =
     resume.key_responsibilities.length > 0

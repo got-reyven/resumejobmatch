@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildRewriteSuggestionsPrompt(
   resume: ParsedResume,
@@ -46,7 +47,8 @@ Rules:
 - Use action verbs from the job description where natural.
 - Mirror the job's terminology (e.g., if the job says "stakeholder management", use that instead of "worked with teams").
 - Keep suggested bullets concise — similar length to the original.
-- If the resume has fewer than 5 improvable bullets, return only what's meaningful.`;
+- If the resume has fewer than 5 improvable bullets, return only what's meaningful.
+${ANTI_INJECTION_PREAMBLE}`;
 
   const userPrompt = `Rewrite the most impactful experience bullets to better match the target job.
 

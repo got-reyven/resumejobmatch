@@ -1,3 +1,5 @@
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
+
 const MAX_INPUT_LENGTH = 8000;
 
 export function buildResumeParsingPrompt(resumeText: string) {
@@ -17,7 +19,8 @@ Rules:
 - Estimate total_years_experience from the employment history dates
 - Dates should be in readable format (e.g. "Jan 2020", "2019")
 - Do NOT fabricate or infer information that is not present in the text
-- Preserve the original language and terminology used in the resume`,
+- Preserve the original language and terminology used in the resume
+${ANTI_INJECTION_PREAMBLE}`,
 
     userPrompt: `Parse this resume and extract structured data:\n\n---\n${truncatedText}\n---`,
   };

@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildATSKeywordsPrompt(
   resume: ParsedResume,
@@ -42,7 +43,8 @@ Rules:
 - Prioritize technical skills and tools over soft skills in your extraction
 - Extract 10-20 keywords for a typical job description
 - Be accurate about match classification — don't inflate found_in_resume
-- Order keywords by importance (most critical for the role first)`;
+- Order keywords by importance (most critical for the role first)
+${ANTI_INJECTION_PREAMBLE}`;
 
   const responsibilitiesContext =
     resume.key_responsibilities.length > 0

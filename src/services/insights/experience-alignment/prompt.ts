@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildExperienceAlignmentPrompt(
   resume: ParsedResume,
@@ -47,7 +48,8 @@ Rules:
 - Be accurate with years — estimate from dates if provided, otherwise from role descriptions
 - Consider both explicit requirements and implied seniority from the job title/description
 - relevant_aspects should be specific (e.g., "3 years managing React applications" not just "React")
-- Order role_mapping from most relevant to least relevant`;
+- Order role_mapping from most relevant to least relevant
+${ANTI_INJECTION_PREAMBLE}`;
 
   const responsibilitiesContext =
     resume.key_responsibilities.length > 0

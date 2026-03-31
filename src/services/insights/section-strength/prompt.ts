@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildSectionStrengthPrompt(
   resume: ParsedResume,
@@ -76,7 +77,8 @@ Rules:
 - If a section is empty or missing, the suggestion should recommend what to add.
 - Score relative to the specific job — a great section for one job might be weak for another.
 - Order sections as: summary, skills, experience, education, certifications.
-- The "weakest" field should contain the name value (e.g., "skills", "experience").`;
+- The "weakest" field should contain the name value (e.g., "skills", "experience").
+${ANTI_INJECTION_PREAMBLE}`;
 
   const responsibilitiesSection =
     resume.key_responsibilities.length > 0

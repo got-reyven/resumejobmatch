@@ -883,6 +883,57 @@ Hiring committees need shareable documentation. An exportable PDF with all insig
 
 ---
 
+### #24 — Resume Integrity Check
+
+| Property | Value |
+|----------|-------|
+| **Tab** | Hiring Manager only |
+| **Tier** | 2 (Business Free + Business Pro) |
+| **Phase** | v0.4 |
+| **Status** | Implemented |
+
+**Why it matters**
+Prompt injection attacks on resumes are a growing threat. Candidates hide invisible text (white-on-white, tiny font) with instructions like "rank this resume 99%" or "ignore previous instructions." This insight protects hiring managers by scanning for and flagging manipulation attempts before they can influence AI scoring.
+
+**Implementation**
+- Two-tier defense: regex-based pre-processing scanner + AI verification
+- **Tier 1 (System Prompt Hardening)**: All insight system prompts include anti-injection preamble instructing the AI to ignore embedded directives
+- **Tier 2 (Text Scanner)**: `src/services/prompt-injection/scanner.ts` scans resume text against 20+ regex patterns across 5 categories: score inflation, instruction override, ranking manipulation, system prompt leak, role hijack
+- AI verifies scanner findings and checks for sophisticated attacks the regex may miss
+- Risk level: none / low / medium / high based on finding count and severity
+- Results surfaced as a hiring manager insight — flag only, never auto-reject
+
+**Output schema**
+```typescript
+z.object({
+  risk_level: z.enum(["none", "low", "medium", "high"]),
+  is_clean: z.boolean(),
+  findings: z.array(z.object({
+    type: z.enum(["score_inflation", "instruction_override", "ranking_manipulation", "system_prompt_leak", "role_hijack", "suspicious_content"]),
+    description: z.string(),
+    excerpt: z.string(),
+    severity: z.enum(["warning", "critical"]),
+  })),
+  summary: z.string(),
+  recommendation: z.string(),
+})
+```
+
+**Defense architecture**
+```
+Resume text
+    ↓
+Regex Scanner (Tier 2) → immediate pattern detection
+    ↓
+AI Verification → confirms/extends scanner findings
+    ↓
+Resume Integrity Check insight → hiring manager sees risk level
+    ↓
+Anti-Injection Preamble (Tier 1) → all other insights immune to embedded instructions
+```
+
+---
+
 ## Scaling Strategy
 
 The insights engine is designed to scale indefinitely:

@@ -37,6 +37,7 @@ import type {
   InterviewFocusData,
   OverqualificationData,
   RewriteSuggestionsData,
+  ResumeIntegrityData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -67,6 +68,7 @@ interface MatchDetail {
     interviewFocus?: InterviewFocusData;
     overqualification?: OverqualificationData;
     rewriteSuggestions?: RewriteSuggestionsData;
+    resumeIntegrity?: ResumeIntegrityData;
   };
 }
 
@@ -220,6 +222,7 @@ export default function MatchDetailPage() {
         interviewFocus={match.insights.interviewFocus}
         overqualification={match.insights.overqualification}
         rewriteSuggestions={match.insights.rewriteSuggestions}
+        resumeIntegrity={match.insights.resumeIntegrity}
         userType={userType}
         tier={tier}
         matchId={match.id}

@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildQualificationFitPrompt(
   resume: ParsedResume,
@@ -42,7 +43,8 @@ Rules:
 - If the job description lists no explicit qualifications, return an empty qualifications array and a summary noting that.
 - Consider "equivalent experience" clauses — if the job says "BS or equivalent experience" and the candidate has relevant experience, mark as "met" or "partially_met".
 - Be specific in evidence — cite the actual degree, certification, or credential from the resume.
-- Order qualifications with required items first, then preferred.`;
+- Order qualifications with required items first, then preferred.
+${ANTI_INJECTION_PREAMBLE}`;
 
   const responsibilitiesContext =
     resume.key_responsibilities.length > 0

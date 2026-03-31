@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildActionItemsPrompt(
   resume: ParsedResume,
@@ -40,7 +41,8 @@ Rules:
    - "medium" = addresses a preferred skill or strengthens overall positioning
 6. Focus on gaps that are realistically addressable — don't suggest fabricating experience.
 7. Prioritize adding missing required skills over refining existing content.
-8. Be specific to this job — generic advice like "tailor your resume" is not acceptable.`;
+8. Be specific to this job — generic advice like "tailor your resume" is not acceptable.
+${ANTI_INJECTION_PREAMBLE}`;
 
   const responsibilitiesContext =
     resume.key_responsibilities.length > 0

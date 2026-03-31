@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildTopStrengthsPrompt(
   resume: ParsedResume,
@@ -39,7 +40,8 @@ Rules:
 3. Rank strengths by relevance to the role's most critical needs (required > preferred).
 4. Consider both explicit matches (listed skills) and inferred strengths (e.g., leadership from senior titles, breadth from diverse experience).
 5. Do NOT list weaknesses or gaps — this insight is purely about what the candidate brings.
-6. Be factual and evidence-based — never speculate beyond what the resume states.`;
+6. Be factual and evidence-based — never speculate beyond what the resume states.
+${ANTI_INJECTION_PREAMBLE}`;
 
   const responsibilitiesContext =
     resume.key_responsibilities.length > 0

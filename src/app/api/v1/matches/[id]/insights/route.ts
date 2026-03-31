@@ -21,6 +21,7 @@ import { computeRiskAreas } from "@/services/insights/risk-areas/compute";
 import { computeInterviewFocus } from "@/services/insights/interview-focus/compute";
 import { computeOverqualification } from "@/services/insights/overqualification/compute";
 import { computeRewriteSuggestions } from "@/services/insights/rewrite-suggestions/compute";
+import { computeResumeIntegrity } from "@/services/insights/resume-integrity/compute";
 import type { InsightComputeContext } from "@/services/insights/types";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 
@@ -78,6 +79,10 @@ const computeMap: Record<
   },
   rewriteSuggestions: async (ctx) => {
     const r = await computeRewriteSuggestions(ctx);
+    return { data: r.data };
+  },
+  resumeIntegrity: async (ctx) => {
+    const r = await computeResumeIntegrity(ctx);
     return { data: r.data };
   },
 };

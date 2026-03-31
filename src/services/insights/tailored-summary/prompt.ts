@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildTailoredSummaryPrompt(
   resume: ParsedResume,
@@ -40,7 +41,8 @@ Rules:
 - Keep it to 3–4 sentences, approximately 50–80 words.
 - If the current summary is already strong for this role, still provide an optimized version but note minimal changes.
 - For current_summary, return the candidate's existing summary text as-is (or null if none exists).
-- For key_changes, list 2–5 specific improvements (e.g., "Added React and TypeScript keywords from job requirements", "Reframed 8 years of experience to emphasize frontend architecture").`;
+- For key_changes, list 2–5 specific improvements (e.g., "Added React and TypeScript keywords from job requirements", "Reframed 8 years of experience to emphasize frontend architecture").
+${ANTI_INJECTION_PREAMBLE}`;
 
   const responsibilitiesContext =
     resume.key_responsibilities.length > 0

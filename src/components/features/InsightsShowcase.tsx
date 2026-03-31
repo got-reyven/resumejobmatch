@@ -25,6 +25,7 @@ import {
   BarChart3,
   DollarSign,
   ClipboardCheck,
+  ShieldCheck,
   Crown,
   Lock,
   ChevronRight,
@@ -310,6 +311,17 @@ const advancedInsights: Insight[] = [
     audience: "hiring_manager",
     access: "pro",
     available: false,
+  },
+  {
+    id: 24,
+    name: "Resume Integrity Check",
+    description:
+      "Detects prompt injection attacks, hidden instructions, and manipulation attempts in resumes.",
+    icon: ShieldCheck,
+    iconColor: "text-sky-500",
+    audience: "hiring_manager",
+    access: "registered",
+    available: true,
   },
 ];
 

@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildSkillsBreakdownPrompt(
   resume: ParsedResume,
@@ -31,7 +32,8 @@ Rules:
 - Be thorough — scan experience descriptions and highlights, not just the skills list
 - Do NOT count a skill as matched if the evidence is weak or tangential
 - Group closely related variants as one skill (e.g., don't list "React" and "React.js" separately)
-- Order matched skills by relevance; order missing skills with required first`;
+- Order matched skills by relevance; order missing skills with required first
+${ANTI_INJECTION_PREAMBLE}`;
 
   const responsibilitiesContext =
     resume.key_responsibilities.length > 0

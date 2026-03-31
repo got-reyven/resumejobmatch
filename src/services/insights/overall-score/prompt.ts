@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 function formatResume(resume: ParsedResume): string {
   const sections: string[] = [];
@@ -73,7 +74,8 @@ Scoring rules:
 - The overall score is the weighted average: (skills × 0.4) + (experience × 0.3) + (qualifications × 0.2) + (overall_fit × 0.1)
 - Be fair but honest — do not inflate scores
 - If the job description lacks explicit requirements for a dimension, score based on reasonable inference from context
-- The summary should be 1–2 sentences explaining the overall match in plain language`;
+- The summary should be 1–2 sentences explaining the overall match in plain language
+${ANTI_INJECTION_PREAMBLE}`;
 
   const userPrompt = `Evaluate this resume against the job description and provide match scores.
 

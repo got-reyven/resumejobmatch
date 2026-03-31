@@ -1,4 +1,5 @@
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
+import { ANTI_INJECTION_PREAMBLE } from "@/services/prompt-injection/preamble";
 
 export function buildOverqualificationPrompt(
   resume: ParsedResume,
@@ -67,7 +68,8 @@ Rules:
 - Be conservative — only flag true overqualification, not strong candidates.
 - Consider career changers, industry switchers, and people returning from breaks who may appear overqualified on paper but aren't.
 - Focus on seniority gap, experience-years gap, title-level mismatch, and education level vs. requirements.
-- Provide 2–5 indicators when overqualified, or 1–2 reassuring points when not.`;
+- Provide 2–5 indicators when overqualified, or 1–2 reassuring points when not.
+${ANTI_INJECTION_PREAMBLE}`;
 
   const userPrompt = `Assess whether this candidate is overqualified for the target role.
 
