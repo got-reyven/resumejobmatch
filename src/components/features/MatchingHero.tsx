@@ -323,6 +323,7 @@ export function MatchingHero() {
                       value={jobDescription}
                       onChange={setJobDescription}
                       onSourceUrlChange={setJobSourceUrl}
+                      showSavedSearch={isLoggedIn}
                     />
                   </div>
                 </div>

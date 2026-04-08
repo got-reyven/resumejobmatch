@@ -35,6 +35,7 @@ interface JobDescriptionInputProps {
   value: string;
   onChange: (value: string) => void;
   onSourceUrlChange?: (url: string | null) => void;
+  showSavedSearch?: boolean;
 }
 
 const MIN_WORDS = 30;
@@ -57,6 +58,7 @@ export function JobDescriptionInput({
   value,
   onChange,
   onSourceUrlChange,
+  showSavedSearch = false,
 }: JobDescriptionInputProps) {
   const [mode, setMode] = useState<InputMode>("text");
   const [expanded, setExpanded] = useState(false);
@@ -210,19 +212,21 @@ export function JobDescriptionInput({
           <Link2 className="h-4 w-4" />
           Paste URL
         </button>
-        <button
-          onClick={() => handleModeSwitch("saved")}
-          className={cn(
-            "flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all",
-            mode === "saved"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-          aria-label="Search saved job descriptions"
-        >
-          <Search className="h-4 w-4" />
-          Search JD
-        </button>
+        {showSavedSearch && (
+          <button
+            onClick={() => handleModeSwitch("saved")}
+            className={cn(
+              "flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all",
+              mode === "saved"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+            aria-label="Search saved job descriptions"
+          >
+            <Search className="h-4 w-4" />
+            Search JD
+          </button>
+        )}
       </div>
 
       {extractedMeta && mode === "text" && extractStatus === "done" && (

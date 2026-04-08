@@ -509,6 +509,7 @@ export default function DashboardMatchPage() {
                   value={jd.text}
                   onChange={(val) => updateJdText(i, val)}
                   onSourceUrlChange={(url) => updateJdSourceUrl(i, url)}
+                  showSavedSearch
                 />
               </div>
             ))}
