@@ -237,7 +237,9 @@ export default function DashboardMatchPage() {
     const resumeFileType = file?.type ?? "application/pdf";
     const resumeFileSize = file?.size ?? savedResumeInfo?.fileSize ?? 0;
 
-    const jdsToMatch = validJdIndices.map((i) => jdEntries[i]);
+    const jdsToMatch = validJdIndices
+      .map((i) => jdEntries[i])
+      .filter((jd): jd is JDEntry => jd != null);
 
     setMatchStatus("matching");
     setMatchError(null);
@@ -250,9 +252,10 @@ export default function DashboardMatchPage() {
     const savedIds: (string | null)[] = [];
 
     try {
-      for (let idx = 0; idx < jdsToMatch.length; idx++) {
-        const jd = jdsToMatch[idx];
-        setMatchProgress({ current: idx + 1, total: jdsToMatch.length });
+      let progressIdx = 0;
+      for (const jd of jdsToMatch) {
+        progressIdx++;
+        setMatchProgress({ current: progressIdx, total: jdsToMatch.length });
 
         const response = await fetch("/api/v1/matches", {
           method: "POST",
