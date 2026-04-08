@@ -10,14 +10,26 @@ import {
   Loader2,
   Globe,
   CheckCircle2,
+  Search,
+  Briefcase,
+  Building2,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 
-type InputMode = "text" | "url";
+type InputMode = "text" | "url" | "saved";
 type ExtractStatus = "idle" | "extracting" | "done" | "error";
+
+interface SavedJob {
+  id: string;
+  title: string | null;
+  company: string | null;
+  rawText: string;
+  sourceUrl: string | null;
+  createdAt: string;
+}
 
 interface JobDescriptionInputProps {
   value: string;
@@ -64,6 +76,11 @@ export function JobDescriptionInput({
     location: string | null;
   } | null>(null);
 
+  const [savedJobs, setSavedJobs] = useState<SavedJob[]>([]);
+  const [savedSearch, setSavedSearch] = useState("");
+  const [loadingSaved, setLoadingSaved] = useState(false);
+  const [savedLoaded, setSavedLoaded] = useState(false);
+
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
@@ -72,6 +89,19 @@ export function JobDescriptionInput({
       setExpandedHeight(Math.max(560, el.scrollHeight + 2));
     }
   }, [value, expanded]);
+
+  function loadSavedJobs() {
+    if (savedLoaded) return;
+    setLoadingSaved(true);
+    fetch("/api/v1/jobs/saved")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.data) setSavedJobs(json.data);
+        setSavedLoaded(true);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingSaved(false));
+  }
 
   async function handleExtract() {
     if (!isValidUrl(urlInput)) {
@@ -122,7 +152,34 @@ export function JobDescriptionInput({
       setExtractStatus("idle");
       setExtractError(null);
     }
+    if (newMode === "saved") {
+      loadSavedJobs();
+    }
   }
+
+  function handleSelectSavedJob(job: SavedJob) {
+    onChange(job.rawText);
+    onSourceUrlChange?.(job.sourceUrl);
+    if (job.title || job.company) {
+      setExtractedMeta({
+        title: job.title,
+        company: job.company,
+        location: null,
+      });
+      setExtractStatus("done");
+    }
+    setMode("text");
+  }
+
+  const filteredJobs = savedJobs.filter((j) => {
+    const q = savedSearch.toLowerCase();
+    if (!q) return true;
+    return (
+      (j.title?.toLowerCase().includes(q) ?? false) ||
+      (j.company?.toLowerCase().includes(q) ?? false) ||
+      j.rawText.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="flex h-full flex-col gap-3">
@@ -153,6 +210,19 @@ export function JobDescriptionInput({
           <Link2 className="h-4 w-4" />
           Paste URL
         </button>
+        <button
+          onClick={() => handleModeSwitch("saved")}
+          className={cn(
+            "flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all",
+            mode === "saved"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+          aria-label="Search saved job descriptions"
+        >
+          <Search className="h-4 w-4" />
+          Search JD
+        </button>
       </div>
 
       {extractedMeta && mode === "text" && extractStatus === "done" && (
@@ -160,7 +230,7 @@ export function JobDescriptionInput({
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
           <div className="min-w-0 text-xs">
             <span className="font-medium text-green-800">
-              Extracted from URL
+              Loaded from saved
             </span>
             {(extractedMeta.title || extractedMeta.company) && (
               <p className="mt-0.5 truncate text-green-700">
@@ -250,7 +320,7 @@ export function JobDescriptionInput({
             )}
           </div>
         </div>
-      ) : (
+      ) : mode === "url" ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-5 rounded-xl border-2 border-dashed border-muted-foreground/25 p-8">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
             {extractStatus === "extracting" ? (
@@ -311,6 +381,66 @@ export function JobDescriptionInput({
               <span>{extractError}</span>
             </div>
           )}
+        </div>
+      ) : (
+        /* Search JD mode */
+        <div className="flex flex-1 flex-col gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search saved job descriptions..."
+              value={savedSearch}
+              onChange={(e) => setSavedSearch(e.target.value)}
+              className="h-10 w-full rounded-lg border bg-background pl-10 pr-3 text-sm outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          <div className="flex-1 overflow-y-auto rounded-xl border-2 border-dashed border-muted-foreground/25">
+            {loadingSaved ? (
+              <div className="flex h-full items-center justify-center p-8">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : filteredJobs.length === 0 ? (
+              <div className="flex h-full flex-col items-center justify-center gap-2 p-8 text-center">
+                <Briefcase className="h-10 w-10 text-muted-foreground/40" />
+                <p className="text-sm text-muted-foreground">
+                  {savedSearch
+                    ? "No matching job descriptions found"
+                    : "No saved job descriptions yet"}
+                </p>
+                <p className="text-xs text-muted-foreground/60">
+                  Job descriptions are saved automatically when you run a match
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y">
+                {filteredJobs.map((job) => (
+                  <button
+                    key={job.id}
+                    onClick={() => handleSelectSavedJob(job)}
+                    className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50"
+                  >
+                    <Briefcase className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {job.title ?? "Untitled Position"}
+                      </p>
+                      {job.company && (
+                        <p className="flex items-center gap-1 truncate text-xs text-muted-foreground">
+                          <Building2 className="h-3 w-3" />
+                          {job.company}
+                        </p>
+                      )}
+                      <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground/70">
+                        {job.rawText.slice(0, 120)}...
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

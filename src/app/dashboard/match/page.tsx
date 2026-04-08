@@ -59,6 +59,12 @@ function formatCountdown(seconds: number): string {
   return `${s}s`;
 }
 
+function extractJobTitle(jdText: string): string {
+  const firstLine = jdText.split("\n")[0]?.trim();
+  if (firstLine && firstLine.length <= 80) return firstLine;
+  return "Job Position";
+}
+
 export default function DashboardMatchPage() {
   const [file, setFile] = useState<File | null>(null);
   const [parsedResume, setParsedResume] = useState<ParsedResume | null>(null);
@@ -79,6 +85,7 @@ export default function DashboardMatchPage() {
   const [matchResults, setMatchResults] = useState<(MatchResultData | null)[]>(
     []
   );
+  const [matchedJdTexts, setMatchedJdTexts] = useState<string[]>([]);
   const [savedMatchIds, setSavedMatchIds] = useState<(string | null)[]>([]);
   const [activeResultTab, setActiveResultTab] = useState(0);
   const [matchCount, setMatchCount] = useState(0);
@@ -175,6 +182,7 @@ export default function DashboardMatchPage() {
     setMatchStatus("idle");
     setMatchResults([]);
     setSavedMatchIds([]);
+    setMatchedJdTexts([]);
   }, []);
 
   const handleFileSelect = useCallback(async (selectedFile: File | null) => {
@@ -185,6 +193,7 @@ export default function DashboardMatchPage() {
     setMatchStatus("idle");
     setMatchResults([]);
     setSavedMatchIds([]);
+    setMatchedJdTexts([]);
 
     if (!selectedFile) {
       setParseStatus("idle");
@@ -234,6 +243,7 @@ export default function DashboardMatchPage() {
     setMatchError(null);
     setMatchResults([]);
     setSavedMatchIds([]);
+    setMatchedJdTexts(jdsToMatch.map((jd) => jd.text));
     setMatchProgress({ current: 0, total: jdsToMatch.length });
 
     const results: (MatchResultData | null)[] = [];
@@ -272,7 +282,6 @@ export default function DashboardMatchPage() {
 
         results.push(resultData);
 
-        // Persist in background
         const saveId = await fetch("/api/v1/matches/save", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -326,16 +335,20 @@ export default function DashboardMatchPage() {
     setMatchError(null);
     setMatchResults([]);
     setSavedMatchIds([]);
+    setMatchedJdTexts([]);
     setActiveResultTab(0);
     setMatchProgress(null);
   };
 
   const isCoolingDown = cooldown > 0;
-  const activeJd = jdEntries[activeJdTab];
-  const activeJdWordCount = activeJd ? countWords(activeJd.text) : 0;
+  const activeJdWordCount = jdEntries[activeJdTab]
+    ? countWords(jdEntries[activeJdTab].text)
+    : 0;
   const successfulResults = matchResults.filter(
     (r): r is MatchResultData => r !== null
   );
+
+  const candidateName = parsedResume?.name ?? "Candidate";
 
   return (
     <div>
@@ -485,14 +498,20 @@ export default function DashboardMatchPage() {
             )}
           </div>
 
-          {/* Active JD Input */}
+          {/* Render all JD inputs, show only active one */}
           <div className="flex-1">
-            <JobDescriptionInput
-              key={activeJdTab}
-              value={activeJd?.text ?? ""}
-              onChange={(val) => updateJdText(activeJdTab, val)}
-              onSourceUrlChange={(url) => updateJdSourceUrl(activeJdTab, url)}
-            />
+            {jdEntries.map((jd, i) => (
+              <div
+                key={i}
+                className={activeJdTab === i ? "block h-full" : "hidden"}
+              >
+                <JobDescriptionInput
+                  value={jd.text}
+                  onChange={(val) => updateJdText(i, val)}
+                  onSourceUrlChange={(url) => updateJdSourceUrl(i, url)}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -557,43 +576,73 @@ export default function DashboardMatchPage() {
       {/* Results */}
       {successfulResults.length > 0 && (
         <div ref={resultsRef} className="mt-10 border-t pt-10">
-          {/* Result tabs if more than 1 result */}
+          {/* Result tabs - centered */}
           {successfulResults.length > 1 && (
-            <div className="mb-6 flex items-center gap-2">
-              {matchResults.map((result, i) => {
-                if (!result) return null;
-                const resultNumber = matchResults
-                  .slice(0, i + 1)
-                  .filter((r) => r !== null).length;
-                const score = result.overallScore.overall;
+            <div className="mb-2 flex flex-col items-center">
+              <div className="flex items-center gap-2">
+                {matchResults.map((result, i) => {
+                  if (!result) return null;
+                  const resultNumber = matchResults
+                    .slice(0, i + 1)
+                    .filter((r) => r !== null).length;
+                  const score = result.overallScore.overall;
 
-                return (
-                  <button
-                    key={i}
-                    onClick={() => setActiveResultTab(i)}
-                    className={cn(
-                      "relative flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all",
-                      activeResultTab === i
-                        ? "border-primary bg-primary/5 text-primary shadow-sm"
-                        : "border-muted bg-background text-muted-foreground hover:border-primary/30 hover:bg-muted/50"
-                    )}
-                  >
-                    <span>Result {resultNumber}</span>
-                    <span
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setActiveResultTab(i)}
                       className={cn(
-                        "rounded-full px-2 py-0.5 text-xs font-bold",
-                        score >= 70
-                          ? "bg-emerald-100 text-emerald-700"
-                          : score >= 40
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-red-100 text-red-700"
+                        "relative flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all",
+                        activeResultTab === i
+                          ? "border-primary bg-primary/5 text-primary shadow-sm"
+                          : "border-muted bg-background text-muted-foreground hover:border-primary/30 hover:bg-muted/50"
                       )}
                     >
-                      {score}%
-                    </span>
-                  </button>
-                );
-              })}
+                      <span>Result {resultNumber}</span>
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-xs font-bold",
+                          score >= 70
+                            ? "bg-emerald-100 text-emerald-700"
+                            : score >= 40
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-red-100 text-red-700"
+                        )}
+                      >
+                        {score}%
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Candidate name + job title for active result */}
+              {matchedJdTexts[activeResultTab] && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">
+                    {candidateName}
+                  </span>
+                  {" as "}
+                  <span className="font-medium text-foreground">
+                    {extractJobTitle(matchedJdTexts[activeResultTab])}
+                  </span>
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Single result: still show candidate + job context */}
+          {successfulResults.length === 1 && matchedJdTexts[0] && (
+            <div className="mb-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  {candidateName}
+                </span>
+                {" as "}
+                <span className="font-medium text-foreground">
+                  {extractJobTitle(matchedJdTexts[0])}
+                </span>
+              </p>
             </div>
           )}
 
