@@ -58,6 +58,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Resume Integrity Check",
   },
+  competitivePositioning: {
+    tab: "jobseeker",
+    tier: 2,
+    title: "Competitive Positioning",
+  },
 };
 
 interface PersistMatchParams {

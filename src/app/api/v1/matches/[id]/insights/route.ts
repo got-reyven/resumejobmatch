@@ -22,6 +22,7 @@ import { computeInterviewFocus } from "@/services/insights/interview-focus/compu
 import { computeOverqualification } from "@/services/insights/overqualification/compute";
 import { computeRewriteSuggestions } from "@/services/insights/rewrite-suggestions/compute";
 import { computeResumeIntegrity } from "@/services/insights/resume-integrity/compute";
+import { computeCompetitivePositioning } from "@/services/insights/competitive-positioning/compute";
 import type { InsightComputeContext } from "@/services/insights/types";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 
@@ -83,6 +84,10 @@ const computeMap: Record<
   },
   resumeIntegrity: async (ctx) => {
     const r = await computeResumeIntegrity(ctx);
+    return { data: r.data };
+  },
+  competitivePositioning: async (ctx) => {
+    const r = await computeCompetitivePositioning(ctx);
     return { data: r.data };
   },
 };

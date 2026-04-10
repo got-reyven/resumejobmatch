@@ -574,8 +574,9 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Jobseeker only |
-| **Tier** | 3 (Pro only) |
+| **Tier** | 2 (Free: positioning + confidence + strong areas; Pro: + gaps + recommendation) |
 | **Phase** | v0.5+ |
+| **Status** | Implemented |
 
 **Why it matters**
 Answers the ultimate jobseeker question: "Am I competitive for this role?" Based on requirement coverage analysis (not real applicant data), it gives a directional estimate that helps candidates decide whether to apply or keep tailoring.

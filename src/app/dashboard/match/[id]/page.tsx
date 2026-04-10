@@ -38,6 +38,7 @@ import type {
   OverqualificationData,
   RewriteSuggestionsData,
   ResumeIntegrityData,
+  CompetitivePositioningData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -69,6 +70,7 @@ interface MatchDetail {
     overqualification?: OverqualificationData;
     rewriteSuggestions?: RewriteSuggestionsData;
     resumeIntegrity?: ResumeIntegrityData;
+    competitivePositioning?: CompetitivePositioningData;
   };
 }
 
@@ -223,6 +225,7 @@ export default function MatchDetailPage() {
         overqualification={match.insights.overqualification}
         rewriteSuggestions={match.insights.rewriteSuggestions}
         resumeIntegrity={match.insights.resumeIntegrity}
+        competitivePositioning={match.insights.competitivePositioning}
         userType={userType}
         tier={tier}
         matchId={match.id}

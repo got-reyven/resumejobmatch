@@ -180,6 +180,14 @@ export interface ResumeIntegrityData {
   recommendation: string;
 }
 
+export interface CompetitivePositioningData {
+  positioning: string;
+  confidence: "high" | "moderate" | "low";
+  strong_areas: string[];
+  weak_areas: string[];
+  recommendation: string;
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

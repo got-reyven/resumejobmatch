@@ -15,6 +15,7 @@ import {
   Scale,
   PenLine,
   ShieldCheck,
+  TrendingUp,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -83,6 +84,10 @@ import {
   ResumeIntegrityDisplay,
   type ResumeIntegrityDisplayProps,
 } from "@/components/features/ResumeIntegrityDisplay";
+import {
+  CompetitivePositioningDisplay,
+  type CompetitivePositioningDisplayProps,
+} from "@/components/features/CompetitivePositioningDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 const COLLAPSED_HEIGHT = 300;
@@ -174,6 +179,7 @@ interface DashboardMatchResultsProps {
   overqualification?: OverqualificationDisplayProps;
   rewriteSuggestions?: RewriteSuggestionsDisplayProps;
   resumeIntegrity?: ResumeIntegrityDisplayProps;
+  competitivePositioning?: CompetitivePositioningDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -194,6 +200,7 @@ export function DashboardMatchResults({
   overqualification,
   rewriteSuggestions,
   resumeIntegrity,
+  competitivePositioning,
   userType,
   tier,
   matchId,
@@ -241,6 +248,12 @@ export function DashboardMatchResults({
   const resolvedResumeIntegrity =
     resumeIntegrity ??
     (generated.resumeIntegrity as ResumeIntegrityDisplayProps | undefined);
+
+  const resolvedCompetitivePositioning =
+    competitivePositioning ??
+    (generated.competitivePositioning as
+      | CompetitivePositioningDisplayProps
+      | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -366,6 +379,24 @@ export function DashboardMatchResults({
           resolvedRewriteSuggestions ? (
             <RewriteSuggestionsDisplay
               {...resolvedRewriteSuggestions}
+              isPro={isPro}
+            />
+          ) : null
+        ),
+    },
+    {
+      id: "competitivePositioning",
+      label: "Competitive Positioning",
+      tab: "jobseeker",
+      render: () =>
+        renderGenerateOrDisplay(
+          "competitivePositioning",
+          <TrendingUp className="h-5 w-5 text-green-500" aria-hidden="true" />,
+          "Competitive Positioning",
+          "Estimate how you stack up against typical applicants based on requirement coverage analysis.",
+          resolvedCompetitivePositioning ? (
+            <CompetitivePositioningDisplay
+              {...resolvedCompetitivePositioning}
               isPro={isPro}
             />
           ) : null
