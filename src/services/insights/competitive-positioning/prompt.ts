@@ -9,7 +9,7 @@ export function buildCompetitivePositioningPrompt(
   const experience = resume.experience
     .map(
       (exp) =>
-        `${exp.title} at ${exp.company} (${exp.startDate}–${exp.endDate ?? "Present"}): ${exp.highlights.join("; ")}`
+        `${exp.title} at ${exp.company} (${exp.start_date}–${exp.end_date ?? "Present"}): ${exp.highlights.join("; ")}`
     )
     .join("\n");
   const education = resume.education

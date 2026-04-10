@@ -169,8 +169,54 @@ function getSnapshot(): MyData | null {
 }
 ```
 
+## Recurring Build Errors & Prevention
+
+### ParsedResume Property Names (snake_case)
+
+**Error**: `Property 'startDate' does not exist on type` — Vercel build fails.
+
+**Root cause**: The `ParsedResume` schema in `src/lib/validations/parsed-resume.ts` uses **snake_case** for all fields, matching the database and AI output. Developers instinctively write camelCase.
+
+**Affected fields** (always use left column):
+
+| Correct (snake_case)    | Wrong (camelCase)       |
+|-------------------------|-------------------------|
+| `exp.start_date`        | `exp.startDate`         |
+| `exp.end_date`          | `exp.endDate`           |
+| `ed.start_year`         | `ed.startYear`          |
+| `ed.end_year`           | `ed.endYear`            |
+| `resume.total_years_experience` | `resume.totalYearsExperience` |
+| `resume.key_responsibilities`   | `resume.keyResponsibilities`  |
+
+**Prevention**: When writing new insight prompts that reference `ParsedResume` fields, always check `src/lib/validations/parsed-resume.ts` for the exact field names. All experience, education, and top-level resume fields use snake_case.
+
+**History**: This error has occurred in multiple insight prompts (`section-strength`, `risk-areas`, `interview-focus`, `qualification-fit`, `overall-score`, `top-strengths`, `competitive-positioning`) and was caught during Vercel deployment each time. The local dev server (Turbopack) does not always surface these TypeScript strict errors.
+
+---
+
+### Array Index Possibly Undefined (TypeScript strict)
+
+**Error**: `'x' is possibly 'undefined'` — Vercel build fails on array element access.
+
+**Root cause**: TypeScript strict mode treats `array[i]` as `T | undefined`. Local Turbopack dev may not enforce this.
+
+**Fix**: Use `.filter((x): x is T => x != null)` type guard, optional chaining (`array[i]?.prop`), or `for...of` loops instead of indexed access.
+
+---
+
+### Nested Interactive Elements (button inside button)
+
+**Error**: `In HTML, <button> cannot be a descendant of <button>` — hydration error.
+
+**Root cause**: React SSR generates valid HTML; nesting interactive elements violates the spec.
+
+**Fix**: Use `<div role="tab" tabIndex={0} onClick={...} onKeyDown={...}>` for the outer element when it needs to contain inner buttons.
+
+---
+
 ## Debugging Practices
 
 - Use `React DevTools` and `Supabase Dashboard` SQL editor for debugging
 - Add `data-testid` attributes to key interactive elements for easier inspection
 - Use Zod `.safeParse()` to get detailed validation diagnostics without throwing
+- **Always run `npx tsc --noEmit` locally before pushing** to catch strict TypeScript errors that Turbopack may miss
