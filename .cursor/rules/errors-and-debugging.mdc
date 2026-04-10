@@ -187,6 +187,7 @@ function getSnapshot(): MyData | null {
 | `ed.end_year`           | `ed.endYear`            |
 | `resume.total_years_experience` | `resume.totalYearsExperience` |
 | `resume.key_responsibilities`   | `resume.keyResponsibilities`  |
+| `ed.field_of_study`             | `ed.field`                    |
 
 **Prevention**: When writing new insight prompts that reference `ParsedResume` fields, always check `src/lib/validations/parsed-resume.ts` for the exact field names. All experience, education, and top-level resume fields use snake_case.
 

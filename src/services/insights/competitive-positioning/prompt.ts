@@ -15,7 +15,7 @@ export function buildCompetitivePositioningPrompt(
   const education = resume.education
     .map(
       (ed) =>
-        `${ed.degree} in ${ed.field ?? "N/A"} from ${ed.institution} (${ed.start_year ?? ""}–${ed.end_year ?? ""})`
+        `${ed.degree} in ${ed.field_of_study ?? "N/A"} from ${ed.institution} (${ed.start_year ?? ""}–${ed.end_year ?? ""})`
     )
     .join("\n");
   const certifications =
