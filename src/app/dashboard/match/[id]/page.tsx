@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -97,10 +104,27 @@ function reducer(_state: DetailState, action: DetailAction): DetailState {
   }
 }
 
+function useSticky(sentinelRef: RefObject<HTMLDivElement | null>) {
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setStuck(entry != null && !entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [sentinelRef]);
+  return stuck;
+}
+
 export default function MatchDetailPage() {
   const params = useParams<{ id: string }>();
   const { userType, tier } = useProfile();
   const [state, dispatch] = useReducer(reducer, { status: "loading" });
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const isStuck = useSticky(sentinelRef);
 
   useEffect(() => {
     async function load() {
@@ -200,7 +224,10 @@ export default function MatchDetailPage() {
         </div>
       </div>
 
-      <div className="sticky top-0 z-20 border-b bg-background px-6 pb-3 pt-3 shadow-sm lg:px-8">
+      <div ref={sentinelRef} className="h-0" aria-hidden="true" />
+      <div
+        className={`sticky top-0 z-20 bg-white px-6 pb-3 pt-3 lg:px-8 ${isStuck ? "after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-4 after:bg-gradient-to-b after:from-black/5 after:to-transparent" : ""}`}
+      >
         <div className="grid gap-4 lg:grid-cols-2">
           <ResumeDetailPanel parsedData={match.resume.parsedData} />
           <JobDetailPanel

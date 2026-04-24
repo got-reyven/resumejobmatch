@@ -580,7 +580,7 @@ export function DashboardMatchResults({
   function renderSidebar(insights: InsightDef[]) {
     const visible = insights.filter((i) => !hidden.has(i.id));
     return (
-      <nav className="sticky top-16 space-y-0.5">
+      <nav className="sticky top-24 space-y-0.5">
         <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           Navigate
         </p>
