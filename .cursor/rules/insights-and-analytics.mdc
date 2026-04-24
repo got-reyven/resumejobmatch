@@ -604,8 +604,9 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Jobseeker only |
-| **Tier** | 3 (Pro only) |
+| **Tier** | 2 (Free: terms found + 1 missing term suggestion; Pro: all missing terms + suggestions) |
 | **Phase** | v0.5+ |
+| **Status** | Implemented |
 
 **Why it matters**
 Every industry has its own vocabulary. Using the right terms signals insider knowledge and cultural fit. Particularly valuable for career changers entering a new industry.

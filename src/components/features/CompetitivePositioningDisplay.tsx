@@ -119,34 +119,7 @@ export function CompetitivePositioningDisplay({
               ))}
             </ul>
           </div>
-        ) : (
-          <div className="relative rounded-lg border bg-background p-3">
-            <div className="mb-2 flex items-center gap-1.5">
-              <AlertTriangle
-                className="h-4 w-4 text-amber-500"
-                aria-hidden="true"
-              />
-              <p className="text-sm font-medium">Gaps to Address</p>
-            </div>
-            <div className="space-y-1.5">
-              {weak_areas.slice(0, 1).map((area, i) => (
-                <p
-                  key={i}
-                  className="flex items-start gap-2 text-sm text-muted-foreground blur-[5px] select-none"
-                >
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
-                  {area}
-                </p>
-              ))}
-            </div>
-            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-background/80 backdrop-blur-[1px]">
-              <Lock className="mb-1 h-4 w-4 text-muted-foreground" />
-              <p className="text-xs font-medium text-muted-foreground">
-                Pro only
-              </p>
-            </div>
-          </div>
-        )}
+        ) : null}
       </div>
 
       {/* Recommendation — Pro only */}
@@ -166,33 +139,28 @@ export function CompetitivePositioningDisplay({
           </div>
         </div>
       ) : (
-        <div className="relative rounded-lg border bg-background p-4">
-          <div className="flex items-start gap-2 blur-[5px] select-none">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-sky-400" />
-            <div>
-              <p className="text-xs font-medium text-foreground">
-                Recommendation
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-start gap-2.5">
+            <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-amber-800">
+                Upgrade to Pro to see the full analysis
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {recommendation}
+              <p className="mt-0.5 text-xs text-amber-700/80">
+                Get gaps to address and personalized recommendations to
+                strengthen your competitive positioning.
               </p>
+              <Button
+                asChild
+                size="sm"
+                className="mt-2.5 gap-1.5 bg-amber-600 text-xs hover:bg-amber-700"
+              >
+                <Link href="/pricing">
+                  <Crown className="h-3.5 w-3.5" />
+                  Upgrade to Pro
+                </Link>
+              </Button>
             </div>
-          </div>
-          <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-background/80 backdrop-blur-[1px]">
-            <Crown className="mb-1.5 h-5 w-5 text-amber-500" />
-            <p className="mb-2 text-center text-xs font-medium text-muted-foreground">
-              Upgrade to Pro to see gaps and recommendations
-            </p>
-            <Button
-              asChild
-              size="sm"
-              className="gap-1.5 bg-amber-600 text-xs hover:bg-amber-700"
-            >
-              <Link href="/pricing">
-                <Crown className="h-3.5 w-3.5" />
-                Upgrade to Pro
-              </Link>
-            </Button>
           </div>
         </div>
       )}

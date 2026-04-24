@@ -16,6 +16,7 @@ import {
   PenLine,
   ShieldCheck,
   TrendingUp,
+  BookOpen,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -88,6 +89,10 @@ import {
   CompetitivePositioningDisplay,
   type CompetitivePositioningDisplayProps,
 } from "@/components/features/CompetitivePositioningDisplay";
+import {
+  IndustryJargonDisplay,
+  type IndustryJargonDisplayProps,
+} from "@/components/features/IndustryJargonDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 const COLLAPSED_HEIGHT = 300;
@@ -180,6 +185,7 @@ interface DashboardMatchResultsProps {
   rewriteSuggestions?: RewriteSuggestionsDisplayProps;
   resumeIntegrity?: ResumeIntegrityDisplayProps;
   competitivePositioning?: CompetitivePositioningDisplayProps;
+  industryJargon?: IndustryJargonDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -201,6 +207,7 @@ export function DashboardMatchResults({
   rewriteSuggestions,
   resumeIntegrity,
   competitivePositioning,
+  industryJargon,
   userType,
   tier,
   matchId,
@@ -254,6 +261,10 @@ export function DashboardMatchResults({
     (generated.competitivePositioning as
       | CompetitivePositioningDisplayProps
       | undefined);
+
+  const resolvedIndustryJargon =
+    industryJargon ??
+    (generated.industryJargon as IndustryJargonDisplayProps | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -399,6 +410,21 @@ export function DashboardMatchResults({
               {...resolvedCompetitivePositioning}
               isPro={isPro}
             />
+          ) : null
+        ),
+    },
+    {
+      id: "industryJargon",
+      label: "Industry Jargon Check",
+      tab: "jobseeker",
+      render: () =>
+        renderGenerateOrDisplay(
+          "industryJargon",
+          <BookOpen className="h-5 w-5 text-sky-500" aria-hidden="true" />,
+          "Industry Jargon Check",
+          "Identify industry-specific terminology from the job description and check if your resume uses the right vocabulary.",
+          resolvedIndustryJargon ? (
+            <IndustryJargonDisplay {...resolvedIndustryJargon} isPro={isPro} />
           ) : null
         ),
     },

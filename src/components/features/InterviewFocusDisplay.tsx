@@ -1,6 +1,8 @@
 "use client";
 
-import { MessageCircleQuestion, Ear } from "lucide-react";
+import Link from "next/link";
+import { MessageCircleQuestion, Ear, Lock, Crown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
 
 export interface InterviewFocusDisplayProps {
@@ -155,14 +157,30 @@ export function InterviewFocusDisplay({
       </div>
 
       {!isPro && hiddenCount > 0 && (
-        <div className="rounded-lg border border-violet-200 bg-violet-50/50 p-4 text-center">
-          <p className="text-sm font-medium text-violet-800">
-            +{hiddenCount} more question{hiddenCount > 1 ? "s" : ""} available
-          </p>
-          <p className="mt-1 text-xs text-violet-600">
-            Upgrade to Business Pro to see all interview questions with detailed
-            rationale.
-          </p>
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-start gap-2.5">
+            <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-amber-800">
+                +{hiddenCount} more question{hiddenCount > 1 ? "s" : ""}{" "}
+                available
+              </p>
+              <p className="mt-0.5 text-xs text-amber-700/80">
+                Upgrade to Pro to see all interview questions with detailed
+                rationale.
+              </p>
+              <Button
+                asChild
+                size="sm"
+                className="mt-2.5 gap-1.5 bg-amber-600 text-xs hover:bg-amber-700"
+              >
+                <Link href="/pricing">
+                  <Crown className="h-3.5 w-3.5" />
+                  Upgrade to Pro
+                </Link>
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

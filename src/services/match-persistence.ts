@@ -63,6 +63,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Competitive Positioning",
   },
+  industryJargon: {
+    tab: "jobseeker",
+    tier: 2,
+    title: "Industry Jargon Check",
+  },
 };
 
 interface PersistMatchParams {

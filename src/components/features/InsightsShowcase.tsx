@@ -221,8 +221,8 @@ const advancedInsights: Insight[] = [
     icon: BookOpen,
     iconColor: "text-sky-500",
     audience: "jobseeker",
-    access: "pro",
-    available: false,
+    access: "registered",
+    available: true,
   },
   {
     id: 16,

@@ -39,6 +39,7 @@ import type {
   RewriteSuggestionsData,
   ResumeIntegrityData,
   CompetitivePositioningData,
+  IndustryJargonData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -71,6 +72,7 @@ interface MatchDetail {
     rewriteSuggestions?: RewriteSuggestionsData;
     resumeIntegrity?: ResumeIntegrityData;
     competitivePositioning?: CompetitivePositioningData;
+    industryJargon?: IndustryJargonData;
   };
 }
 
@@ -226,6 +228,7 @@ export default function MatchDetailPage() {
         rewriteSuggestions={match.insights.rewriteSuggestions}
         resumeIntegrity={match.insights.resumeIntegrity}
         competitivePositioning={match.insights.competitivePositioning}
+        industryJargon={match.insights.industryJargon}
         userType={userType}
         tier={tier}
         matchId={match.id}

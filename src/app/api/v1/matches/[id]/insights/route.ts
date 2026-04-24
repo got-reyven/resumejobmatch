@@ -23,6 +23,7 @@ import { computeOverqualification } from "@/services/insights/overqualification/
 import { computeRewriteSuggestions } from "@/services/insights/rewrite-suggestions/compute";
 import { computeResumeIntegrity } from "@/services/insights/resume-integrity/compute";
 import { computeCompetitivePositioning } from "@/services/insights/competitive-positioning/compute";
+import { computeIndustryJargon } from "@/services/insights/industry-jargon/compute";
 import type { InsightComputeContext } from "@/services/insights/types";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 
@@ -88,6 +89,10 @@ const computeMap: Record<
   },
   competitivePositioning: async (ctx) => {
     const r = await computeCompetitivePositioning(ctx);
+    return { data: r.data };
+  },
+  industryJargon: async (ctx) => {
+    const r = await computeIndustryJargon(ctx);
     return { data: r.data };
   },
 };

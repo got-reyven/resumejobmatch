@@ -195,6 +195,24 @@ function getSnapshot(): MyData | null {
 
 ---
 
+### OpenAI Structured Output: No `.optional()` Fields
+
+**Error**: `Zod field uses .optional() without .nullable() which is not supported by the API`
+
+**Root cause**: OpenAI's structured output API (Responses API with `zodResponseFormat` / `zodTextFormat`) requires **all fields to be present** in the output. Zod's `.optional()` maps to a field that can be omitted, which the API doesn't support. Use `.nullable()` instead, which makes the field always present but allows `null`.
+
+**Fix**: Replace `.optional()` with `.nullable()` in all Zod schemas used with OpenAI structured output.
+
+```typescript
+// BAD — will throw at runtime
+suggestion: z.string().optional()
+
+// GOOD — always present, can be null
+suggestion: z.string().nullable()
+```
+
+---
+
 ### Array Index Possibly Undefined (TypeScript strict)
 
 **Error**: `'x' is possibly 'undefined'` — Vercel build fails on array element access.

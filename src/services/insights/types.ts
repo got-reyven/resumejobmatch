@@ -188,6 +188,16 @@ export interface CompetitivePositioningData {
   recommendation: string;
 }
 
+export interface IndustryJargonData {
+  industry: string;
+  terms: {
+    term: string;
+    present: boolean;
+    suggestion: string | null;
+  }[];
+  summary: string;
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;
