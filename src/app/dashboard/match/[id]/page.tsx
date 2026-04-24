@@ -168,7 +168,7 @@ export default function MatchDetailPage() {
 
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-6 px-6 pt-6 lg:px-8 lg:pt-8">
         <Button
           asChild
           variant="ghost"
@@ -200,39 +200,43 @@ export default function MatchDetailPage() {
         </div>
       </div>
 
-      <div className="mb-8 grid gap-4 lg:grid-cols-2">
-        <ResumeDetailPanel parsedData={match.resume.parsedData} />
-        <JobDetailPanel
-          rawText={match.jobDescription.rawText}
-          sourceUrl={match.jobDescription.sourceUrl}
-        />
+      <div className="sticky top-0 z-20 border-b bg-background px-6 pb-3 pt-3 shadow-sm lg:px-8">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <ResumeDetailPanel parsedData={match.resume.parsedData} />
+          <JobDetailPanel
+            rawText={match.jobDescription.rawText}
+            sourceUrl={match.jobDescription.sourceUrl}
+          />
+        </div>
       </div>
 
-      <DashboardMatchResults
-        score={{
-          overall: match.insights.overallScore.overall,
-          dimensions: match.insights.overallScore.dimensions,
-          summary: match.insights.overallScore.summary,
-        }}
-        skillsBreakdown={match.insights.skillsBreakdown}
-        actionItems={match.insights.actionItems}
-        topStrengths={match.insights.topStrengths}
-        atsKeywords={match.insights.atsKeywords}
-        experienceAlignment={match.insights.experienceAlignment}
-        qualificationFit={match.insights.qualificationFit}
-        sectionStrength={match.insights.sectionStrength}
-        tailoredSummary={match.insights.tailoredSummary}
-        riskAreas={match.insights.riskAreas}
-        interviewFocus={match.insights.interviewFocus}
-        overqualification={match.insights.overqualification}
-        rewriteSuggestions={match.insights.rewriteSuggestions}
-        resumeIntegrity={match.insights.resumeIntegrity}
-        competitivePositioning={match.insights.competitivePositioning}
-        industryJargon={match.insights.industryJargon}
-        userType={userType}
-        tier={tier}
-        matchId={match.id}
-      />
+      <div className="px-6 pt-6 pb-6 lg:px-8 lg:pb-8">
+        <DashboardMatchResults
+          score={{
+            overall: match.insights.overallScore.overall,
+            dimensions: match.insights.overallScore.dimensions,
+            summary: match.insights.overallScore.summary,
+          }}
+          skillsBreakdown={match.insights.skillsBreakdown}
+          actionItems={match.insights.actionItems}
+          topStrengths={match.insights.topStrengths}
+          atsKeywords={match.insights.atsKeywords}
+          experienceAlignment={match.insights.experienceAlignment}
+          qualificationFit={match.insights.qualificationFit}
+          sectionStrength={match.insights.sectionStrength}
+          tailoredSummary={match.insights.tailoredSummary}
+          riskAreas={match.insights.riskAreas}
+          interviewFocus={match.insights.interviewFocus}
+          overqualification={match.insights.overqualification}
+          rewriteSuggestions={match.insights.rewriteSuggestions}
+          resumeIntegrity={match.insights.resumeIntegrity}
+          competitivePositioning={match.insights.competitivePositioning}
+          industryJargon={match.insights.industryJargon}
+          userType={userType}
+          tier={tier}
+          matchId={match.id}
+        />
+      </div>
     </div>
   );
 }
@@ -356,6 +360,17 @@ function ResumeDetailPanel({
   parsedData: Record<string, unknown> | null;
 }) {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
 
   if (!parsedData) return null;
 
@@ -379,25 +394,30 @@ function ResumeDetailPanel({
     | undefined;
 
   return (
-    <Card className="py-0">
-      <CardContent className="p-0">
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-muted/40"
-        >
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <User className="h-4 w-4 text-[#6696C9]" />
-            Parsed Resume
-          </span>
-          {open ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          )}
-        </button>
-        {open && (
-          <div className="space-y-4 border-t px-5 py-4 text-sm">
+    <div ref={ref} className="relative">
+      <Card className="py-0">
+        <CardContent className="p-0">
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-muted/40"
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold">
+              <User className="h-4 w-4 text-[#6696C9]" />
+              Parsed Resume
+            </span>
+            {open ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+        </CardContent>
+      </Card>
+
+      {open && (
+        <div className="absolute top-full left-0 z-30 mt-1 max-h-[70vh] w-full overflow-y-auto rounded-lg border bg-background shadow-lg">
+          <div className="space-y-4 px-5 py-4 text-sm">
             <div>
               <p className="font-semibold">{name}</p>
               {email && (
@@ -502,9 +522,9 @@ function ResumeDetailPanel({
               </div>
             )}
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -516,27 +536,43 @@ function JobDetailPanel({
   sourceUrl: string | null;
 }) {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
 
   return (
-    <Card className="py-0">
-      <CardContent className="p-0">
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-muted/40"
-        >
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <Briefcase className="h-4 w-4 text-[#6696C9]" />
-            Job Details
-          </span>
-          {open ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          )}
-        </button>
-        {open && (
-          <div className="border-t px-5 py-4">
+    <div ref={ref} className="relative">
+      <Card className="py-0">
+        <CardContent className="p-0">
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            className="flex w-full items-center justify-between px-5 py-3 text-left transition-colors hover:bg-muted/40"
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold">
+              <Briefcase className="h-4 w-4 text-[#6696C9]" />
+              Job Details
+            </span>
+            {open ? (
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+        </CardContent>
+      </Card>
+
+      {open && (
+        <div className="absolute top-full left-0 z-30 mt-1 max-h-[70vh] w-full overflow-y-auto rounded-lg border bg-background shadow-lg">
+          <div className="px-5 py-4">
             {sourceUrl && (
               <a
                 href={sourceUrl}
@@ -548,12 +584,12 @@ function JobDetailPanel({
                 View Original Posting
               </a>
             )}
-            <pre className="max-h-80 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+            <pre className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
               {rawText}
             </pre>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 }

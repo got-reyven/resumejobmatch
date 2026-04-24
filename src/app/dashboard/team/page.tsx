@@ -146,7 +146,7 @@ export default function TeamPage() {
   }
 
   return (
-    <div>
+    <div className="p-6 lg:p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Team</h1>

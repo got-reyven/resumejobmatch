@@ -150,6 +150,39 @@ export default function Page() {
 
 ---
 
+## React Hooks Lint Rules (react-hooks/refs, react-hooks/set-state-in-effect)
+
+**Error:**
+
+```
+Error: Cannot access refs during render (react-hooks/refs)
+Error: Calling setState synchronously within an effect can trigger cascading renders (react-hooks/set-state-in-effect)
+```
+
+**Root cause:** Accessing `ref.current` during render or calling `setState` synchronously inside `useEffect` violates React strict lint rules.
+
+**Fix pattern:** Make the component **controlled** — lift state to the parent and pass it as props.
+
+```tsx
+// BAD: internal state + forceExpanded sync via effect/ref
+function Collapsible({ forceExpanded }) {
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    if (forceExpanded) setExpanded(true);
+  }, [forceExpanded]); // lint error
+}
+
+// GOOD: fully controlled by parent
+function Collapsible({ expanded, onToggle }) {
+  // no internal expanded state, parent owns it
+  return <button onClick={onToggle}>{expanded ? "Less" : "More"}</button>;
+}
+```
+
+**Prevention:** When a parent needs to control a child's state (e.g., force-expand), make the child a controlled component instead of syncing props to internal state.
+
+---
+
 ## tsconfig.json Strict Settings Reference
 
 These settings cause most build-time errors. All code must comply:

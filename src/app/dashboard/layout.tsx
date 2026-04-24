@@ -38,11 +38,11 @@ export default async function DashboardLayout({
         tier,
       }}
     >
-      <div className="flex min-h-screen">
+      <div className="flex h-screen overflow-hidden">
         <DashboardSidebar />
 
-        <div className="flex flex-1 flex-col">
-          <header className="flex h-14 items-center border-b px-6 lg:hidden">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="flex h-14 shrink-0 items-center border-b px-6 lg:hidden">
             <Link href="/dashboard" aria-label="Dashboard home">
               <Image
                 src="/logo-default.svg"
@@ -53,7 +53,9 @@ export default async function DashboardLayout({
             </Link>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
+          <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+            {children}
+          </main>
         </div>
       </div>
     </ProfileProvider>

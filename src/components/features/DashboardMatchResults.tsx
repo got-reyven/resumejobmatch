@@ -19,6 +19,11 @@ import {
   BookOpen,
   ChevronDown,
   ChevronUp,
+  Target,
+  Lightbulb,
+  Zap,
+  Search,
+  type LucideIcon,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils/cn";
@@ -99,12 +104,13 @@ const COLLAPSED_HEIGHT = 300;
 
 function CollapsibleInsight({
   children,
-  onExpandChange,
+  expanded,
+  onToggle,
 }: {
   children: React.ReactNode;
-  onExpandChange?: (expanded: boolean) => void;
+  expanded: boolean;
+  onToggle: () => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const [needsCollapse, setNeedsCollapse] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -139,11 +145,7 @@ function CollapsibleInsight({
           )}
           <button
             type="button"
-            onClick={() => {
-              const next = !expanded;
-              setExpanded(next);
-              onExpandChange?.(next);
-            }}
+            onClick={onToggle}
             className="absolute top-0 right-0 z-10 flex items-center gap-1 rounded-full border border-[#6696C9] bg-[#B5DAF2]/30 px-2.5 py-0.5 text-[10px] font-medium text-foreground transition-colors hover:bg-[#B5DAF2]/50"
           >
             {expanded ? (
@@ -165,6 +167,8 @@ function CollapsibleInsight({
 interface InsightDef {
   id: string;
   label: string;
+  icon: LucideIcon;
+  iconClass: string;
   tab: "shared" | "jobseeker" | "business";
   render: () => React.ReactNode;
 }
@@ -293,42 +297,56 @@ export function DashboardMatchResults({
     {
       id: "overallScore",
       label: "Overall Match Score",
+      icon: Target,
+      iconClass: "text-[#6696C9]",
       tab: "shared",
       render: () => <MatchScoreDisplay {...score} />,
     },
     {
       id: "skillsBreakdown",
       label: "Skills Breakdown",
+      icon: Search,
+      iconClass: "text-orange-500",
       tab: "shared",
       render: () => <SkillsBreakdownDisplay {...skillsBreakdown} />,
     },
     {
       id: "actionItems",
       label: "Action Items",
+      icon: Lightbulb,
+      iconClass: "text-amber-500",
       tab: "jobseeker",
       render: () => <ActionItemsDisplay {...actionItems} />,
     },
     {
       id: "topStrengths",
       label: "Top Strengths",
+      icon: Zap,
+      iconClass: "text-emerald-500",
       tab: "business",
       render: () => <TopStrengthsDisplay {...topStrengths} />,
     },
     {
       id: "atsKeywords",
       label: "ATS Keywords",
+      icon: FileText,
+      iconClass: "text-blue-500",
       tab: "jobseeker",
       render: () => <ATSKeywordDisplay {...atsKeywords} />,
     },
     {
       id: "experienceAlignment",
       label: "Experience Alignment",
+      icon: Briefcase,
+      iconClass: "text-slate-500",
       tab: "shared",
       render: () => <ExperienceAlignmentDisplay {...experienceAlignment} />,
     },
     {
       id: "qualificationFit",
       label: "Qualification Fit",
+      icon: GraduationCap,
+      iconClass: "text-purple-500",
       tab: "shared",
       render: () =>
         renderGenerateOrDisplay(
@@ -347,6 +365,8 @@ export function DashboardMatchResults({
     {
       id: "sectionStrength",
       label: "Section Strength",
+      icon: BarChart3,
+      iconClass: "text-indigo-500",
       tab: "jobseeker",
       render: () =>
         renderGenerateOrDisplay(
@@ -362,6 +382,8 @@ export function DashboardMatchResults({
     {
       id: "tailoredSummary",
       label: "Tailored Summary",
+      icon: FileText,
+      iconClass: "text-teal-500",
       tab: "jobseeker",
       render: () =>
         renderGenerateOrDisplay(
@@ -380,6 +402,8 @@ export function DashboardMatchResults({
     {
       id: "rewriteSuggestions",
       label: "Rewrite Suggestions",
+      icon: PenLine,
+      iconClass: "text-rose-500",
       tab: "jobseeker",
       render: () =>
         renderGenerateOrDisplay(
@@ -398,6 +422,8 @@ export function DashboardMatchResults({
     {
       id: "competitivePositioning",
       label: "Competitive Positioning",
+      icon: TrendingUp,
+      iconClass: "text-green-500",
       tab: "jobseeker",
       render: () =>
         renderGenerateOrDisplay(
@@ -416,6 +442,8 @@ export function DashboardMatchResults({
     {
       id: "industryJargon",
       label: "Industry Jargon Check",
+      icon: BookOpen,
+      iconClass: "text-sky-500",
       tab: "jobseeker",
       render: () =>
         renderGenerateOrDisplay(
@@ -431,6 +459,8 @@ export function DashboardMatchResults({
     {
       id: "riskAreas",
       label: "Risk Areas & Gaps",
+      icon: AlertTriangle,
+      iconClass: "text-red-400",
       tab: "business",
       render: () =>
         renderGenerateOrDisplay(
@@ -446,6 +476,8 @@ export function DashboardMatchResults({
     {
       id: "interviewFocus",
       label: "Interview Focus Points",
+      icon: MessageCircleQuestion,
+      iconClass: "text-violet-500",
       tab: "business",
       render: () =>
         renderGenerateOrDisplay(
@@ -464,6 +496,8 @@ export function DashboardMatchResults({
     {
       id: "overqualification",
       label: "Overqualification Assessment",
+      icon: Scale,
+      iconClass: "text-pink-500",
       tab: "business",
       render: () =>
         renderGenerateOrDisplay(
@@ -479,6 +513,8 @@ export function DashboardMatchResults({
     {
       id: "resumeIntegrity",
       label: "Resume Integrity Check",
+      icon: ShieldCheck,
+      iconClass: "text-sky-500",
       tab: "business",
       render: () =>
         renderGenerateOrDisplay(
@@ -502,14 +538,25 @@ export function DashboardMatchResults({
 
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [activeInsightId, setActiveInsightId] = useState<string | null>(null);
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const toggleExpanded = useCallback((id: string, isExpanded: boolean) => {
+  const toggleExpanded = useCallback((id: string) => {
     setExpandedCards((prev) => {
       const next = new Set(prev);
-      if (isExpanded) next.add(id);
-      else next.delete(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
+  }, []);
+
+  const scrollToInsight = useCallback((id: string) => {
+    setActiveInsightId(id);
+    setExpandedCards((prev) => new Set(prev).add(id));
+    const el = cardRefs.current[id];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }, []);
 
   const toggle = (id: string) => {
@@ -521,92 +568,137 @@ export function DashboardMatchResults({
     });
   };
 
-  const activeInsights = isPro
+  const filteredInsights = isPro
     ? allInsights
     : userType === "business"
       ? businessInsights
       : jobseekerInsights;
   const hiddenCount = [...hidden].filter((id) =>
-    activeInsights.some((i) => i.id === id)
+    filteredInsights.some((i) => i.id === id)
   ).length;
+
+  function renderSidebar(insights: InsightDef[]) {
+    const visible = insights.filter((i) => !hidden.has(i.id));
+    return (
+      <nav className="sticky top-16 space-y-0.5">
+        <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Navigate
+        </p>
+        {visible.map((insight) => {
+          const Icon = insight.icon;
+          const isActive = activeInsightId === insight.id;
+          return (
+            <button
+              key={insight.id}
+              type="button"
+              onClick={() => scrollToInsight(insight.id)}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition-colors",
+                isActive
+                  ? "bg-[#6696C9]/10 font-semibold text-[#6696C9]"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+              )}
+            >
+              <Icon
+                className={cn(
+                  "h-3.5 w-3.5 shrink-0",
+                  isActive ? "text-[#6696C9]" : insight.iconClass
+                )}
+                aria-hidden="true"
+              />
+              <span className="truncate">{insight.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+    );
+  }
 
   function renderCards(insights: InsightDef[]) {
     const visible = insights.filter((i) => !hidden.has(i.id));
     return (
-      <div className="columns-1 gap-6 lg:columns-2">
+      <div className="columns-1 gap-6 xl:columns-2">
         {visible.map((insight) => (
-          <Card
+          <div
             key={insight.id}
-            className={cn(
-              "mb-6 min-w-0 break-inside-avoid overflow-hidden transition-shadow duration-200",
-              expandedCards.has(insight.id) ? "border-foreground shadow-md" : ""
-            )}
+            ref={(el) => {
+              cardRefs.current[insight.id] = el;
+            }}
+            className="mb-6 break-inside-avoid"
           >
-            <CardContent>
-              <CollapsibleInsight
-                onExpandChange={(exp) => toggleExpanded(insight.id, exp)}
-              >
-                {insight.render()}
-              </CollapsibleInsight>
-            </CardContent>
-          </Card>
+            <Card
+              className={cn(
+                "min-w-0 overflow-hidden transition-shadow duration-200",
+                expandedCards.has(insight.id)
+                  ? "border-foreground shadow-md"
+                  : "",
+                activeInsightId === insight.id ? "ring-2 ring-[#6696C9]/40" : ""
+              )}
+            >
+              <CardContent>
+                <CollapsibleInsight
+                  expanded={expandedCards.has(insight.id)}
+                  onToggle={() => toggleExpanded(insight.id)}
+                >
+                  {insight.render()}
+                </CollapsibleInsight>
+              </CardContent>
+            </Card>
+          </div>
         ))}
       </div>
     );
   }
 
-  return (
-    <div className="mx-auto max-w-6xl rounded-lg p-6 lg:p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-bold tracking-tight">
-          Insights and Analysis Results
-        </h2>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2 text-xs">
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              Filter
-              {hiddenCount > 0 && (
-                <span className="ml-1 rounded-full bg-[#6696C9] px-1.5 py-0.5 text-[10px] font-medium leading-none text-white">
-                  {hiddenCount}
-                </span>
+  const filterPopover = (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2 text-xs">
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          Filter
+          {hiddenCount > 0 && (
+            <span className="ml-1 rounded-full bg-[#6696C9] px-1.5 py-0.5 text-[10px] font-medium leading-none text-white">
+              {hiddenCount}
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-56 p-2">
+        <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
+          Show / Hide Insights
+        </p>
+        {filteredInsights.map((i) => {
+          const isVisible = !hidden.has(i.id);
+          return (
+            <button
+              key={i.id}
+              type="button"
+              onClick={() => toggle(i.id)}
+              className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted/50"
+            >
+              {isVisible ? (
+                <Eye className="h-3.5 w-3.5 shrink-0 text-[#6696C9]" />
+              ) : (
+                <EyeOff className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
               )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-56 p-2">
-            <p className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
-              Show / Hide Insights
-            </p>
-            {activeInsights.map((i) => {
-              const isVisible = !hidden.has(i.id);
-              return (
-                <button
-                  key={i.id}
-                  type="button"
-                  onClick={() => toggle(i.id)}
-                  className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted/50"
-                >
-                  {isVisible ? (
-                    <Eye className="h-3.5 w-3.5 shrink-0 text-[#6696C9]" />
-                  ) : (
-                    <EyeOff className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
-                  )}
-                  <span
-                    className={
-                      isVisible
-                        ? "font-medium text-foreground"
-                        : "text-muted-foreground/50 line-through"
-                    }
-                  >
-                    {i.label}
-                  </span>
-                </button>
-              );
-            })}
-          </PopoverContent>
-        </Popover>
-      </div>
+              <span
+                className={
+                  isVisible
+                    ? "font-medium text-foreground"
+                    : "text-muted-foreground/50 line-through"
+                }
+              >
+                {i.label}
+              </span>
+            </button>
+          );
+        })}
+      </PopoverContent>
+    </Popover>
+  );
 
+  return (
+    <div className="w-full">
       <Tabs defaultValue={defaultTab}>
         {isPro && (
           <TabsList className="mx-auto mb-6 w-full max-w-md">
@@ -623,13 +715,39 @@ export function DashboardMatchResults({
 
         {showJobseekerTab && (
           <TabsContent value="jobseeker">
-            {renderCards(jobseekerInsights)}
+            <div className="flex gap-6">
+              <aside className="hidden w-52 shrink-0 lg:block">
+                {renderSidebar(jobseekerInsights)}
+              </aside>
+              <div className="min-w-0 flex-1">
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-xl font-bold tracking-tight">
+                    Insights and Analysis Results
+                  </h2>
+                  {filterPopover}
+                </div>
+                {renderCards(jobseekerInsights)}
+              </div>
+            </div>
           </TabsContent>
         )}
 
         {showBusinessTab && (
           <TabsContent value="business">
-            {renderCards(businessInsights)}
+            <div className="flex gap-6">
+              <aside className="hidden w-52 shrink-0 lg:block">
+                {renderSidebar(businessInsights)}
+              </aside>
+              <div className="min-w-0 flex-1">
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-xl font-bold tracking-tight">
+                    Insights and Analysis Results
+                  </h2>
+                  {filterPopover}
+                </div>
+                {renderCards(businessInsights)}
+              </div>
+            </div>
           </TabsContent>
         )}
       </Tabs>

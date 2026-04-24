@@ -42,7 +42,7 @@ export default async function DashboardPage() {
   const isPro = tier === "pro";
 
   return (
-    <div>
+    <div className="p-6 lg:p-8">
       <GuestMatchBanner />
 
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

@@ -354,7 +354,7 @@ export default function DashboardMatchPage() {
   const candidateName = parsedResume?.name ?? "Candidate";
 
   return (
-    <div>
+    <div className="p-6 lg:p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">New Match</h1>
