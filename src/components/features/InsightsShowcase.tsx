@@ -241,10 +241,10 @@ const advancedInsights: Insight[] = [
     description:
       "Identifies employment timeline gaps with suggestions on how to address them.",
     icon: CalendarClock,
-    iconColor: "text-slate-500",
+    iconColor: "text-violet-500",
     audience: "both",
     access: "pro",
-    available: false,
+    available: true,
   },
   {
     id: 18,

@@ -198,6 +198,17 @@ export interface IndustryJargonData {
   summary: string;
 }
 
+export interface CareerGapData {
+  gaps: {
+    from: string;
+    to: string;
+    duration_months: number;
+    possible_context: string | null;
+  }[];
+  has_significant_gaps: boolean;
+  summary: string;
+}
+
 export interface SoftSkillsData {
   skills: {
     skill: string;

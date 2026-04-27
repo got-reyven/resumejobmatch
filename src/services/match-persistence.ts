@@ -73,6 +73,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Soft Skills Alignment",
   },
+  careerGap: {
+    tab: "shared",
+    tier: 2,
+    title: "Career Gap Analysis",
+  },
 };
 
 interface PersistMatchParams {

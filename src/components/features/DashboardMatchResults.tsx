@@ -18,6 +18,7 @@ import {
   TrendingUp,
   BookOpen,
   Heart,
+  Clock,
   ChevronDown,
   ChevronUp,
   Target,
@@ -103,6 +104,10 @@ import {
   SoftSkillsDisplay,
   type SoftSkillsDisplayProps,
 } from "@/components/features/SoftSkillsDisplay";
+import {
+  CareerGapDisplay,
+  type CareerGapDisplayProps,
+} from "@/components/features/CareerGapDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 const COLLAPSED_HEIGHT = 300;
@@ -196,6 +201,7 @@ interface DashboardMatchResultsProps {
   competitivePositioning?: CompetitivePositioningDisplayProps;
   industryJargon?: IndustryJargonDisplayProps;
   softSkills?: SoftSkillsDisplayProps;
+  careerGap?: CareerGapDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -219,6 +225,7 @@ export function DashboardMatchResults({
   competitivePositioning,
   industryJargon,
   softSkills,
+  careerGap,
   userType,
   tier,
   matchId,
@@ -279,6 +286,9 @@ export function DashboardMatchResults({
 
   const resolvedSoftSkills =
     softSkills ?? (generated.softSkills as SoftSkillsDisplayProps | undefined);
+
+  const resolvedCareerGap =
+    careerGap ?? (generated.careerGap as CareerGapDisplayProps | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -480,6 +490,23 @@ export function DashboardMatchResults({
           "Assess how well the resume demonstrates the soft skills this role requires — with behavioral evidence, not just keywords.",
           resolvedSoftSkills ? (
             <SoftSkillsDisplay {...resolvedSoftSkills} isPro={isPro} />
+          ) : null
+        ),
+    },
+    {
+      id: "careerGap",
+      label: "Career Gap Analysis",
+      icon: Clock,
+      iconClass: "text-violet-500",
+      tab: "shared",
+      render: () =>
+        renderGenerateOrDisplay(
+          "careerGap",
+          <Clock className="h-5 w-5 text-violet-500" aria-hidden="true" />,
+          "Career Gap Analysis",
+          "Analyze employment timeline gaps with duration, context, and constructive framing for both jobseekers and hiring managers.",
+          resolvedCareerGap ? (
+            <CareerGapDisplay {...resolvedCareerGap} isPro={isPro} />
           ) : null
         ),
     },

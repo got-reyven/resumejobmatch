@@ -25,6 +25,7 @@ import { computeResumeIntegrity } from "@/services/insights/resume-integrity/com
 import { computeCompetitivePositioning } from "@/services/insights/competitive-positioning/compute";
 import { computeIndustryJargon } from "@/services/insights/industry-jargon/compute";
 import { computeSoftSkills } from "@/services/insights/soft-skills/compute";
+import { computeCareerGap } from "@/services/insights/career-gap/compute";
 import type { InsightComputeContext } from "@/services/insights/types";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 
@@ -98,6 +99,10 @@ const computeMap: Record<
   },
   softSkills: async (ctx) => {
     const r = await computeSoftSkills(ctx);
+    return { data: r.data };
+  },
+  careerGap: async (ctx) => {
+    const r = await computeCareerGap(ctx);
     return { data: r.data };
   },
 };

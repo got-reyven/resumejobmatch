@@ -673,8 +673,9 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Shared |
-| **Tier** | 3 (Pro only) |
+| **Tier** | 2 (Free: summary + gap count; Pro: full gap details with dates & context) |
 | **Phase** | v0.5+ |
+| **Status** | Implemented |
 
 **Why it matters**
 Employment gaps are the #1 concern hiring managers flag during screening. For jobseekers, knowing how their gaps are perceived helps them address concerns proactively. For hiring managers, structured gap context enables fair evaluation.

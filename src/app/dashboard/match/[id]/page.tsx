@@ -48,6 +48,7 @@ import type {
   CompetitivePositioningData,
   IndustryJargonData,
   SoftSkillsData,
+  CareerGapData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -82,6 +83,7 @@ interface MatchDetail {
     competitivePositioning?: CompetitivePositioningData;
     industryJargon?: IndustryJargonData;
     softSkills?: SoftSkillsData;
+    careerGap?: CareerGapData;
   };
 }
 
@@ -262,6 +264,7 @@ export default function MatchDetailPage() {
           competitivePositioning={match.insights.competitivePositioning}
           industryJargon={match.insights.industryJargon}
           softSkills={match.insights.softSkills}
+          careerGap={match.insights.careerGap}
           userType={userType}
           tier={tier}
           matchId={match.id}
