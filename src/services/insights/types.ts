@@ -198,6 +198,18 @@ export interface IndustryJargonData {
   summary: string;
 }
 
+export interface SoftSkillsData {
+  skills: {
+    skill: string;
+    required: boolean;
+    evidence_strength: "strong" | "moderate" | "weak" | "none";
+    evidence: string | null;
+    suggestion: string | null;
+  }[];
+  coverage_percent: number;
+  summary: string;
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

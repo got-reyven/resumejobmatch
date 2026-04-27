@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   TrendingUp,
   BookOpen,
+  Heart,
   ChevronDown,
   ChevronUp,
   Target,
@@ -98,6 +99,10 @@ import {
   IndustryJargonDisplay,
   type IndustryJargonDisplayProps,
 } from "@/components/features/IndustryJargonDisplay";
+import {
+  SoftSkillsDisplay,
+  type SoftSkillsDisplayProps,
+} from "@/components/features/SoftSkillsDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 const COLLAPSED_HEIGHT = 300;
@@ -190,6 +195,7 @@ interface DashboardMatchResultsProps {
   resumeIntegrity?: ResumeIntegrityDisplayProps;
   competitivePositioning?: CompetitivePositioningDisplayProps;
   industryJargon?: IndustryJargonDisplayProps;
+  softSkills?: SoftSkillsDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -212,6 +218,7 @@ export function DashboardMatchResults({
   resumeIntegrity,
   competitivePositioning,
   industryJargon,
+  softSkills,
   userType,
   tier,
   matchId,
@@ -269,6 +276,9 @@ export function DashboardMatchResults({
   const resolvedIndustryJargon =
     industryJargon ??
     (generated.industryJargon as IndustryJargonDisplayProps | undefined);
+
+  const resolvedSoftSkills =
+    softSkills ?? (generated.softSkills as SoftSkillsDisplayProps | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -453,6 +463,23 @@ export function DashboardMatchResults({
           "Identify industry-specific terminology from the job description and check if your resume uses the right vocabulary.",
           resolvedIndustryJargon ? (
             <IndustryJargonDisplay {...resolvedIndustryJargon} isPro={isPro} />
+          ) : null
+        ),
+    },
+    {
+      id: "softSkills",
+      label: "Soft Skills Alignment",
+      icon: Heart,
+      iconClass: "text-pink-400",
+      tab: "shared",
+      render: () =>
+        renderGenerateOrDisplay(
+          "softSkills",
+          <Heart className="h-5 w-5 text-pink-400" aria-hidden="true" />,
+          "Soft Skills Alignment",
+          "Assess how well the resume demonstrates the soft skills this role requires — with behavioral evidence, not just keywords.",
+          resolvedSoftSkills ? (
+            <SoftSkillsDisplay {...resolvedSoftSkills} isPro={isPro} />
           ) : null
         ),
     },

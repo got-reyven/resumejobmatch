@@ -68,6 +68,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Industry Jargon Check",
   },
+  softSkills: {
+    tab: "shared",
+    tier: 2,
+    title: "Soft Skills Alignment",
+  },
 };
 
 interface PersistMatchParams {

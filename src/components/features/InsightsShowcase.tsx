@@ -233,7 +233,7 @@ const advancedInsights: Insight[] = [
     iconColor: "text-pink-400",
     audience: "both",
     access: "pro",
-    available: false,
+    available: true,
   },
   {
     id: 17,

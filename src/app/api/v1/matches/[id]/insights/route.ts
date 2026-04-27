@@ -24,6 +24,7 @@ import { computeRewriteSuggestions } from "@/services/insights/rewrite-suggestio
 import { computeResumeIntegrity } from "@/services/insights/resume-integrity/compute";
 import { computeCompetitivePositioning } from "@/services/insights/competitive-positioning/compute";
 import { computeIndustryJargon } from "@/services/insights/industry-jargon/compute";
+import { computeSoftSkills } from "@/services/insights/soft-skills/compute";
 import type { InsightComputeContext } from "@/services/insights/types";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 
@@ -93,6 +94,10 @@ const computeMap: Record<
   },
   industryJargon: async (ctx) => {
     const r = await computeIndustryJargon(ctx);
+    return { data: r.data };
+  },
+  softSkills: async (ctx) => {
+    const r = await computeSoftSkills(ctx);
     return { data: r.data };
   },
 };

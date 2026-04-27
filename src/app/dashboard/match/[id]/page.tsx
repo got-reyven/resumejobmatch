@@ -47,6 +47,7 @@ import type {
   ResumeIntegrityData,
   CompetitivePositioningData,
   IndustryJargonData,
+  SoftSkillsData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -80,6 +81,7 @@ interface MatchDetail {
     resumeIntegrity?: ResumeIntegrityData;
     competitivePositioning?: CompetitivePositioningData;
     industryJargon?: IndustryJargonData;
+    softSkills?: SoftSkillsData;
   };
 }
 
@@ -259,6 +261,7 @@ export default function MatchDetailPage() {
           resumeIntegrity={match.insights.resumeIntegrity}
           competitivePositioning={match.insights.competitivePositioning}
           industryJargon={match.insights.industryJargon}
+          softSkills={match.insights.softSkills}
           userType={userType}
           tier={tier}
           matchId={match.id}
