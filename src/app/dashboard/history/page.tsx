@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useCallback } from "react";
+import { useEffect, useReducer, useCallback, useState } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -11,10 +11,20 @@ import {
   Eye,
   Loader2,
   AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -136,7 +146,12 @@ export default function HistoryPage() {
     fetchHistory(state.page, state.query);
   }, [state.page, state.query, fetchHistory]);
 
-  const handleDelete = async (id: string) => {
+  const [deleteTarget, setDeleteTarget] = useState<MatchItem | null>(null);
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget.id;
+    setDeleteTarget(null);
     dispatch({ type: "deleting", id });
     try {
       await fetch(`/api/v1/matches/${id}`, { method: "DELETE" });
@@ -235,7 +250,7 @@ export default function HistoryPage() {
                   key={item.id}
                   item={item}
                   isDeleting={state.deletingId === item.id}
-                  onDelete={handleDelete}
+                  onDelete={() => setDeleteTarget(item)}
                 />
               ))}
             </TableBody>
@@ -270,6 +285,51 @@ export default function HistoryPage() {
           </Button>
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+              </div>
+              <DialogTitle>Delete Match</DialogTitle>
+            </div>
+            <DialogDescription className="pt-2">
+              Are you sure you want to delete this match? This will permanently
+              remove all insights and results for{" "}
+              <span className="font-medium text-foreground">
+                {deleteTarget?.candidateName ??
+                  deleteTarget?.resumeFileName.replace(/\.[^.]+$/, "")}
+              </span>{" "}
+              &times;{" "}
+              <span className="font-medium text-foreground">
+                {deleteTarget?.jobTitle ?? "Untitled Position"}
+              </span>
+              . This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-row justify-between sm:justify-between">
+            <DialogClose asChild>
+              <Button variant="outline" className="cursor-pointer">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              className="cursor-pointer"
+            >
+              <Trash2 className="mr-1.5 h-4 w-4" />
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -281,7 +341,7 @@ function HistoryRow({
 }: {
   item: MatchItem;
   isDeleting: boolean;
-  onDelete: (id: string) => void;
+  onDelete: () => void;
 }) {
   const scoreColor =
     item.overallScore >= 75
@@ -354,7 +414,7 @@ function HistoryRow({
             className="h-8 w-8 text-muted-foreground hover:text-destructive"
             aria-label="Remove match"
             disabled={isDeleting}
-            onClick={() => onDelete(item.id)}
+            onClick={onDelete}
           >
             {isDeleting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
