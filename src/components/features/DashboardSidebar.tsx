@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,6 +13,8 @@ import {
   LogOut,
   Briefcase,
   User,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/cn";
@@ -26,9 +29,10 @@ interface NavItem {
 }
 
 export function DashboardSidebar() {
-  const { displayName, email, avatarUrl, userType } = useProfile();
+  const { displayName, email, avatarUrl, userType, tier } = useProfile();
   const pathname = usePathname();
   const router = useRouter();
+  const [collapsed, setCollapsed] = useState(false);
 
   const navItems: NavItem[] = [
     {
@@ -78,19 +82,37 @@ export function DashboardSidebar() {
   const TypeIcon = userType === "business" ? Briefcase : User;
 
   return (
-    <aside className="hidden h-screen w-64 shrink-0 sticky top-0 border-r bg-muted/30 lg:flex lg:flex-col">
-      <div className="flex h-14 items-center border-b px-6">
+    <aside
+      className={cn(
+        "hidden h-screen shrink-0 sticky top-0 border-r bg-muted/30 lg:flex lg:flex-col transition-[width] duration-200",
+        collapsed ? "w-16" : "w-64"
+      )}
+    >
+      {/* Header */}
+      <div
+        className={cn(
+          "flex h-14 items-center border-b",
+          collapsed ? "justify-center px-2" : "px-6"
+        )}
+      >
         <Link href="/dashboard" aria-label="Dashboard home">
-          <Image
-            src="/logo-default.svg"
-            alt="Resume Job Match"
-            width={220}
-            height={40}
-          />
+          {collapsed ? (
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#6696C9] text-sm font-bold text-white">
+              R
+            </span>
+          ) : (
+            <Image
+              src="/logo-default.svg"
+              alt="Resume Job Match"
+              width={220}
+              height={40}
+            />
+          )}
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      {/* Navigation */}
+      <nav className={cn("flex-1 space-y-1 py-4", collapsed ? "px-2" : "px-3")}>
         {navItems
           .filter((item) => item.show)
           .map((item) => {
@@ -99,67 +121,134 @@ export function DashboardSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                title={collapsed ? item.label : undefined}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  "relative flex items-center rounded-lg text-sm font-medium transition-colors cursor-pointer group",
+                  collapsed
+                    ? "justify-center px-0 py-2.5"
+                    : "gap-3 px-3 py-2.5",
                   active
                     ? "bg-[#B5DAF2]/30 text-[#6696C9] font-semibold"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
-                <item.icon className="h-4 w-4" />
-                {item.label}
+                <item.icon className="h-4 w-4 shrink-0" />
+                {!collapsed && item.label}
+
+                {/* Tooltip on hover when collapsed */}
+                {collapsed && (
+                  <span className="pointer-events-none absolute left-full ml-2 z-50 hidden whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-xs text-background shadow-lg group-hover:block">
+                    {item.label}
+                  </span>
+                )}
               </Link>
             );
           })}
       </nav>
 
-      <div className="border-t p-4">
-        <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10">
-            {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt={displayName}
-                width={36}
-                height={36}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <TypeIcon className="h-4 w-4 text-primary" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{displayName}</p>
-            <p className="truncate text-xs text-muted-foreground">{email}</p>
-            <div className="mt-1 flex items-center gap-1.5">
-              <Badge
-                variant="outline"
-                className={cn(
-                  "px-1.5 py-0 text-[10px] capitalize leading-4",
-                  userType === "business"
-                    ? "border-amber-200 text-amber-700"
-                    : "border-sky-200 text-sky-700"
-                )}
-              >
-                {userType}
-              </Badge>
-              <Badge
-                variant="outline"
-                className="px-1.5 py-0 text-[10px] leading-4"
-              >
-                Free
-              </Badge>
-            </div>
-          </div>
-        </div>
+      {/* Toggle button */}
+      <div className={cn("px-3 pb-2", collapsed && "flex justify-center px-2")}>
         <button
           type="button"
-          onClick={handleSignOut}
-          className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground transition-colors hover:text-red-600"
+          onClick={() => setCollapsed((prev) => !prev)}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
         >
-          <LogOut className="h-3 w-3" />
-          Sign Out
+          {collapsed ? (
+            <PanelLeftOpen className="h-4 w-4 shrink-0" />
+          ) : (
+            <>
+              <PanelLeftClose className="h-4 w-4 shrink-0" />
+              <span>Collapse</span>
+            </>
+          )}
         </button>
+      </div>
+
+      {/* User info */}
+      <div className={cn("border-t", collapsed ? "p-2" : "p-4")}>
+        {collapsed ? (
+          <div className="flex flex-col items-center gap-2">
+            <div className="group relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10">
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt={displayName}
+                  width={36}
+                  height={36}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <TypeIcon className="h-4 w-4 text-primary" />
+              )}
+              <span className="pointer-events-none absolute left-full ml-2 z-50 hidden whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-xs text-background shadow-lg group-hover:block">
+                {displayName}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              title="Sign Out"
+              className="group relative flex items-center justify-center rounded-lg p-1.5 text-muted-foreground transition-colors hover:text-red-600 cursor-pointer"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span className="pointer-events-none absolute left-full ml-2 z-50 hidden whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-xs text-background shadow-lg group-hover:block">
+                Sign Out
+              </span>
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10">
+                {avatarUrl ? (
+                  <Image
+                    src={avatarUrl}
+                    alt={displayName}
+                    width={36}
+                    height={36}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <TypeIcon className="h-4 w-4 text-primary" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{displayName}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {email}
+                </p>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "px-1.5 py-0 text-[10px] capitalize leading-4",
+                      userType === "business"
+                        ? "border-amber-200 text-amber-700"
+                        : "border-sky-200 text-sky-700"
+                    )}
+                  >
+                    {userType}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className="px-1.5 py-0 text-[10px] capitalize leading-4"
+                  >
+                    {tier}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground transition-colors hover:text-red-600 cursor-pointer"
+            >
+              <LogOut className="h-3 w-3" />
+              Sign Out
+            </button>
+          </>
+        )}
       </div>
     </aside>
   );
