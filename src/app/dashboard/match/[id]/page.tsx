@@ -49,6 +49,7 @@ import type {
   IndustryJargonData,
   SoftSkillsData,
   CareerGapData,
+  CoverLetterData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -84,6 +85,7 @@ interface MatchDetail {
     industryJargon?: IndustryJargonData;
     softSkills?: SoftSkillsData;
     careerGap?: CareerGapData;
+    coverLetter?: CoverLetterData;
   };
 }
 
@@ -265,6 +267,7 @@ export default function MatchDetailPage() {
           industryJargon={match.insights.industryJargon}
           softSkills={match.insights.softSkills}
           careerGap={match.insights.careerGap}
+          coverLetter={match.insights.coverLetter}
           userType={userType}
           tier={tier}
           matchId={match.id}

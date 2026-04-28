@@ -710,22 +710,29 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Jobseeker only |
-| **Tier** | 3 (Pro only) |
+| **Tier** | 2 (Jobseeker Free: opening paragraph; Jobseeker Pro: full cover letter) |
 | **Phase** | v0.5+ |
+| **Status** | Implemented |
 
 **Why it matters**
-Many jobs still require cover letters, and most candidates dread writing them. A tailored opening paragraph based on the match analysis removes the blank-page problem and ensures the letter highlights the strongest alignment points.
+Many jobs still require cover letters, and most candidates dread writing them. A tailored cover letter based on the match analysis removes the blank-page problem and ensures the letter highlights the strongest alignment points. Full letter generation is a key Pro conversion driver.
 
 **Implementation**
-- AI generates an opening paragraph (3–4 sentences) tailored to the specific job
-- Highlights the candidate's strongest match areas from the analysis
-- Maintains a professional but personable tone
-- Ready to copy-paste and extend
+- AI generates a complete cover letter tailored to the specific job
+- Opening paragraph hooks with strongest alignment, body paragraphs cover key strengths with evidence, closing reaffirms fit
+- Includes copy-to-clipboard for easy use
+- Under 400 words, avoids clichés, mirrors job description language
+
+**Tier gating**
+- Jobseeker Free: opening paragraph (3–4 sentences) + key alignment points
+- Jobseeker Pro: full cover letter (opening + 2–3 body paragraphs + closing) + key alignment points
 
 **Output schema**
 ```typescript
 z.object({
   opening_paragraph: z.string(),
+  body_paragraphs: z.array(z.string()),
+  closing_paragraph: z.string(),
   key_points_used: z.array(z.string()),
   tone: z.string(),
 })

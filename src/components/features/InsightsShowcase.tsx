@@ -250,12 +250,12 @@ const advancedInsights: Insight[] = [
     id: 18,
     name: "Cover Letter Starter",
     description:
-      "AI-generated tailored cover letter opening paragraph based on the match analysis.",
+      "AI-generated tailored cover letter based on the match analysis — opening for Free, full letter for Pro.",
     icon: Mail,
     iconColor: "text-blue-400",
     audience: "jobseeker",
-    access: "pro",
-    available: false,
+    access: "registered",
+    available: true,
   },
   {
     id: 19,

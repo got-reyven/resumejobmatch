@@ -26,6 +26,7 @@ import { computeCompetitivePositioning } from "@/services/insights/competitive-p
 import { computeIndustryJargon } from "@/services/insights/industry-jargon/compute";
 import { computeSoftSkills } from "@/services/insights/soft-skills/compute";
 import { computeCareerGap } from "@/services/insights/career-gap/compute";
+import { computeCoverLetter } from "@/services/insights/cover-letter/compute";
 import type { InsightComputeContext } from "@/services/insights/types";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 
@@ -103,6 +104,10 @@ const computeMap: Record<
   },
   careerGap: async (ctx) => {
     const r = await computeCareerGap(ctx);
+    return { data: r.data };
+  },
+  coverLetter: async (ctx) => {
+    const r = await computeCoverLetter(ctx);
     return { data: r.data };
   },
 };

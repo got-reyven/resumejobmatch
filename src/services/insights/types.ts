@@ -198,6 +198,14 @@ export interface IndustryJargonData {
   summary: string;
 }
 
+export interface CoverLetterData {
+  opening_paragraph: string;
+  body_paragraphs: string[];
+  closing_paragraph: string;
+  key_points_used: string[];
+  tone: string;
+}
+
 export interface CareerGapData {
   gaps: {
     from: string;

@@ -78,6 +78,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Career Gap Analysis",
   },
+  coverLetter: {
+    tab: "jobseeker",
+    tier: 2,
+    title: "Cover Letter Starter",
+  },
 };
 
 interface PersistMatchParams {

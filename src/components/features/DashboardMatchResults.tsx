@@ -19,6 +19,7 @@ import {
   BookOpen,
   Heart,
   Clock,
+  Mail,
   ChevronDown,
   ChevronUp,
   Target,
@@ -108,6 +109,10 @@ import {
   CareerGapDisplay,
   type CareerGapDisplayProps,
 } from "@/components/features/CareerGapDisplay";
+import {
+  CoverLetterDisplay,
+  type CoverLetterDisplayProps,
+} from "@/components/features/CoverLetterDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 const COLLAPSED_HEIGHT = 300;
@@ -202,6 +207,7 @@ interface DashboardMatchResultsProps {
   industryJargon?: IndustryJargonDisplayProps;
   softSkills?: SoftSkillsDisplayProps;
   careerGap?: CareerGapDisplayProps;
+  coverLetter?: CoverLetterDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -226,6 +232,7 @@ export function DashboardMatchResults({
   industryJargon,
   softSkills,
   careerGap,
+  coverLetter,
   userType,
   tier,
   matchId,
@@ -289,6 +296,10 @@ export function DashboardMatchResults({
 
   const resolvedCareerGap =
     careerGap ?? (generated.careerGap as CareerGapDisplayProps | undefined);
+
+  const resolvedCoverLetter =
+    coverLetter ??
+    (generated.coverLetter as CoverLetterDisplayProps | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -507,6 +518,23 @@ export function DashboardMatchResults({
           "Analyze employment timeline gaps with duration, context, and constructive framing for both jobseekers and hiring managers.",
           resolvedCareerGap ? (
             <CareerGapDisplay {...resolvedCareerGap} isPro={isPro} />
+          ) : null
+        ),
+    },
+    {
+      id: "coverLetter",
+      label: "Cover Letter Starter",
+      icon: Mail,
+      iconClass: "text-blue-400",
+      tab: "jobseeker",
+      render: () =>
+        renderGenerateOrDisplay(
+          "coverLetter",
+          <Mail className="h-5 w-5 text-blue-400" aria-hidden="true" />,
+          "Cover Letter Starter",
+          "Generate a tailored cover letter based on your resume and the job description — ready to copy, paste, and send.",
+          resolvedCoverLetter ? (
+            <CoverLetterDisplay {...resolvedCoverLetter} isPro={isPro} />
           ) : null
         ),
     },
