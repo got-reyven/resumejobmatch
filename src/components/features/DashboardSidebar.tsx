@@ -134,8 +134,6 @@ export function DashboardSidebar() {
               >
                 <item.icon className="h-4 w-4 shrink-0" />
                 {!collapsed && item.label}
-
-                {/* Tooltip on hover when collapsed */}
                 {collapsed && (
                   <span className="pointer-events-none absolute left-full ml-2 z-50 hidden whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-xs text-background shadow-lg group-hover:block">
                     {item.label}
@@ -144,31 +142,31 @@ export function DashboardSidebar() {
               </Link>
             );
           })}
-      </nav>
 
-      {/* Toggle button */}
-      <div className={cn("px-3 pb-2", collapsed && "flex justify-center px-2")}>
+        {/* Sign Out — grouped with nav */}
         <button
           type="button"
-          onClick={() => setCollapsed((prev) => !prev)}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
+          onClick={handleSignOut}
+          title={collapsed ? "Sign Out" : undefined}
+          className={cn(
+            "relative flex w-full items-center rounded-lg text-sm font-medium transition-colors cursor-pointer group text-muted-foreground hover:bg-red-50 hover:text-red-600",
+            collapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
+          )}
         >
-          {collapsed ? (
-            <PanelLeftOpen className="h-4 w-4 shrink-0" />
-          ) : (
-            <>
-              <PanelLeftClose className="h-4 w-4 shrink-0" />
-              <span>Collapse</span>
-            </>
+          <LogOut className="h-4 w-4 shrink-0" />
+          {!collapsed && "Sign Out"}
+          {collapsed && (
+            <span className="pointer-events-none absolute left-full ml-2 z-50 hidden whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-xs text-background shadow-lg group-hover:block">
+              Sign Out
+            </span>
           )}
         </button>
-      </div>
+      </nav>
 
       {/* User info */}
       <div className={cn("border-t", collapsed ? "p-2" : "p-4")}>
         {collapsed ? (
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-3">
             <div className="group relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10">
               {avatarUrl ? (
                 <Image
@@ -187,19 +185,16 @@ export function DashboardSidebar() {
             </div>
             <button
               type="button"
-              onClick={handleSignOut}
-              title="Sign Out"
-              className="group relative flex items-center justify-center rounded-lg p-1.5 text-muted-foreground transition-colors hover:text-red-600 cursor-pointer"
+              onClick={() => setCollapsed(false)}
+              title="Expand sidebar"
+              className="flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
             >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="pointer-events-none absolute left-full ml-2 z-50 hidden whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-xs text-background shadow-lg group-hover:block">
-                Sign Out
-              </span>
+              <PanelLeftOpen className="h-4 w-4" />
             </button>
           </div>
         ) : (
           <>
-            <div className="mb-3 flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10">
                 {avatarUrl ? (
                   <Image
@@ -218,35 +213,37 @@ export function DashboardSidebar() {
                 <p className="truncate text-xs text-muted-foreground">
                   {email}
                 </p>
-                <div className="mt-1 flex items-center gap-1.5">
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "px-1.5 py-0 text-[10px] capitalize leading-4",
-                      userType === "business"
-                        ? "border-amber-200 text-amber-700"
-                        : "border-sky-200 text-sky-700"
-                    )}
-                  >
-                    {userType}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="px-1.5 py-0 text-[10px] capitalize leading-4"
-                  >
-                    {tier}
-                  </Badge>
-                </div>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground transition-colors hover:text-red-600 cursor-pointer"
-            >
-              <LogOut className="h-3 w-3" />
-              Sign Out
-            </button>
+            <div className="mt-2 flex items-center justify-between pl-12">
+              <div className="flex items-center gap-1.5">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "px-1.5 py-0 text-[10px] capitalize leading-4",
+                    userType === "business"
+                      ? "border-amber-200 text-amber-700"
+                      : "border-sky-200 text-sky-700"
+                  )}
+                >
+                  {userType}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="px-1.5 py-0 text-[10px] capitalize leading-4"
+                >
+                  {tier}
+                </Badge>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCollapsed(true)}
+                title="Collapse sidebar"
+                className="flex items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground cursor-pointer"
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </button>
+            </div>
           </>
         )}
       </div>
