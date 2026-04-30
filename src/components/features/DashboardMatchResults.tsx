@@ -26,6 +26,7 @@ import {
   Lightbulb,
   Zap,
   Search,
+  GitBranch,
   type LucideIcon,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -113,6 +114,10 @@ import {
   CoverLetterDisplay,
   type CoverLetterDisplayProps,
 } from "@/components/features/CoverLetterDisplay";
+import {
+  SkillTransferabilityDisplay,
+  type SkillTransferabilityDisplayProps,
+} from "@/components/features/SkillTransferabilityDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 const COLLAPSED_HEIGHT = 300;
@@ -208,6 +213,7 @@ interface DashboardMatchResultsProps {
   softSkills?: SoftSkillsDisplayProps;
   careerGap?: CareerGapDisplayProps;
   coverLetter?: CoverLetterDisplayProps;
+  skillTransferability?: SkillTransferabilityDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -233,6 +239,7 @@ export function DashboardMatchResults({
   softSkills,
   careerGap,
   coverLetter,
+  skillTransferability,
   userType,
   tier,
   matchId,
@@ -300,6 +307,12 @@ export function DashboardMatchResults({
   const resolvedCoverLetter =
     coverLetter ??
     (generated.coverLetter as CoverLetterDisplayProps | undefined);
+
+  const resolvedSkillTransferability =
+    skillTransferability ??
+    (generated.skillTransferability as
+      | SkillTransferabilityDisplayProps
+      | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -606,6 +619,26 @@ export function DashboardMatchResults({
           "Scan the resume for prompt injection attacks, hidden instructions, and manipulation attempts.",
           resolvedResumeIntegrity ? (
             <ResumeIntegrityDisplay {...resolvedResumeIntegrity} />
+          ) : null
+        ),
+    },
+    {
+      id: "skillTransferability",
+      label: "Skill Transferability Map",
+      icon: GitBranch,
+      iconClass: "text-purple-500",
+      tab: "business",
+      render: () =>
+        renderGenerateOrDisplay(
+          "skillTransferability",
+          <GitBranch className="h-5 w-5 text-purple-500" aria-hidden="true" />,
+          "Skill Transferability Map",
+          "Map the candidate's adjacent skills to missing requirements — showing how existing expertise transfers.",
+          resolvedSkillTransferability ? (
+            <SkillTransferabilityDisplay
+              {...resolvedSkillTransferability}
+              isPro={isPro}
+            />
           ) : null
         ),
     },

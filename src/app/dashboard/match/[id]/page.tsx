@@ -50,6 +50,7 @@ import type {
   SoftSkillsData,
   CareerGapData,
   CoverLetterData,
+  SkillTransferabilityData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -86,6 +87,7 @@ interface MatchDetail {
     softSkills?: SoftSkillsData;
     careerGap?: CareerGapData;
     coverLetter?: CoverLetterData;
+    skillTransferability?: SkillTransferabilityData;
   };
 }
 
@@ -268,6 +270,7 @@ export default function MatchDetailPage() {
           softSkills={match.insights.softSkills}
           careerGap={match.insights.careerGap}
           coverLetter={match.insights.coverLetter}
+          skillTransferability={match.insights.skillTransferability}
           userType={userType}
           tier={tier}
           matchId={match.id}

@@ -745,8 +745,9 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Hiring Manager only |
-| **Tier** | 3 (Pro only) |
+| **Tier** | 2 (Business Free: top 2 transfers with level badges; Business Pro: full list with rationale) |
 | **Phase** | v0.5+ |
+| **Status** | Implemented |
 
 **Why it matters**
 The best candidates aren't always exact-match candidates. This insight helps hiring managers see potential in adjacent experience — e.g., an Angular expert can likely learn React quickly. Reduces false negatives in screening.
@@ -755,6 +756,11 @@ The best candidates aren't always exact-match candidates. This insight helps hir
 - AI identifies skills the candidate lacks but has adjacent experience in
 - Rates transferability based on technology proximity, conceptual overlap, and learning curve
 - Provides context for each transfer potential
+- On-demand generation only (registered users, via Generate button in business tab)
+
+**Tier gating**
+- Business Free: shows transfer count, distribution badges, and top 2 skill pairs with transferability level
+- Business Pro: full transfer list with detailed rationale for each mapping
 
 **Output schema**
 ```typescript

@@ -229,6 +229,16 @@ export interface SoftSkillsData {
   summary: string;
 }
 
+export interface SkillTransferabilityData {
+  transfers: {
+    required_skill: string;
+    candidate_skill: string;
+    transferability: "high" | "moderate" | "low";
+    rationale: string;
+  }[];
+  summary: string;
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

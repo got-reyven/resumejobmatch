@@ -83,6 +83,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Cover Letter Starter",
   },
+  skillTransferability: {
+    tab: "hiring_manager",
+    tier: 2,
+    title: "Skill Transferability Map",
+  },
 };
 
 interface PersistMatchParams {
