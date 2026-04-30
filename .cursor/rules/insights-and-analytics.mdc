@@ -782,16 +782,22 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Hiring Manager only |
-| **Tier** | 3 (Pro only) |
+| **Tier** | 2 (Business Free: communication style + dimension/signal pairs; Business Pro: + evidence details) |
 | **Phase** | v0.5+ |
+| **Status** | Implemented |
 
 **Why it matters**
 Resume writing style reveals communication patterns. Collaborative language, leadership framing, and technical depth in descriptions signal working style. Not a personality test — a language pattern analysis that gives hiring managers additional signal.
 
 **Implementation**
-- AI analyzes resume writing patterns across dimensions: collaborative vs. individual, leadership vs. execution, detail-oriented vs. big-picture
+- AI analyzes resume writing patterns across 4–6 dimensions: collaborative vs. individual, leadership vs. execution, detail-oriented vs. big-picture, proactive vs. responsive, etc.
 - Based purely on language analysis of the resume text
 - Explicitly disclaimed as "indicators from writing style, not a personality assessment"
+- On-demand generation only (registered users, via Generate button in business tab)
+
+**Tier gating**
+- Business Free: communication style summary + dimension names with signal badges (table without evidence column)
+- Business Pro: full table with evidence excerpts for each dimension
 
 **Output schema**
 ```typescript

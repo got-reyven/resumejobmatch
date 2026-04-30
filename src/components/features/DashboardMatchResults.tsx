@@ -27,6 +27,7 @@ import {
   Zap,
   Search,
   GitBranch,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -118,6 +119,10 @@ import {
   SkillTransferabilityDisplay,
   type SkillTransferabilityDisplayProps,
 } from "@/components/features/SkillTransferabilityDisplay";
+import {
+  CultureCommunicationDisplay,
+  type CultureCommunicationDisplayProps,
+} from "@/components/features/CultureCommunicationDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 const COLLAPSED_HEIGHT = 300;
@@ -214,6 +219,7 @@ interface DashboardMatchResultsProps {
   careerGap?: CareerGapDisplayProps;
   coverLetter?: CoverLetterDisplayProps;
   skillTransferability?: SkillTransferabilityDisplayProps;
+  cultureCommunication?: CultureCommunicationDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -240,6 +246,7 @@ export function DashboardMatchResults({
   careerGap,
   coverLetter,
   skillTransferability,
+  cultureCommunication,
   userType,
   tier,
   matchId,
@@ -312,6 +319,12 @@ export function DashboardMatchResults({
     skillTransferability ??
     (generated.skillTransferability as
       | SkillTransferabilityDisplayProps
+      | undefined);
+
+  const resolvedCultureCommunication =
+    cultureCommunication ??
+    (generated.cultureCommunication as
+      | CultureCommunicationDisplayProps
       | undefined);
 
   function renderGenerateOrDisplay(
@@ -637,6 +650,26 @@ export function DashboardMatchResults({
           resolvedSkillTransferability ? (
             <SkillTransferabilityDisplay
               {...resolvedSkillTransferability}
+              isPro={isPro}
+            />
+          ) : null
+        ),
+    },
+    {
+      id: "cultureCommunication",
+      label: "Culture & Communication",
+      icon: Users,
+      iconClass: "text-teal-500",
+      tab: "business",
+      render: () =>
+        renderGenerateOrDisplay(
+          "cultureCommunication",
+          <Users className="h-5 w-5 text-teal-500" aria-hidden="true" />,
+          "Culture & Communication Indicators",
+          "Analyze resume language patterns to surface working-style indicators — collaboration, leadership, and communication approach.",
+          resolvedCultureCommunication ? (
+            <CultureCommunicationDisplay
+              {...resolvedCultureCommunication}
               isPro={isPro}
             />
           ) : null

@@ -239,6 +239,16 @@ export interface SkillTransferabilityData {
   summary: string;
 }
 
+export interface CultureCommunicationData {
+  indicators: {
+    dimension: string;
+    signal: string;
+    evidence: string;
+  }[];
+  communication_style: string;
+  disclaimer: string;
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

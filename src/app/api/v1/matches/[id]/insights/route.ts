@@ -28,6 +28,7 @@ import { computeSoftSkills } from "@/services/insights/soft-skills/compute";
 import { computeCareerGap } from "@/services/insights/career-gap/compute";
 import { computeCoverLetter } from "@/services/insights/cover-letter/compute";
 import { computeSkillTransferability } from "@/services/insights/skill-transferability/compute";
+import { computeCultureCommunication } from "@/services/insights/culture-communication/compute";
 import type { InsightComputeContext } from "@/services/insights/types";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 
@@ -113,6 +114,10 @@ const computeMap: Record<
   },
   skillTransferability: async (ctx) => {
     const r = await computeSkillTransferability(ctx);
+    return { data: r.data };
+  },
+  cultureCommunication: async (ctx) => {
+    const r = await computeCultureCommunication(ctx);
     return { data: r.data };
   },
 };

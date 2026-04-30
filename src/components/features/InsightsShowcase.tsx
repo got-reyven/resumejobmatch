@@ -274,10 +274,10 @@ const advancedInsights: Insight[] = [
     description:
       "Analyzes resume writing style for collaborative language, leadership framing, and technical depth.",
     icon: Users,
-    iconColor: "text-fuchsia-500",
+    iconColor: "text-teal-500",
     audience: "hiring_manager",
     access: "pro",
-    available: false,
+    available: true,
   },
   {
     id: 21,

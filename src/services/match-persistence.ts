@@ -88,6 +88,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Skill Transferability Map",
   },
+  cultureCommunication: {
+    tab: "hiring_manager",
+    tier: 2,
+    title: "Culture & Communication Indicators",
+  },
 };
 
 interface PersistMatchParams {
