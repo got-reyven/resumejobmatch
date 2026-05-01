@@ -29,6 +29,7 @@ import {
   GitBranch,
   Users,
   DollarSign,
+  Check,
   type LucideIcon,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -753,6 +754,35 @@ export function DashboardMatchResults({
     filteredInsights.some((i) => i.id === id)
   ).length;
 
+  const availableInsights = new Set<string>();
+  const resolvedMap: Record<string, unknown> = {
+    overallScore: score,
+    skillsBreakdown: skillsBreakdown,
+    actionItems: actionItems,
+    topStrengths: topStrengths,
+    atsKeywords: atsKeywords,
+    experienceAlignment: experienceAlignment,
+    qualificationFit: resolvedQualificationFit,
+    sectionStrength: resolvedSectionStrength,
+    tailoredSummary: resolvedTailoredSummary,
+    riskAreas: resolvedRiskAreas,
+    interviewFocus: resolvedInterviewFocus,
+    overqualification: resolvedOverqualification,
+    rewriteSuggestions: resolvedRewriteSuggestions,
+    resumeIntegrity: resolvedResumeIntegrity,
+    competitivePositioning: resolvedCompetitivePositioning,
+    industryJargon: resolvedIndustryJargon,
+    softSkills: resolvedSoftSkills,
+    careerGap: resolvedCareerGap,
+    coverLetter: resolvedCoverLetter,
+    skillTransferability: resolvedSkillTransferability,
+    cultureCommunication: resolvedCultureCommunication,
+    salaryRange: resolvedSalaryRange,
+  };
+  for (const [key, val] of Object.entries(resolvedMap)) {
+    if (val) availableInsights.add(key);
+  }
+
   function renderSidebar(insights: InsightDef[]) {
     const visible = insights.filter((i) => !hidden.has(i.id));
     return (
@@ -763,6 +793,7 @@ export function DashboardMatchResults({
         {visible.map((insight) => {
           const Icon = insight.icon;
           const isActive = activeInsightId === insight.id;
+          const hasData = availableInsights.has(insight.id);
           return (
             <button
               key={insight.id}
@@ -782,7 +813,13 @@ export function DashboardMatchResults({
                 )}
                 aria-hidden="true"
               />
-              <span className="truncate">{insight.label}</span>
+              <span className="truncate flex-1">{insight.label}</span>
+              {hasData && (
+                <Check
+                  className="h-3.5 w-3.5 shrink-0 text-[#6696C9]"
+                  aria-label="Generated"
+                />
+              )}
             </button>
           );
         })}
