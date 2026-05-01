@@ -28,6 +28,7 @@ import {
   Search,
   GitBranch,
   Users,
+  DollarSign,
   type LucideIcon,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -123,6 +124,10 @@ import {
   CultureCommunicationDisplay,
   type CultureCommunicationDisplayProps,
 } from "@/components/features/CultureCommunicationDisplay";
+import {
+  SalaryRangeDisplay,
+  type SalaryRangeDisplayProps,
+} from "@/components/features/SalaryRangeDisplay";
 import { InsightGeneratePrompt } from "@/components/features/InsightGeneratePrompt";
 
 const COLLAPSED_HEIGHT = 300;
@@ -220,6 +225,7 @@ interface DashboardMatchResultsProps {
   coverLetter?: CoverLetterDisplayProps;
   skillTransferability?: SkillTransferabilityDisplayProps;
   cultureCommunication?: CultureCommunicationDisplayProps;
+  salaryRange?: SalaryRangeDisplayProps;
   userType: string;
   tier: string;
   matchId?: string;
@@ -247,6 +253,7 @@ export function DashboardMatchResults({
   coverLetter,
   skillTransferability,
   cultureCommunication,
+  salaryRange,
   userType,
   tier,
   matchId,
@@ -326,6 +333,10 @@ export function DashboardMatchResults({
     (generated.cultureCommunication as
       | CultureCommunicationDisplayProps
       | undefined);
+
+  const resolvedSalaryRange =
+    salaryRange ??
+    (generated.salaryRange as SalaryRangeDisplayProps | undefined);
 
   function renderGenerateOrDisplay(
     insightId: string,
@@ -672,6 +683,23 @@ export function DashboardMatchResults({
               {...resolvedCultureCommunication}
               isPro={isPro}
             />
+          ) : null
+        ),
+    },
+    {
+      id: "salaryRange",
+      label: "Salary Range Indicator",
+      icon: DollarSign,
+      iconClass: "text-green-500",
+      tab: "business",
+      render: () =>
+        renderGenerateOrDisplay(
+          "salaryRange",
+          <DollarSign className="h-5 w-5 text-green-500" aria-hidden="true" />,
+          "Salary Range Indicator",
+          "Estimate a competitive salary range based on the candidate's experience, skills, and the role's market positioning.",
+          resolvedSalaryRange ? (
+            <SalaryRangeDisplay {...resolvedSalaryRange} isPro={isPro} />
           ) : null
         ),
     },

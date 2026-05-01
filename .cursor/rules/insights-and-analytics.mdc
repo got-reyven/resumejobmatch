@@ -855,8 +855,9 @@ z.object({
 | Property | Value |
 |----------|-------|
 | **Tab** | Hiring Manager only |
-| **Tier** | 3 (Pro only) |
-| **Phase** | v0.5+ (requires external data) |
+| **Tier** | 2 (Business Free: range + confidence; Business Pro: + contributing factors) |
+| **Phase** | v0.5+ |
+| **Status** | Implemented |
 
 **Why it matters**
 Helps hiring managers set realistic compensation expectations based on the candidate's experience level and skill set. Reduces offer-rejection rates from misaligned expectations.
@@ -864,7 +865,13 @@ Helps hiring managers set realistic compensation expectations based on the candi
 **Implementation**
 - AI estimates a salary range based on experience level, skills, seniority, and industry signals from the resume and job description
 - Framed as a market-informed estimate, not a precise figure
+- Includes a gradient salary bar visualization with low/mid/high markers
+- On-demand generation only (registered users, via Generate button in business tab)
 - Future phase: integrate with public salary APIs for data-backed ranges
+
+**Tier gating**
+- Business Free: estimated salary range (low–mid–high) with visual bar + confidence badge + disclaimer
+- Business Pro: full breakdown with contributing factors list
 
 **Output schema**
 ```typescript

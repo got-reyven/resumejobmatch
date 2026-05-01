@@ -52,6 +52,7 @@ import type {
   CoverLetterData,
   SkillTransferabilityData,
   CultureCommunicationData,
+  SalaryRangeData,
 } from "@/services/insights/types";
 
 interface MatchDetail {
@@ -90,6 +91,7 @@ interface MatchDetail {
     coverLetter?: CoverLetterData;
     skillTransferability?: SkillTransferabilityData;
     cultureCommunication?: CultureCommunicationData;
+    salaryRange?: SalaryRangeData;
   };
 }
 
@@ -274,6 +276,7 @@ export default function MatchDetailPage() {
           coverLetter={match.insights.coverLetter}
           skillTransferability={match.insights.skillTransferability}
           cultureCommunication={match.insights.cultureCommunication}
+          salaryRange={match.insights.salaryRange}
           userType={userType}
           tier={tier}
           matchId={match.id}

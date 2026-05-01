@@ -29,6 +29,7 @@ import { computeCareerGap } from "@/services/insights/career-gap/compute";
 import { computeCoverLetter } from "@/services/insights/cover-letter/compute";
 import { computeSkillTransferability } from "@/services/insights/skill-transferability/compute";
 import { computeCultureCommunication } from "@/services/insights/culture-communication/compute";
+import { computeSalaryRange } from "@/services/insights/salary-range/compute";
 import type { InsightComputeContext } from "@/services/insights/types";
 import type { ParsedResume } from "@/lib/validations/parsed-resume";
 
@@ -118,6 +119,10 @@ const computeMap: Record<
   },
   cultureCommunication: async (ctx) => {
     const r = await computeCultureCommunication(ctx);
+    return { data: r.data };
+  },
+  salaryRange: async (ctx) => {
+    const r = await computeSalaryRange(ctx);
     return { data: r.data };
   },
 };

@@ -249,6 +249,18 @@ export interface CultureCommunicationData {
   disclaimer: string;
 }
 
+export interface SalaryRangeData {
+  range: {
+    low: number;
+    mid: number;
+    high: number;
+    currency: string;
+  };
+  confidence: "high" | "moderate" | "low";
+  factors: string[];
+  disclaimer: string;
+}
+
 export interface ATSKeywordsData {
   keywords: {
     keyword: string;

@@ -296,10 +296,10 @@ const advancedInsights: Insight[] = [
     description:
       "Market-informed salary range estimate based on experience level, skills, and seniority.",
     icon: DollarSign,
-    iconColor: "text-emerald-400",
+    iconColor: "text-green-500",
     audience: "hiring_manager",
     access: "pro",
-    available: false,
+    available: true,
   },
   {
     id: 23,

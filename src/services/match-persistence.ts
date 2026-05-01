@@ -93,6 +93,11 @@ export const INSIGHT_META: Record<
     tier: 2,
     title: "Culture & Communication Indicators",
   },
+  salaryRange: {
+    tab: "hiring_manager",
+    tier: 2,
+    title: "Salary Range Indicator",
+  },
 };
 
 interface PersistMatchParams {
