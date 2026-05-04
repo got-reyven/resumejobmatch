@@ -892,24 +892,23 @@ z.object({
 
 ---
 
-### #23 — Structured Evaluation Report
+### Export Insights (replaces former #23)
 
 | Property | Value |
 |----------|-------|
-| **Tab** | Hiring Manager only |
-| **Tier** | 3 (Pro only) |
-| **Phase** | v0.5+ |
+| **Type** | Feature (not an insight) |
+| **Location** | Sidebar navigation, below insight list |
+| **Status** | Implemented |
 
-**Why it matters**
-Hiring committees need shareable documentation. An exportable PDF with all insights formatted as a professional evaluation document saves hours of write-up time and standardizes the evaluation process across reviewers.
+**What it does**
+Allows users to export selected insights as a printable report. An "Export Insights" button appears below the navigation sidebar when at least one insight has data. Clicking it opens a modal where users can check/uncheck which available insights to include. The export opens a print-ready window with all selected insight content.
 
 **Implementation**
-- Aggregates all computed insights into a structured PDF document
-- Uses a professional template with sections, scores, and evidence
-- Includes: executive summary, score breakdown, strengths, risks, interview recommendations
-- Generated server-side using a PDF library (e.g., `@react-pdf/renderer`)
-
-**Output**: PDF binary — no Zod schema needed. The input is the complete set of `InsightResult` objects from the match.
+- Button rendered in the sidebar navigation (`DashboardMatchResults`)
+- Dialog modal with checkbox list of available (generated) insights
+- Uses browser print API to generate a print-ready page with selected insight card content
+- Only available insights (with data) appear in the selection list
+- All available insights are pre-selected by default
 
 ---
 

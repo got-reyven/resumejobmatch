@@ -22,9 +22,7 @@ import {
   Mail,
   GitBranch,
   Users,
-  BarChart3,
   DollarSign,
-  ClipboardCheck,
   ShieldCheck,
   Crown,
   Lock,
@@ -280,17 +278,6 @@ const advancedInsights: Insight[] = [
     available: true,
   },
   {
-    id: 21,
-    name: "Comparison Matrix",
-    description:
-      "Side-by-side ranking of multiple resumes against the same job with per-requirement scores.",
-    icon: BarChart3,
-    iconColor: "text-orange-400",
-    audience: "hiring_manager",
-    access: "pro",
-    available: false,
-  },
-  {
     id: 22,
     name: "Salary Range Indicator",
     description:
@@ -300,17 +287,6 @@ const advancedInsights: Insight[] = [
     audience: "hiring_manager",
     access: "pro",
     available: true,
-  },
-  {
-    id: 23,
-    name: "Structured Evaluation Report",
-    description:
-      "Exportable PDF with all insights formatted as a professional evaluation document.",
-    icon: ClipboardCheck,
-    iconColor: "text-indigo-400",
-    audience: "hiring_manager",
-    access: "pro",
-    available: false,
   },
   {
     id: 24,

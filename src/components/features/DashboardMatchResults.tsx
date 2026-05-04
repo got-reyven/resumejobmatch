@@ -30,6 +30,7 @@ import {
   Users,
   DollarSign,
   Check,
+  Download,
   type LucideIcon,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,6 +42,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   MatchScoreDisplay,
   type MatchScoreDisplayProps,
@@ -716,6 +724,10 @@ export function DashboardMatchResults({
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [activeInsightId, setActiveInsightId] = useState<string | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportSelection, setExportSelection] = useState<Set<string>>(
+    new Set()
+  );
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const toggleExpanded = useCallback((id: string) => {
@@ -783,47 +795,131 @@ export function DashboardMatchResults({
     if (val) availableInsights.add(key);
   }
 
+  const openExportModal = (insights: InsightDef[]) => {
+    const available = insights.filter((i) => availableInsights.has(i.id));
+    setExportSelection(new Set(available.map((i) => i.id)));
+    setShowExportModal(true);
+  };
+
+  const toggleExportItem = (id: string) => {
+    setExportSelection((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleExport = () => {
+    const selectedIds = [...exportSelection];
+    const insightCards = selectedIds
+      .map((id) => cardRefs.current[id])
+      .filter(Boolean) as HTMLDivElement[];
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const styles = Array.from(document.styleSheets)
+      .map((sheet) => {
+        try {
+          return Array.from(sheet.cssRules)
+            .map((rule) => rule.cssText)
+            .join("\n");
+        } catch {
+          return "";
+        }
+      })
+      .join("\n");
+
+    const cardHtml = insightCards
+      .map((el) => {
+        const clone = el.cloneNode(true) as HTMLElement;
+        clone.querySelectorAll("[style]").forEach((node) => {
+          const htmlNode = node as HTMLElement;
+          if (htmlNode.style.maxHeight) {
+            htmlNode.style.maxHeight = "none";
+          }
+        });
+        clone
+          .querySelectorAll(".pointer-events-none")
+          .forEach((node) => node.remove());
+        clone.querySelectorAll("button").forEach((btn) => {
+          const text = btn.textContent?.trim() ?? "";
+          if (text === "More" || text === "Less") btn.remove();
+        });
+        return `<div style="margin-bottom:2rem;page-break-inside:avoid;">${clone.innerHTML}</div>`;
+      })
+      .join("");
+
+    printWindow.document.write(`<!DOCTYPE html>
+<html><head><title>Insights Export</title>
+<style>${styles}
+@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style></head><body class="bg-white p-8">
+<h1 style="font-size:1.5rem;font-weight:bold;margin-bottom:1.5rem;">Insights & Analysis Report</h1>
+${cardHtml}
+</body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 500);
+    setShowExportModal(false);
+  };
+
   function renderSidebar(insights: InsightDef[]) {
     const visible = insights.filter((i) => !hidden.has(i.id));
+    const hasAnyData = visible.some((i) => availableInsights.has(i.id));
     return (
-      <nav className="sticky top-24 space-y-0.5">
-        <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Navigate
-        </p>
-        {visible.map((insight) => {
-          const Icon = insight.icon;
-          const isActive = activeInsightId === insight.id;
-          const hasData = availableInsights.has(insight.id);
-          return (
-            <button
-              key={insight.id}
-              type="button"
-              onClick={() => scrollToInsight(insight.id)}
-              className={cn(
-                "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition-colors",
-                isActive
-                  ? "bg-[#6696C9]/10 font-semibold text-[#6696C9]"
-                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-              )}
-            >
-              <Icon
+      <div className="sticky top-24 space-y-3">
+        <nav className="space-y-0.5">
+          <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Navigate
+          </p>
+          {visible.map((insight) => {
+            const Icon = insight.icon;
+            const isActive = activeInsightId === insight.id;
+            const hasData = availableInsights.has(insight.id);
+            return (
+              <button
+                key={insight.id}
+                type="button"
+                onClick={() => scrollToInsight(insight.id)}
                 className={cn(
-                  "h-3.5 w-3.5 shrink-0",
-                  isActive ? "text-[#6696C9]" : insight.iconClass
+                  "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs transition-colors",
+                  isActive
+                    ? "bg-[#6696C9]/10 font-semibold text-[#6696C9]"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                 )}
-                aria-hidden="true"
-              />
-              <span className="truncate flex-1">{insight.label}</span>
-              {hasData && (
-                <Check
-                  className="h-3.5 w-3.5 shrink-0 text-[#6696C9]"
-                  aria-label="Generated"
+              >
+                <Icon
+                  className={cn(
+                    "h-3.5 w-3.5 shrink-0",
+                    isActive ? "text-[#6696C9]" : insight.iconClass
+                  )}
+                  aria-hidden="true"
                 />
-              )}
-            </button>
-          );
-        })}
-      </nav>
+                <span className="truncate flex-1">{insight.label}</span>
+                {hasData && (
+                  <Check
+                    className="h-3.5 w-3.5 shrink-0 text-[#6696C9]"
+                    aria-label="Generated"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {hasAnyData && (
+          <button
+            type="button"
+            onClick={() => openExportModal(insights)}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#6696C9] bg-[#6696C9]/5 px-3 py-2 text-xs font-medium text-[#6696C9] transition-colors hover:bg-[#6696C9]/15 cursor-pointer"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export Insights
+          </button>
+        )}
+      </div>
     );
   }
 
@@ -964,6 +1060,70 @@ export function DashboardMatchResults({
           </TabsContent>
         )}
       </Tabs>
+
+      <Dialog open={showExportModal} onOpenChange={setShowExportModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5 text-[#6696C9]" />
+              Export Insights
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Select which insights to include in your export.
+          </p>
+          <div className="max-h-[28rem] space-y-1 overflow-y-auto pr-1">
+            {filteredInsights
+              .filter((i) => availableInsights.has(i.id))
+              .map((insight) => {
+                const Icon = insight.icon;
+                const checked = exportSelection.has(insight.id);
+                return (
+                  <button
+                    key={insight.id}
+                    type="button"
+                    onClick={() => toggleExportItem(insight.id)}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-muted/50 cursor-pointer"
+                  >
+                    <div
+                      className={cn(
+                        "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
+                        checked
+                          ? "border-[#6696C9] bg-[#6696C9]"
+                          : "border-muted-foreground/30"
+                      )}
+                    >
+                      {checked && <Check className="h-3 w-3 text-white" />}
+                    </div>
+                    <Icon
+                      className={cn("h-4 w-4 shrink-0", insight.iconClass)}
+                      aria-hidden="true"
+                    />
+                    <span className="flex-1">{insight.label}</span>
+                  </button>
+                );
+              })}
+          </div>
+          <DialogFooter className="flex-row justify-between sm:justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowExportModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              disabled={exportSelection.size === 0}
+              onClick={handleExport}
+              className="gap-2 bg-[#6696C9] hover:bg-[#5580b0]"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export ({exportSelection.size})
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

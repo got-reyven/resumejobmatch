@@ -183,6 +183,41 @@ function Collapsible({ expanded, onToggle }) {
 
 ---
 
+## 8. React Compiler — `Could not preserve existing manual memoization`
+
+**Error:**
+
+```
+Compilation Skipped: Existing memoization could not be preserved.
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved.
+The inferred dependencies did not match the manually specified dependencies.
+react-hooks/preserve-manual-memoization
+```
+
+**Root cause:** React Compiler (enabled in Next.js) auto-memoizes functions and values. When `useCallback` or `useMemo` is used with manually specified dependency arrays that don't match what the compiler infers, the compiler cannot reconcile them and skips the entire component.
+
+**Fix:** Remove `useCallback`/`useMemo` wrappers and use plain functions/values instead. The React Compiler will handle memoization automatically.
+
+```tsx
+// BAD: manual useCallback with deps the compiler disagrees with
+const handleExport = useCallback(() => {
+  // uses exportSelection, setShowExportModal, cardRefs...
+}, [exportSelection]); // compiler infers more deps
+
+// GOOD: plain function — compiler auto-memoizes
+const handleExport = () => {
+  // uses exportSelection, setShowExportModal, cardRefs...
+};
+```
+
+**Files affected:**
+
+- `src/components/features/DashboardMatchResults.tsx` — `openExportModal`, `toggleExportItem`, `handleExport`
+
+**Prevention:** In projects with React Compiler enabled, prefer plain functions over `useCallback`. Only use `useCallback`/`useMemo` when the compiler is explicitly disabled for a file or when deps are trivially correct (e.g., empty `[]` with no closures).
+
+---
+
 ## tsconfig.json Strict Settings Reference
 
 These settings cause most build-time errors. All code must comply:
