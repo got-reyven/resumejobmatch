@@ -192,7 +192,7 @@ export default function ComparePage() {
                         id: r.resumeId,
                         label: r.label,
                       }))}
-                      value={columnResumeIds[colIdx]}
+                      value={columnResumeIds[colIdx] ?? null}
                       onChange={(id) => setColumnAt(colIdx, id)}
                       placeholder={`Select Resume ${colIdx + 1}`}
                       disabled={!selectedJdId}
