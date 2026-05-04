@@ -985,3 +985,35 @@ The insights engine is designed to scale indefinitely:
 | **Total per match** | | ~5,000 | **~$0.003** |
 
 At $0.003/match and 3 free matches/day per guest, the daily cost per guest is under $0.01.
+
+---
+
+## Comparison Module
+
+- **Location**: `/dashboard/compare` (sidebar menu: "Compare", icon: `GitCompareArrows`)
+- **Purpose**: Compare up to 3 matches side-by-side in a table format with insight data in a matrix view
+- **Access**: Logged-in users only
+- **Status**: `Implemented`
+
+### Layout
+
+- **Top**: JD selector dropdown (top-right)
+- **Table header**: 3 resume column selectors ("Select Resume 1/2/3")
+- **Left column**: Insight names with icons (sticky), filtered by user type
+- **Cells**: Compact insight summary or "Generate" button for missing insights
+
+### Features
+
+- Compare multiple resumes against a single JD
+- Insight matrix on the left (rows), resume match columns on the right
+- Each cell shows a compact summary of the insight data (e.g., "85%", "3 actions", "Pass: high")
+- Missing insights show a **Generate** button that computes + persists the insight on-demand
+- Insight rows are filtered by user type (jobseeker vs business) — shared insights always visible
+- Resume selectors prevent duplicate selection across columns
+
+### Implementation
+
+- **API**: `GET /api/v1/matches/compare` — returns all completed matches with insights
+- **Page**: `src/app/dashboard/compare/page.tsx`
+- **Shared constants**: `src/lib/constants/insight-defs.ts` (insight definitions for comparison)
+- **Summary helper**: `src/lib/utils/insight-summary.ts` (compact cell text per insight type)

@@ -15,6 +15,7 @@ import {
   User,
   PanelLeftClose,
   PanelLeftOpen,
+  GitCompareArrows,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/cn";
@@ -45,6 +46,12 @@ export function DashboardSidebar() {
       href: "/dashboard/match",
       label: "Matches",
       icon: PlusCircle,
+      show: true,
+    },
+    {
+      href: "/dashboard/compare",
+      label: "Compare",
+      icon: GitCompareArrows,
       show: true,
     },
     {
