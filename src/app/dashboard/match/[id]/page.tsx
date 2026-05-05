@@ -202,54 +202,54 @@ export default function MatchDetailPage() {
 
   const jobTitle = match.jobDescription.title ?? "Untitled Position";
 
+  const detailBar = (
+    <div className="grid gap-4 lg:grid-cols-2">
+      <ResumeDetailPanel parsedData={match.resume.parsedData} />
+      <JobDetailPanel
+        rawText={match.jobDescription.rawText}
+        sourceUrl={match.jobDescription.sourceUrl}
+      />
+    </div>
+  );
+
+  const headerContent = (
+    <div className="pb-4">
+      <EditableTitle initialTitle={jobTitle} matchId={match.id} />
+      {match.jobDescription.company && (
+        <p className="text-muted-foreground">{match.jobDescription.company}</p>
+      )}
+      <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <FileText className="h-4 w-4" />
+          {match.resume.fileName}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <Calendar className="h-4 w-4" />
+          {dateStr} at {timeStr}
+        </span>
+      </div>
+    </div>
+  );
+
+  const sidebarHeader = (
+    <Button
+      asChild
+      variant="ghost"
+      size="sm"
+      className="mb-4 gap-1.5 text-muted-foreground"
+    >
+      <Link href="/dashboard/history">
+        <ArrowLeft className="h-4 w-4" />
+        Back to History
+      </Link>
+    </Button>
+  );
+
   return (
     <div>
-      <div className="mb-6 px-6 pt-6 lg:px-8 lg:pt-8">
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
-          className="mb-4 gap-1.5 text-muted-foreground"
-        >
-          <Link href="/dashboard/history">
-            <ArrowLeft className="h-4 w-4" />
-            Back to History
-          </Link>
-        </Button>
-
-        <EditableTitle initialTitle={jobTitle} matchId={match.id} />
-        {match.jobDescription.company && (
-          <p className="text-muted-foreground">
-            {match.jobDescription.company}
-          </p>
-        )}
-
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <FileText className="h-4 w-4" />
-            {match.resume.fileName}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Calendar className="h-4 w-4" />
-            {dateStr} at {timeStr}
-          </span>
-        </div>
-      </div>
-
       <div ref={sentinelRef} className="h-0" aria-hidden="true" />
-      <div
-        className={`sticky top-0 z-20 bg-white px-6 pb-3 pt-3 lg:px-8 ${isStuck ? "after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-4 after:bg-gradient-to-b after:from-black/5 after:to-transparent" : ""}`}
-      >
-        <div className="grid gap-4 lg:grid-cols-2">
-          <ResumeDetailPanel parsedData={match.resume.parsedData} />
-          <JobDetailPanel
-            rawText={match.jobDescription.rawText}
-            sourceUrl={match.jobDescription.sourceUrl}
-          />
-        </div>
-      </div>
 
-      <div className="px-6 pt-6 pb-6 lg:px-8 lg:pb-8">
+      <div className="px-6 pb-6 pt-6 lg:px-8 lg:pb-8 lg:pt-8">
         <DashboardMatchResults
           score={{
             overall: match.insights.overallScore.overall,
@@ -280,6 +280,10 @@ export default function MatchDetailPage() {
           userType={userType}
           tier={tier}
           matchId={match.id}
+          detailBar={detailBar}
+          isStuck={isStuck}
+          headerContent={headerContent}
+          sidebarHeader={sidebarHeader}
         />
       </div>
     </div>

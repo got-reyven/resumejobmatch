@@ -238,6 +238,10 @@ interface DashboardMatchResultsProps {
   userType: string;
   tier: string;
   matchId?: string;
+  detailBar?: React.ReactNode;
+  isStuck?: boolean;
+  headerContent?: React.ReactNode;
+  sidebarHeader?: React.ReactNode;
 }
 
 export function DashboardMatchResults({
@@ -266,6 +270,10 @@ export function DashboardMatchResults({
   userType,
   tier,
   matchId,
+  detailBar,
+  isStuck,
+  headerContent,
+  sidebarHeader,
 }: DashboardMatchResultsProps) {
   const isPro = tier === "pro";
   const defaultTab = userType === "business" ? "business" : "jobseeker";
@@ -869,7 +877,7 @@ ${cardHtml}
     const visible = insights.filter((i) => !hidden.has(i.id));
     const hasAnyData = visible.some((i) => availableInsights.has(i.id));
     return (
-      <div className="sticky top-24 space-y-3">
+      <div className="space-y-3">
         <nav className="space-y-0.5">
           <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Navigate
@@ -1009,56 +1017,80 @@ ${cardHtml}
   return (
     <div className="w-full">
       <Tabs defaultValue={defaultTab}>
-        {isPro && (
-          <TabsList className="mx-auto mb-6 w-full max-w-md">
-            <TabsTrigger value="jobseeker" className="flex-1 gap-2">
-              <User className="h-4 w-4" aria-hidden="true" />
-              For Jobseekers
-            </TabsTrigger>
-            <TabsTrigger value="business" className="flex-1 gap-2">
-              <Briefcase className="h-4 w-4" aria-hidden="true" />
-              For Business
-            </TabsTrigger>
-          </TabsList>
-        )}
+        <div className="flex gap-6">
+          {/* Left: Navigation sidebar — sticky as a whole */}
+          <aside className="hidden w-60 shrink-0 lg:block">
+            <div className="sticky top-0 pt-3">
+              {sidebarHeader}
+              {isPro && (
+                <TabsList className="mb-4 w-full">
+                  <TabsTrigger
+                    value="jobseeker"
+                    className="flex-1 gap-1.5 text-xs"
+                  >
+                    <User className="h-3.5 w-3.5" aria-hidden="true" />
+                    Jobseeker
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="business"
+                    className="flex-1 gap-1.5 text-xs"
+                  >
+                    <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
+                    Business
+                  </TabsTrigger>
+                </TabsList>
+              )}
+              {showJobseekerTab && (
+                <TabsContent value="jobseeker" className="mt-0">
+                  {renderSidebar(jobseekerInsights)}
+                </TabsContent>
+              )}
+              {showBusinessTab && (
+                <TabsContent value="business" className="mt-0">
+                  {renderSidebar(businessInsights)}
+                </TabsContent>
+              )}
+            </div>
+          </aside>
 
-        {showJobseekerTab && (
-          <TabsContent value="jobseeker">
-            <div className="flex gap-6">
-              <aside className="hidden w-52 shrink-0 lg:block">
-                {renderSidebar(jobseekerInsights)}
-              </aside>
-              <div className="min-w-0 flex-1">
-                <div className="mb-6 flex items-center justify-between">
-                  <h2 className="text-xl font-bold tracking-tight">
-                    Insights and Analysis Results
-                  </h2>
-                  {filterPopover}
-                </div>
+          {/* Right: Header + Detail bar (sticky) + title + insight cards */}
+          <div className="min-w-0 flex-1">
+            {headerContent}
+
+            {/* Sticky detail bar: resume/JD dropdowns */}
+            {detailBar && (
+              <div
+                className={cn(
+                  "sticky top-0 z-20 -mx-6 bg-white px-6 pb-3 pt-3 lg:-mx-8 lg:px-8",
+                  isStuck &&
+                    "after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-4 after:bg-gradient-to-b after:from-black/5 after:to-transparent"
+                )}
+              >
+                {detailBar}
+              </div>
+            )}
+
+            {/* Title + filter */}
+            <div className="mb-6 mt-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold tracking-tight">
+                Insights and Analysis Results
+              </h2>
+              {filterPopover}
+            </div>
+
+            {/* Insight cards */}
+            {showJobseekerTab && (
+              <TabsContent value="jobseeker" className="mt-0">
                 {renderCards(jobseekerInsights)}
-              </div>
-            </div>
-          </TabsContent>
-        )}
-
-        {showBusinessTab && (
-          <TabsContent value="business">
-            <div className="flex gap-6">
-              <aside className="hidden w-52 shrink-0 lg:block">
-                {renderSidebar(businessInsights)}
-              </aside>
-              <div className="min-w-0 flex-1">
-                <div className="mb-6 flex items-center justify-between">
-                  <h2 className="text-xl font-bold tracking-tight">
-                    Insights and Analysis Results
-                  </h2>
-                  {filterPopover}
-                </div>
+              </TabsContent>
+            )}
+            {showBusinessTab && (
+              <TabsContent value="business" className="mt-0">
                 {renderCards(businessInsights)}
-              </div>
-            </div>
-          </TabsContent>
-        )}
+              </TabsContent>
+            )}
+          </div>
+        </div>
       </Tabs>
 
       <Dialog open={showExportModal} onOpenChange={setShowExportModal}>
