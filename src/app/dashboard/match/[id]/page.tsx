@@ -431,7 +431,15 @@ function ResumeDetailPanel({
     | string[]
     | undefined;
   const experience = parsedData.experience as
-    | Array<{ title?: string; company?: string; years?: number }>
+    | Array<{
+        title?: string;
+        company?: string;
+        years?: number;
+        start_date?: string;
+        end_date?: string;
+        description?: string;
+        highlights?: string[];
+      }>
     | undefined;
   const education = parsedData.education as
     | Array<{
@@ -519,21 +527,37 @@ function ResumeDetailPanel({
                 <p className="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Experience
                 </p>
-                <ul className="space-y-1">
+                <ul className="space-y-3">
                   {experience.map((exp, i) => (
                     <li key={i} className="text-xs">
-                      <span className="font-medium">{exp.title}</span>
-                      {exp.company && (
-                        <span className="text-muted-foreground">
-                          {" "}
-                          at {exp.company}
-                        </span>
-                      )}
-                      {exp.years != null && (
-                        <span className="text-muted-foreground">
-                          {" "}
-                          ({exp.years}y)
-                        </span>
+                      <div>
+                        <span className="font-medium">{exp.title}</span>
+                        {exp.company && (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            at {exp.company}
+                          </span>
+                        )}
+                        {exp.start_date && (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            &middot; {exp.start_date}
+                            {exp.end_date ? ` – ${exp.end_date}` : " – Present"}
+                          </span>
+                        )}
+                      </div>
+                      {exp.highlights && exp.highlights.length > 0 && (
+                        <ul className="mt-1 space-y-0.5 pl-3">
+                          {exp.highlights.map((h, j) => (
+                            <li
+                              key={j}
+                              className="flex items-start gap-1.5 text-xs text-muted-foreground"
+                            >
+                              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" />
+                              {h}
+                            </li>
+                          ))}
+                        </ul>
                       )}
                     </li>
                   ))}

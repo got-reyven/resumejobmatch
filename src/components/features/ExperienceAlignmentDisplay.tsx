@@ -89,11 +89,14 @@ export function ExperienceAlignmentDisplay({
       </div>
 
       <div className="mb-3 flex-1 space-y-2">
-        {role_mapping.map((role) => {
+        {role_mapping.map((role, idx) => {
           const config = relevanceConfig[role.relevance];
           const Icon = config.icon;
           return (
-            <div key={role.resume_role} className="rounded-lg border p-2.5">
+            <div
+              key={`${role.resume_role}-${idx}`}
+              className="rounded-lg border p-2.5"
+            >
               <div className="flex items-center gap-2">
                 <Icon
                   className={cn("h-4 w-4 shrink-0", config.color)}

@@ -481,17 +481,34 @@ function ParsedResumePreview({ data }: { data: ParsedResume }) {
             {data.total_years_experience != null &&
               ` (${data.total_years_experience}+ yrs)`}
           </p>
-          <ul className="space-y-1">
+          <ul className="space-y-2.5">
             {data.experience.map((exp, i) => (
-              <li key={i} className="text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">{exp.title}</span>{" "}
-                at {exp.company}
-                {exp.start_date && (
-                  <span>
-                    {" "}
-                    &middot; {exp.start_date}
-                    {exp.end_date ? ` – ${exp.end_date}` : " – Present"}
-                  </span>
+              <li key={i} className="text-xs">
+                <div className="text-muted-foreground">
+                  <span className="font-medium text-foreground">
+                    {exp.title}
+                  </span>{" "}
+                  at {exp.company}
+                  {exp.start_date && (
+                    <span>
+                      {" "}
+                      &middot; {exp.start_date}
+                      {exp.end_date ? ` – ${exp.end_date}` : " – Present"}
+                    </span>
+                  )}
+                </div>
+                {exp.highlights && exp.highlights.length > 0 && (
+                  <ul className="mt-1 space-y-0.5 pl-3">
+                    {exp.highlights.map((h, j) => (
+                      <li
+                        key={j}
+                        className="flex items-start gap-1.5 text-xs text-muted-foreground"
+                      >
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" />
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </li>
             ))}
